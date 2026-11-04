@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a>
+  <a href="README.md">English</a> · <a href="README.zh-CN.md">简体中文</a> · <a href="README.ja.md">日本語</a>
 </p>
 
 <p align="center">
@@ -265,6 +265,7 @@ cait/
 ├─ NOTICE
 ├─ README.md
 ├─ README.zh-CN.md
+├─ README.ja.md
 ├─ CHANGELOG.md
 ├─ lib/
 │  ├─ store.js              # CatStore 门面 + 文档/句段核心
@@ -341,7 +342,7 @@ node _dev/test-mt.mjs
 - HTML/RTF 导出不往返原始样式；JSON 只翻译字符串值。
 - TM 匹配是词法级的，不是语义级；没有词干、同义词或向量。
 - 库重命名/删除和逐标签页挂载状态不属于 v1.0.0。
-- 工作台界面提供中文、English、日本語三种语言，可在设置中切换；README 以英文版为主。
+- 工作台界面提供中文、English、日本語三种语言，可在设置中切换；README 提供英文、简体中文和日文三个版本，以英文版为准。
 
 后续计划：PDF 与 EPUB 适配器、通过多模态 DSH 路由支持图片/视觉输入、
 更完整的库管理、保留样式的 XLSX 输出，以及 XLIFF `<alt-trans>` / 注释支持。

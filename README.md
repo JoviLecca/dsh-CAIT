@@ -9,7 +9,7 @@
   Translation memory · glossary · segment editor · MT assistance · document tabs · Office / subtitle / localization formats
 </p>
 <p align="center">
-  <a href="README.zh-CN.md">简体中文</a> · <a href="README.md">English</a>
+  <a href="README.zh-CN.md">简体中文</a> · <a href="README.ja.md">日本語</a> · <a href="README.md">English</a>
 </p>
 
 
@@ -283,6 +283,7 @@ cait/
 ├─ NOTICE
 ├─ README.md
 ├─ README.zh-CN.md
+├─ README.ja.md
 ├─ CHANGELOG.md
 ├─ lib/
 │  ├─ store.js              # CatStore facade + document/segment core
@@ -365,7 +366,8 @@ The import/export fixtures are `_dev/sample.docx`, `_dev/sample-table.docx`, and
 - TM matching is lexical, not semantic; no stemming, synonyms, or embeddings.
 - Library rename/delete and per-tab mount state are not part of v1.0.0.
 - The workbench UI ships in Chinese, English, and Japanese, switchable in
-  Settings; the README is English-first.
+  Settings; this README ships in English, Simplified Chinese, and Japanese, and
+  the English version is the source of truth.
 
 Planned next: PDF and EPUB adapters, image/vision input through a multimodal DSH
 route, richer library management, style-preserving XLSX output, and XLIFF

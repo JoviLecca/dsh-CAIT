@@ -8,6 +8,11 @@ All notable changes to CAIT are documented here. The project follows
 
 Interface-language fix.
 
+### Added
+
+- Japanese README (`README.ja.md`), linked from the language switcher of all
+  three READMEs and listed in the project layout.
+
 ### Fixed
 
 - **Follow DSH language** now follows the DSH locale instead of staying on
