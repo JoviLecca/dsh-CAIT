@@ -1,8 +1,14 @@
 {
   "name": "dsh-cait",
-  "version": "1.0.2",
-  "private": true,
+  "version": "1.0.3",
   "license": "Apache-2.0",
+  "author": {
+    "name": "Jovi Lecca",
+    "url": "https://github.com/JoviLecca"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JoviLecca/dsh-CAIT.git"
@@ -14,8 +20,9 @@
   "description": "CAIT — a CAT workbench for DeepSeek Harness with translation memory, glossary, document tabs, MT routes, and Office/subtitle/localization formats.",
   "type": "module",
   "keywords": [
-    "dsh",
+    "dsh-plugin",
     "deepseek-harness",
+    "cordis",
     "cat",
     "translation",
     "translation-memory",
@@ -25,8 +32,12 @@
     "pptx",
     "xliff"
   ],
+  "engines": {
+    "dsh": ">=0.2.2-rc.1"
+  },
   "scripts": {
-    "build:client": "node scripts/build-client.mjs"
+    "build:client": "node scripts/build-client.mjs",
+    "prepublishOnly": "node scripts/build-client.mjs && node --check client.js"
   },
   "exports": {
     ".": "./index.js",
@@ -46,12 +57,16 @@
     "icon.svg",
     "README.md",
     "README.zh-CN.md",
+    "README.ja.md",
     "CHANGELOG.md",
     "LICENSE",
     "NOTICE"
   ],
   "peerDependencies": {
     "@deepseek-ai/schemastery": ">=3.18.1 <4.0.0"
+  },
+  "devDependencies": {
+    "@deepseek-ai/schemastery": "^3.19.0"
   },
   "dsh": {
     "bundle": {

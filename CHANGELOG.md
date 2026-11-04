@@ -4,6 +4,39 @@ All notable changes to CAIT are documented here. The project follows
 [Semantic Versioning](https://semver.org/) and the format is based on
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.3] - 2026-11-05
+
+npm distribution.
+
+### Added
+
+- The package can now be installed from the npm registry:
+  `plugin_manager install_bundle target: dsh-cait` in DSH Desktop, or
+  `dsh plugin --profile <name> add dsh-cait`. Pin a release with
+  `dsh-cait@1.0.3`; the GitHub and local-checkout routes still work.
+- `engines.dsh` (`>=0.2.2-rc.1`), so the plugin manager refuses an older host
+  with a compatibility report instead of a broken mount.
+- `publishConfig.access: public`, an `author` field, and the `dsh-plugin` /
+  `cordis` keywords for the registry listing.
+- `prepublishOnly` rebuilds the client bundle and syntax-checks it, so a
+  release cannot ship a stale `client.js`.
+- `.github/workflows/publish.yml` publishes a GitHub release through npm
+  Trusted Publishing with `--provenance`; it checks the tag against
+  `package.json`, runs the whole test suite, and never stores an npm token.
+- `@deepseek-ai/schemastery` is a `devDependency` as well as a peer dependency,
+  so a fresh checkout can run the tests.
+
+### Changed
+
+- `README.ja.md` ships in the package (`files`).
+- The README install section leads with the npm route and keeps the GitHub and
+  local-checkout routes as alternatives.
+- The repository no longer tracks `node_modules/`; packed tarballs are ignored.
+
+### Removed
+
+- `"private": true`, which blocked `npm publish`.
+
 ## [1.0.2] - 2026-11-04
 
 Interface-language fix.

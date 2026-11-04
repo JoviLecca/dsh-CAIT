@@ -14,7 +14,7 @@
 
 
 <p align="center">
-  <img alt="Version 1.0.2" src="https://img.shields.io/badge/version-1.0.2-blue.svg" />
+  <img alt="Version 1.0.3" src="https://img.shields.io/badge/version-1.0.3-blue.svg" />
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
   <img alt="Tests: 13 suites" src="https://img.shields.io/badge/tests-13%20suites-brightgreen.svg" />
   <img alt="No API key required" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
@@ -148,36 +148,47 @@ is stored on the document/segments and persists in the snapshot.
 
 ## Install
 
-### DSH Desktop
+CAIT installs as a DSH bundle; the published package name is `dsh-cait` and the
+plugin itself shows up as **CAIT** in the left sidebar. The in-app plugin
+manager owns the `desktop` profile, so use it rather than editing the profile's
+`package.json`.
 
-Install the local package through the in-app plugin manager (the `desktop` profile
-is owned by the Electron app). The package name is `dsh-cait`; the plugin itself
-shows up as **CAIT** in the left sidebar.
+### From npm
 
-From this repository:
+In DSH Desktop (or any profile with the `plugin_manager` tool):
+
+```text
+plugin_manager install_bundle target: dsh-cait
+```
+
+Pin a release with `dsh-cait@1.0.3`, or ask for the newest one with
+`dsh-cait@latest`. The manager resolves the registry package, applies the bundle
+patch, and activates the plugin — no hand-written profile rows.
+
+With a CLI-managed profile:
+
+```sh
+dsh plugin --profile web add dsh-cait
+```
+
+Replace `web` with your profile name, and restart `dsh web` if your host
+requires it.
+
+### From this repository
+
+GitHub:
 
 ```text
 plugin_manager install_bundle target: github:JoviLecca/dsh-CAIT
 ```
 
-From a local checkout:
+Local checkout:
 
 ```text
 plugin_manager install_bundle target: /absolute/path/to/dsh-CAIT
 ```
 
 Then reload DSH. The **CAIT** entry appears in the left sidebar.
-
-### `dsh` CLI (Web / CLI-managed profile)
-
-```sh
-git clone <this-repository> dsh-CAIT
-dsh plugin --profile web add /absolute/path/to/dsh-CAIT
-```
-
-Replace `web` with your profile name. Restart `dsh web` if your host requires it.
-The Desktop app manages its own profile; install through the app's Plugins page
-or the plugin manager instead of a CLI profile.
 
 ### From source
 
@@ -339,6 +350,33 @@ The import/export fixtures are `_dev/sample.docx`, `_dev/sample-table.docx`, and
 `_dev/sample-format.docx`; regenerate them with the matching
 `python _dev/make-*.py` scripts. All 13 suites should pass.
 
+### Releasing
+
+`npm publish` runs `prepublishOnly`, which rebuilds `client.js` from the
+`client/` fragments and syntax-checks the result, so a release cannot ship a
+stale bundle. Publishing from the repository root:
+
+```sh
+npm publish
+```
+
+`.github/workflows/publish.yml` does the same from CI on a published GitHub
+release, using npm Trusted Publishing (OIDC) instead of a stored token, and it
+refuses to publish when the release tag does not match `package.json`.
+
+The very first release has to be published locally, because a trusted publisher
+can only be configured for a package that already exists:
+
+```sh
+npm login
+npm publish
+```
+
+Afterwards open the package on npmjs.com, go to
+**Settings → Trusted publishing**, and add the repository `JoviLecca/dsh-CAIT`
+with the workflow file `publish.yml`. Later releases can then be published from
+GitHub with a release.
+
 ## Security model
 
 - The Host API is mounted at `/cait/api`, restricted to same-origin/trusted
@@ -376,9 +414,10 @@ route, richer library management, style-preserving XLSX output, and XLIFF
 ## Changelog and versioning
 
 See [CHANGELOG.md](CHANGELOG.md). `v1.0.0` was the first public release;
-`v1.0.1` adds the Japanese UI and the in-app interface language switch, and
-`v1.0.2` makes *Follow DSH language* honour the DSH locale. The project was
-developed as `0.1.0` and renumbered for the GitHub release.
+`v1.0.1` adds the Japanese UI and the in-app interface language switch,
+`v1.0.2` makes *Follow DSH language* honour the DSH locale, and `v1.0.3`
+publishes the package to npm. The project was developed as `0.1.0` and
+renumbered for the GitHub release.
 
 > **License:** Apache License 2.0 — see [LICENSE](LICENSE). Redistributions must
 > retain the attribution in [NOTICE](NOTICE).

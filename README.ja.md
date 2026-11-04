@@ -15,7 +15,7 @@
 
 
 <p align="center">
-  <img alt="バージョン 1.0.2" src="https://img.shields.io/badge/version-1.0.2-blue.svg" />
+  <img alt="バージョン 1.0.3" src="https://img.shields.io/badge/version-1.0.3-blue.svg" />
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
   <img alt="テスト 13 スイート" src="https://img.shields.io/badge/tests-13%20suites-brightgreen.svg" />
   <img alt="API キー不要" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
@@ -143,36 +143,45 @@ CAIT はエンドポイントもキーも持ちません。セレクタは DSH �
 
 ## インストール
 
-### DSH デスクトップ
+CAIT は DSH の bundle としてインストールします。公開パッケージ名は `dsh-cait` で、
+プラグイン自体は左サイドバーに **CAIT** として表示されます。`desktop` プロファイルは
+アプリのプラグインマネージャが管理するため、プロファイルの `package.json` を手で編集せず
+そちらを使ってください。
 
-アプリ内のプラグインマネージャからローカルパッケージをインストールします（`desktop`
-プロファイルは Electron アプリが管理します）。パッケージ名は `dsh-cait` で、プラグイン
-自体は左サイドバーに **CAIT** として表示されます。
+### npm から
 
-このリポジトリから:
+DSH デスクトップ（または `plugin_manager` ツールがある任意のプロファイル）で:
+
+```text
+plugin_manager install_bundle target: dsh-cait
+```
+
+バージョンを固定するときは `dsh-cait@1.0.3`、最新版は `dsh-cait@latest` を指定します。
+マネージャが registry のパッケージを解決し、bundle patch を適用してプラグインを有効化します。
+
+CLI 管理のプロファイル:
+
+```sh
+dsh plugin --profile web add dsh-cait
+```
+
+`web` はご自身のプロファイル名に置き換えてください。必要なら `dsh web` を再起動します。
+
+### このリポジトリから
+
+GitHub:
 
 ```text
 plugin_manager install_bundle target: github:JoviLecca/dsh-CAIT
 ```
 
-ローカルのチェックアウトから:
+ローカルのチェックアウト:
 
 ```text
 plugin_manager install_bundle target: /absolute/path/to/dsh-CAIT
 ```
 
 その後 DSH をリロードすると、左サイドバーに **CAIT** のエントリが現れます。
-
-### `dsh` CLI（Web / CLI 管理プロファイル）
-
-```sh
-git clone <this-repository> dsh-CAIT
-dsh plugin --profile web add /absolute/path/to/dsh-CAIT
-```
-
-`web` はご自身のプロファイル名に置き換えてください。必要なら `dsh web` を再起動します。
-デスクトップアプリは独自のプロファイルを管理するため、CLI プロファイルではなくアプリの
-プラグインページかプラグインマネージャからインストールしてください。
 
 ### ソースから
 
@@ -334,6 +343,32 @@ node _dev/test-mt.mjs
 `_dev/sample-format.docx` です。対応する `python _dev/make-*.py` スクリプトで再生成
 できます。13 スイートすべてが通るはずです。
 
+### リリース
+
+`npm publish` は `prepublishOnly` を実行し、`client/` のフラグメントから
+`client.js` を再ビルドして構文チェックするため、古いバンドルが出荷されることは
+ありません。リポジトリのルートで実行します:
+
+```sh
+npm publish
+```
+
+`.github/workflows/publish.yml` は GitHub で release を公開したときに同じ処理を
+CI で行い、保存したトークンではなく npm Trusted Publishing（OIDC）を使います。
+release タグが `package.json` のバージョンと一致しない場合は公開を拒否します。
+
+最初のリリースだけはローカルで公開する必要があります。Trusted Publishing は
+既に存在するパッケージにしか設定できないためです:
+
+```sh
+npm login
+npm publish
+```
+
+その後 npmjs.com でパッケージを開き、**Settings → Trusted publishing** で
+リポジトリ `JoviLecca/dsh-CAIT` とワークフローファイル `publish.yml` を追加します。
+以降のリリースは GitHub の release から公開できます。
+
 ## セキュリティモデル
 
 - Host API は `/cait/api` にマウントされ、`ctx.connection.requestRejection` によって
@@ -370,8 +405,8 @@ node _dev/test-mt.mjs
 
 [CHANGELOG.md](CHANGELOG.md) を参照してください。`v1.0.0` が最初の公開リリースで、
 `v1.0.1` が日本語 UI とアプリ内の UI 言語切り替えを追加し、`v1.0.2` で
-*DSH の言語に従う* が DSH のロケールに従うようになりました。プロジェクトは `0.1.0`
-として開発され、GitHub リリースに向けて採番し直されました。
+*DSH の言語に従う* が DSH のロケールに従うようになり、`v1.0.3` で npm に公開しました。
+プロジェクトは `0.1.0` として開発され、GitHub リリースに向けて採番し直されました。
 
 > **ライセンス:** Apache License 2.0 — [LICENSE](LICENSE) を参照してください。
 > 再配布時は [NOTICE](NOTICE) の帰属表示を保持する必要があります。

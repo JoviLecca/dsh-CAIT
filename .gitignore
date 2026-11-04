@@ -1,0 +1,9 @@
+# Installed dependencies (restore with your package manager)
+node_modules/
+
+# Packed release tarballs
+*.tgz
+
+# Local scratch
+.git-commit-msg.txt
+npm-debug.log*

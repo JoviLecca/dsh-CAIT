@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <img alt="版本 1.0.2" src="https://img.shields.io/badge/version-1.0.2-blue.svg" />
+  <img alt="版本 1.0.3" src="https://img.shields.io/badge/version-1.0.3-blue.svg" />
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
   <img alt="13 套测试" src="https://img.shields.io/badge/tests-13%20suites-brightgreen.svg" />
   <img alt="无需 API Key" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
@@ -137,35 +137,44 @@ JSON 路径/模板、XLSX 行号、PPTX 幻灯片/段落位置）会保存在文
 
 ## 安装
 
-### DSH 桌面端
+CAIT 以 DSH bundle 的形式安装；发布的 npm 包名为 `dsh-cait`，插件本身在左侧栏显示为
+**CAIT**。`desktop` 配置档由应用的 plugin manager 管理，请通过它安装，不要手写配置档的
+`package.json`。
 
-通过应用内插件管理器安装（`desktop` 配置档由 Electron 应用管理）。npm 包名为
-`dsh-cait`，插件本身在左侧栏仍显示为 **CAIT**。
+### 从 npm 安装
 
-从本仓库安装：
+在 DSH 桌面端（或任何带有 `plugin_manager` 工具的配置档）中：
+
+```text
+plugin_manager install_bundle target: dsh-cait
+```
+
+需要固定版本时写 `dsh-cait@1.0.3`，需要最新版时写 `dsh-cait@latest`。管理器会解析 registry
+上的包、应用 bundle patch 并激活插件，不需要手工在配置档里加行。
+
+使用 CLI 管理的配置档：
+
+```sh
+dsh plugin --profile web add dsh-cait
+```
+
+将 `web` 替换为你的配置档名称。如果 Host 需要重启，请重启 `dsh web`。
+
+### 从本仓库安装
+
+GitHub：
 
 ```text
 plugin_manager install_bundle target: github:JoviLecca/dsh-CAIT
 ```
 
-从本地目录安装：
+本地目录：
 
 ```text
 plugin_manager install_bundle target: /absolute/path/to/dsh-CAIT
 ```
 
 然后重新加载 DSH。左侧栏会出现 **CAIT** 入口。
-
-### `dsh` CLI（Web / CLI 管理的配置档）
-
-```sh
-git clone <this-repository> dsh-CAIT
-dsh plugin --profile web add /absolute/path/to/dsh-CAIT
-```
-
-将 `web` 替换为你的配置档名称。如果 Host 需要重启，请重启 `dsh web`。
-桌面端应用管理自己的配置档；请通过应用的插件页面或 plugin manager 安装，
-不要使用 CLI 配置档。
 
 ### 从源码安装
 
@@ -321,6 +330,30 @@ node _dev/test-mt.mjs
 `_dev/sample-format.docx`；可用对应的 `python _dev/make-*.py` 脚本重新生成。
 13 套测试应全部通过。
 
+### 发布
+
+`npm publish` 会触发 `prepublishOnly`：从 `client/` 的片段重建 `client.js`
+并做语法检查，因此发布出去的不会是一个过期的 bundle。在仓库根目录执行：
+
+```sh
+npm publish
+```
+
+`.github/workflows/publish.yml` 会在 GitHub 发布 release 时做同样的事，使用
+npm Trusted Publishing（OIDC）而不是保存的 token，并且当 release tag 与
+`package.json` 的版本不一致时拒绝发布。
+
+首次发布必须在本地完成，因为 Trusted Publishing 只能为已经存在的包配置：
+
+```sh
+npm login
+npm publish
+```
+
+之后在 npmjs.com 打开该包，进入 **Settings → Trusted publishing**，添加仓库
+`JoviLecca/dsh-CAIT` 和 workflow 文件 `publish.yml`。以后的版本就可以通过
+GitHub release 发布。
+
 ## 安全模型
 
 - Host API 挂载在 `/cait/api`，通过 `ctx.connection.requestRejection`
@@ -350,8 +383,8 @@ node _dev/test-mt.mjs
 ## 变更日志与版本
 
 见 [CHANGELOG.md](CHANGELOG.md)。`v1.0.0` 是首个公开发布版本，`v1.0.1` 增加了
-日语界面和界面内语言切换，`v1.0.2` 让「跟随 DSH 语言」真正跟随 DSH 的语言设置；
-项目在开发阶段使用 `0.1.0`，发布到 GitHub 前统一改为 `1.0.0`。
+日语界面和界面内语言切换，`v1.0.2` 让「跟随 DSH 语言」真正跟随 DSH 的语言设置，
+`v1.0.3` 把包发布到 npm；项目在开发阶段使用 `0.1.0`，发布到 GitHub 前统一改为 `1.0.0`。
 
 > **License：** Apache License 2.0，见 [LICENSE](LICENSE)。再分发时需保留
 > [NOTICE](NOTICE) 中的署名信息。
