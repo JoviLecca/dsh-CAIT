@@ -4,6 +4,35 @@ All notable changes to CAIT are documented here. The project follows
 [Semantic Versioning](https://semver.org/) and the format is based on
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.1] - 2026-11-04
+
+UI languages and license metadata.
+
+### Added
+
+- Japanese (`ja`) UI dictionary. The workbench now ships three interface
+  languages: Simplified Chinese, English, and Japanese.
+- **Settings → Interface → Interface language**, with *Follow DSH language*
+  (default), 简体中文, English, and 日本語. The choice is stored as
+  `settings.uiLang` in the CAIT store, applies to the workbench and the sidebar
+  label immediately, and only affects the CAIT interface — document source and
+  target languages are untouched.
+- `NOTICE`, the attribution supplement for Apache-2.0 (section 4(d)), and an
+  explicit `license` field in `package.json`.
+
+### Changed
+
+- `LICENSE` appendix copyright line now reads `Copyright 2026 Jovi Lecca`.
+- Version bumped to `1.0.1` (`package.json`, `CAIT_VERSION`, and the exported
+  document metadata move together).
+- Verified against DSH `0.2.2-rc.1`; the README badges and development notes use
+  that version.
+
+### Fixed
+
+- `saveSettings` rejects an unsupported interface language with
+  `INVALID_UI_LANG` instead of silently storing it.
+
 ## [1.0.0] - 2026-11-04
 
 First public release. CAIT was developed as `0.1.0` and renumbered to `1.0.0`

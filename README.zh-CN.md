@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <img alt="版本 1.0.0" src="https://img.shields.io/badge/version-1.0.0-blue.svg" />
+  <img alt="版本 1.0.1" src="https://img.shields.io/badge/version-1.0.1-blue.svg" />
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
   <img alt="13 套测试" src="https://img.shields.io/badge/tests-13%20suites-brightgreen.svg" />
   <img alt="无需 API Key" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
@@ -23,7 +23,7 @@
 CAIT 为 DSH Web UI 和 DSH 桌面端增加一个 CAT 翻译工作台。它从左侧栏入口打开，
 工作台与七个 Agent 工具共用一个数据存储，覆盖从导入源文件到导出译文的完整流程。
 
-> **已在 DSH `0.2.1-rc.5` 中验证。** CAIT 使用 DSH 自己的模型路由和凭据，
+> **已在 DSH `0.2.2-rc.1` 中验证。** CAIT 使用 DSH 自己的模型路由和凭据，
 > 不会要求用户填写 API Key。内部回退提供方仍叫 `mock`，界面显示为
 > **术语替换（离线）**。
 
@@ -84,6 +84,9 @@ CAIT 为 DSH Web UI 和 DSH 桌面端增加一个 CAT 翻译工作台。它从�
 - 支持保存草稿、确认并下一句、上一句/下一句导航和进度。
 - 文档标签页；关闭标签页不会删除文档。
 - **打开已有文档** 可重新打开已关闭的文档。
+- **设置 → 界面** 提供界面语言切换：跟随 DSH 语言（默认）、简体中文、English、
+  日本語。工作台与侧栏名称立即生效，且只改 CAIT 界面，不会改动文档的源语言或
+  目标语言。
 - 下拉框旁的垃圾桶按钮可删除一个或全部已关闭文档；删除是永久性的，
   不会影响 TM、术语库或其他文档。
 - 同格式、同内容的再次导入会复用已有文档，而不是新建重复文档。
@@ -204,6 +207,10 @@ dsh web --patch C:\absolute\path\to\dsh-CAIT\_dev\cait.patch.yml
 快照保存文档、打开的标签页、TM、术语库、库、挂载关系和非敏感设置。
 导入的 DOCX/PPTX 源包放在 `sources/` 下。
 
+界面内的**设置**保存在快照里，而不是上面的 YAML：源语言/目标语言、模糊阈值、
+TM 返回条数、MT 路由/模型/温度，以及界面语言（`uiLang`：`auto` | `zh` | `en` |
+`ja`，默认 `auto` 即跟随 DSH 语言）。
+
 句段确认使用严格写入：如果快照无法写入，确认会以 `PERSISTENCE_FAILED`（503）
 失败，并回滚内存中的确认。其他结构性修改采用尽力写入，并通过工作台横幅显示
 `bootstrap().storage.error`。
@@ -254,7 +261,8 @@ cait/
 ├─ client/                  # helpers、styles、RPC、components、locales、entry
 ├─ scripts/build-client.mjs
 ├─ icon.svg
-├─ locale/{en,zh}.json
+├─ locale/{en,zh,ja}.json
+├─ NOTICE
 ├─ README.md
 ├─ README.zh-CN.md
 ├─ CHANGELOG.md
@@ -286,7 +294,7 @@ cait/
 
 ## 开发
 
-需要 Node.js 22+ 和 DSH `0.2.x`。已在 DSH `0.2.1-rc.5`、Node `26.7.0`
+需要 Node.js 22+ 和 DSH `0.2.x`。已在 DSH `0.2.2-rc.1`、Node `26.7.0`
 中测试。
 
 ```sh
@@ -333,14 +341,16 @@ node _dev/test-mt.mjs
 - HTML/RTF 导出不往返原始样式；JSON 只翻译字符串值。
 - TM 匹配是词法级的，不是语义级；没有词干、同义词或向量。
 - 库重命名/删除和逐标签页挂载状态不属于 v1.0.0。
-- 工作台界面为中英双语；README 提供英文和简体中文两个版本。
+- 工作台界面提供中文、English、日本語三种语言，可在设置中切换；README 以英文版为主。
 
 后续计划：PDF 与 EPUB 适配器、通过多模态 DSH 路由支持图片/视觉输入、
 更完整的库管理、保留样式的 XLSX 输出，以及 XLIFF `<alt-trans>` / 注释支持。
 
 ## 变更日志与版本
 
-见 [CHANGELOG.md](CHANGELOG.md)。`v1.0.0` 是首个公开发布版本；项目在开发阶段
-使用 `0.1.0`，发布到 GitHub 前统一改为 `1.0.0`。
+见 [CHANGELOG.md](CHANGELOG.md)。`v1.0.0` 是首个公开发布版本，`v1.0.1` 增加了
+日语界面和界面内语言切换；项目在开发阶段使用 `0.1.0`，发布到 GitHub 前统一改为
+`1.0.0`。
 
-> **License：** 当前尚未包含 `LICENSE` 文件。发布或分发前请先添加。
+> **License：** Apache License 2.0，见 [LICENSE](LICENSE)。再分发时需保留
+> [NOTICE](NOTICE) 中的署名信息。

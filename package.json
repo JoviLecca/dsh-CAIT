@@ -1,6 +1,6 @@
 {
   "name": "dsh-cait",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "license": "Apache-2.0",
   "repository": {
@@ -46,7 +46,9 @@
     "icon.svg",
     "README.md",
     "README.zh-CN.md",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "LICENSE",
+    "NOTICE"
   ],
   "peerDependencies": {
     "@deepseek-ai/schemastery": ">=3.18.1 <4.0.0"

@@ -1,0 +1,14 @@
+CAIT (dsh-cait)
+Copyright 2026 Jovi Lecca
+
+This product includes software developed as part of the CAIT project
+(https://github.com/JoviLecca/dsh-CAIT).
+
+This NOTICE file is a supplement to, and does not modify, the terms of the
+Apache License, Version 2.0, under which the work is distributed (see LICENSE).
+It carries the attribution notice recommended by section 4(d) of that license:
+any redistribution of the work or a derivative work must retain this notice.
+
+Third-party components are not bundled with this work. DSH itself, the DSH
+runtime, and any installed DSH plugins remain under their own licenses; CAIT
+loads them from the host environment and does not redistribute them.

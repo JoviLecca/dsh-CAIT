@@ -14,7 +14,7 @@
 
 
 <p align="center">
-  <img alt="Version 1.0.0" src="https://img.shields.io/badge/version-1.0.0-blue.svg" />
+  <img alt="Version 1.0.1" src="https://img.shields.io/badge/version-1.0.1-blue.svg" />
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
   <img alt="Tests: 13 suites" src="https://img.shields.io/badge/tests-13%20suites-brightgreen.svg" />
   <img alt="No API key required" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
@@ -25,7 +25,7 @@ left-sidebar entry, keeps one shared store behind the workbench and seven agent
 tools, and covers the practical path from importing a source file to exporting a
 translated document.
 
-> **Tested with DSH `0.2.1-rc.5`.** CAIT uses DSH's own model routes and
+> **Tested with DSH `0.2.2-rc.1`.** CAIT uses DSH's own model routes and
 > credentials; it never asks for an API key. The internal fallback provider is
 > still called `mock`, but the UI labels it **Glossary substitution (offline)**.
 
@@ -90,6 +90,10 @@ manual reload.
 - Draft saving, confirm-and-next, previous/next navigation, and progress.
 - Document tabs; closing a tab does not delete the document.
 - **Open existing document** reopens a closed document.
+- Interface language switch in **Settings → Interface**: *Follow DSH language*
+  (default), 简体中文, English, or 日本語. It applies to the workbench and the
+  sidebar label right away, and changes only the CAIT UI — never the document's
+  source or target language.
 - The trash dialog beside the picker deletes one closed document or all closed
   documents; deletion is permanent and does not touch TM, glossary, or other
   documents.
@@ -215,6 +219,11 @@ not both.
 
 The snapshot stores documents, open tabs, TM, glossary, libraries, mounts, and
 non-secret settings. Imported DOCX/PPTX source packages live in `sources/`.
+
+In-app settings (**Settings**) live in the snapshot rather than in the YAML
+above: source/target language, fuzzy threshold, TM result limit, MT
+route/model/temperature, and the interface language (`uiLang`: `auto` | `zh` |
+`en` | `ja`, default `auto` = follow the DSH locale).
 Segment confirmations use a strict write: if the snapshot cannot be written, the
 confirm fails with `PERSISTENCE_FAILED` (503) and rolls back the in-memory
 confirmation. Other structural edits remain best-effort and surface
@@ -270,7 +279,8 @@ cait/
 ├─ client/                  # helpers, styles, RPC, components, locales, entry
 ├─ scripts/build-client.mjs
 ├─ icon.svg
-├─ locale/{en,zh}.json
+├─ locale/{en,zh,ja}.json
+├─ NOTICE
 ├─ README.md
 ├─ README.zh-CN.md
 ├─ CHANGELOG.md
@@ -302,7 +312,7 @@ cait/
 
 ## Development
 
-Requires Node.js 22+ and DSH `0.2.x`. Tested with DSH `0.2.1-rc.5` and Node
+Requires Node.js 22+ and DSH `0.2.x`. Tested with DSH `0.2.2-rc.1` and Node
 `26.7.0`.
 
 ```sh
@@ -354,7 +364,8 @@ The import/export fixtures are `_dev/sample.docx`, `_dev/sample-table.docx`, and
   values only.
 - TM matching is lexical, not semantic; no stemming, synonyms, or embeddings.
 - Library rename/delete and per-tab mount state are not part of v1.0.0.
-- The workbench UI is bilingual (Chinese/English); the README is English-first.
+- The workbench UI ships in Chinese, English, and Japanese, switchable in
+  Settings; the README is English-first.
 
 Planned next: PDF and EPUB adapters, image/vision input through a multimodal DSH
 route, richer library management, style-preserving XLSX output, and XLIFF
@@ -362,8 +373,9 @@ route, richer library management, style-preserving XLSX output, and XLIFF
 
 ## Changelog and versioning
 
-See [CHANGELOG.md](CHANGELOG.md). `v1.0.0` is the first public release; the
+See [CHANGELOG.md](CHANGELOG.md). `v1.0.0` was the first public release;
+`v1.0.1` adds the Japanese UI and the in-app interface language switch. The
 project was developed as `0.1.0` and renumbered for the GitHub release.
 
-> **License:** no license file is included yet. Add a `LICENSE` before publishing
-> or distributing the package.
+> **License:** Apache License 2.0 — see [LICENSE](LICENSE). Redistributions must
+> retain the attribution in [NOTICE](NOTICE).

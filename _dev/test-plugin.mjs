@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import * as plugin from '../index.js'
 
-assert.equal(plugin.name, 'cait')
+assert.equal(plugin.name, 'dsh-cait')
 assert.deepEqual(plugin.inject, ['tools', 'webServer', 'connection'])
 assert.deepEqual(plugin.Config({}), { dataDir: '' })
 assert.deepEqual(plugin.Config({ dataDir: '' }), { dataDir: '' })

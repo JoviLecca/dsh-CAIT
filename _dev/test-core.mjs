@@ -38,6 +38,7 @@ section('document + TM + glossary')
   const state = store.bootstrap()
   assert.equal(state.settings.mt.provider, 'mock')
   assert.equal(state.settings.mt.model, 'cait-mock')
+  assert.equal(state.settings.uiLang, 'auto')
   assert.equal(Object.hasOwn(state.settings.mt, 'hasApiKey'), false)
 
   const current = store.getSegmentForTool()
@@ -222,6 +223,11 @@ section('settings + MT mock')
   assert.equal(Object.hasOwn(saved.settings.mt, 'hasApiKey'), false)
   assert.equal(JSON.stringify(saved.settings).includes('apiKey'), false)
   assert.equal(JSON.stringify(saved.settings).includes('secret'), false)
+
+  // Interface language: explicit choices persist, unsupported values are rejected.
+  assert.equal(store.saveSettings({ uiLang: 'ja' }).settings.uiLang, 'ja')
+  assert.equal(store.saveSettings({ uiLang: 'AUTO' }).settings.uiLang, 'auto')
+  assert.throws(() => store.saveSettings({ uiLang: 'fr' }), (error) => error.code === 'INVALID_UI_LANG')
 }
 
 console.log('\nALL CORE TESTS PASSED')

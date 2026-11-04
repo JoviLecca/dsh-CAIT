@@ -45,7 +45,7 @@ const sandbox = {
 }
 vm.runInNewContext(source, sandbox, { filename: 'client.js' })
 assert.ok(definition, 'client.js should register a module definition')
-assert.equal(definition.id, 'cait')
+assert.equal(definition.id, 'dsh-cait')
 
 const fakeReact = {
   createElement() {
@@ -77,11 +77,25 @@ const {
   scaleCssLengths,
   caitUiBase,
   caitUiMaxUnit,
+  makeTranslator,
+  uiLangCodes,
 } = mod.__test || {}
 assert.equal(typeof isMountToggleDisabled, 'function')
 assert.equal(typeof computeNextMountIds, 'function')
 assert.equal(typeof shouldAdoptRemote, 'function')
 assert.equal(syncPollMs, 2000)
+
+// Interface language: the explicit choice uses its own dictionary, 'auto' defers
+// to the DSH-bound translator first, unknown languages fall back to English, and
+// placeholders are interpolated.
+assert.equal(uiLangCodes.join(','), 'auto,zh,en,ja')
+assert.equal(makeTranslator('ja', null)('nav.new'), '新規')
+assert.equal(makeTranslator('zh', null)('modal.settings.uiLanguage'), '界面语言')
+assert.equal(makeTranslator('en', null)('toast.docsCleared', { count: 3 }), 'Cleared 3 closed documents')
+assert.equal(makeTranslator('auto', (key) => (key === 'nav.new' ? 'DSH-NEW' : key))('nav.new'), 'DSH-NEW')
+assert.equal(makeTranslator('auto', null)('nav.new'), 'New', 'auto without a DSH translator falls back to English')
+assert.equal(makeTranslator('fr', null)('nav.new'), 'New', 'unsupported languages fall back to English')
+assert.equal(makeTranslator('ja', null)('definitely.missing.key'), 'definitely.missing.key')
 
 // Fullscreen windows need more than the old 1.4× cap; short windows must
 // still stay at the designed density instead of shrinking.
@@ -180,8 +194,8 @@ const ctx = {
   },
 }
 mod.apply(ctx)
-assert.equal(sidebar.id, 'cait')
+assert.equal(sidebar.id, 'dsh-cait')
 assert.equal(sidebar.order, 25)
-assert.equal(main.key, 'cait')
+assert.equal(main.key, 'dsh-cait')
 
 console.log('ALL MOUNT TESTS PASSED')

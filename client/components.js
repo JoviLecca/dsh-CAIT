@@ -1146,6 +1146,7 @@
         targetLang: settings.targetLang,
         fuzzyThreshold: settings.fuzzyThreshold,
         tmLimit: settings.tmLimit,
+        uiLang: settings.uiLang || 'auto',
         mt: {
           provider: settings.mt.provider,
           model: settings.mt.model,
@@ -1180,6 +1181,7 @@
           targetLang: form.targetLang,
           fuzzyThreshold: Number(form.fuzzyThreshold),
           tmLimit: Number(form.tmLimit),
+          uiLang: form.uiLang,
           mt: {
             provider: form.mt.provider,
             model: form.mt.model,
@@ -1195,6 +1197,28 @@
         h(
           'form',
           { onSubmit: submit },
+          h(
+            'div',
+            { className: 'cait-settings-section' },
+            h('h4', { className: 'cait-settings-title' }, t('modal.settings.ui')),
+            h(
+              'label',
+              { className: 'cait-field' },
+              h('span', null, t('modal.settings.uiLanguage')),
+              h(
+                'select',
+                {
+                  className: 'cait-input',
+                  value: form.uiLang,
+                  onChange: (event) => setForm({ ...form, uiLang: event.target.value }),
+                },
+                UI_LANGS.map(([code, label]) =>
+                  h('option', { key: code, value: code }, label || t('modal.settings.uiAuto')),
+                ),
+              ),
+            ),
+            h('p', { className: 'cait-mt-hint', style: { marginTop: 0 } }, t('modal.settings.uiHint')),
+          ),
           h(
             'div',
             { className: 'cait-settings-section' },
@@ -1513,7 +1537,7 @@
       )
     }
 
-    function Workbench({ t }) {
+    function Workbench({ i18n, translate }) {
       const [data, setData] = useState(null)
       const [loading, setLoading] = useState(true)
       const [loadError, setLoadError] = useState('')
@@ -1549,8 +1573,17 @@
         targetLang: 'zh-CN',
         fuzzyThreshold: 0.55,
         tmLimit: 5,
+        uiLang: 'auto',
         mt: { provider: 'mock', model: 'cait-mock', temperature: 0.2 },
       }
+
+      // The UI language is a plugin setting; 'auto' follows the DSH locale.
+      const uiLang = UI_LANG_CODES.includes(settings.uiLang) ? settings.uiLang : 'auto'
+      const t = useMemo(() => (key, vars) => translate(uiLang, key, vars), [translate, uiLang])
+      useEffect(() => {
+        // Keep the sidebar label in sync with the in-app switch.
+        i18n.set(uiLang)
+      }, [i18n, uiLang])
 
       const adoptState = (next, forcedIndex) => {
         setData(next)
