@@ -14,7 +14,7 @@
 
 
 <p align="center">
-  <img alt="Version 1.0.3" src="https://img.shields.io/badge/version-1.0.3-blue.svg" />
+  <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm version" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
   <img alt="Tests: 13 suites" src="https://img.shields.io/badge/tests-13%20suites-brightgreen.svg" />
   <img alt="No API key required" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
@@ -161,7 +161,7 @@ In DSH Desktop (or any profile with the `plugin_manager` tool):
 plugin_manager install_bundle target: dsh-cait
 ```
 
-Pin a release with `dsh-cait@1.0.3`, or ask for the newest one with
+Pin a release with `dsh-cait@1.0.4`, or ask for the newest one with
 `dsh-cait@latest`. The manager resolves the registry package, applies the bundle
 patch, and activates the plugin — no hand-written profile rows.
 
@@ -415,8 +415,9 @@ route, richer library management, style-preserving XLSX output, and XLIFF
 
 See [CHANGELOG.md](CHANGELOG.md). `v1.0.0` was the first public release;
 `v1.0.1` adds the Japanese UI and the in-app interface language switch,
-`v1.0.2` makes *Follow DSH language* honour the DSH locale, and `v1.0.3`
-publishes the package to npm. The project was developed as `0.1.0` and
+`v1.0.2` makes *Follow DSH language* honour the DSH locale, `v1.0.3`
+publishes the package to npm, and `v1.0.4` moves later releases to the
+provenance-publishing workflow. The project was developed as `0.1.0` and
 renumbered for the GitHub release.
 
 > **License:** Apache License 2.0 — see [LICENSE](LICENSE). Redistributions must

@@ -15,7 +15,7 @@
 
 
 <p align="center">
-  <img alt="バージョン 1.0.3" src="https://img.shields.io/badge/version-1.0.3-blue.svg" />
+  <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm バージョン" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
   <img alt="テスト 13 スイート" src="https://img.shields.io/badge/tests-13%20suites-brightgreen.svg" />
   <img alt="API キー不要" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
@@ -156,7 +156,7 @@ DSH デスクトップ（または `plugin_manager` ツールがある任意の�
 plugin_manager install_bundle target: dsh-cait
 ```
 
-バージョンを固定するときは `dsh-cait@1.0.3`、最新版は `dsh-cait@latest` を指定します。
+バージョンを固定するときは `dsh-cait@1.0.4`、最新版は `dsh-cait@latest` を指定します。
 マネージャが registry のパッケージを解決し、bundle patch を適用してプラグインを有効化します。
 
 CLI 管理のプロファイル:
@@ -405,7 +405,8 @@ npm publish
 
 [CHANGELOG.md](CHANGELOG.md) を参照してください。`v1.0.0` が最初の公開リリースで、
 `v1.0.1` が日本語 UI とアプリ内の UI 言語切り替えを追加し、`v1.0.2` で
-*DSH の言語に従う* が DSH のロケールに従うようになり、`v1.0.3` で npm に公開しました。
+*DSH の言語に従う* が DSH のロケールに従うようになり、`v1.0.3` で npm に公開、
+`v1.0.4` から以降のリリースは provenance 付きの公開ワークフローで行われます。
 プロジェクトは `0.1.0` として開発され、GitHub リリースに向けて採番し直されました。
 
 > **ライセンス:** Apache License 2.0 — [LICENSE](LICENSE) を参照してください。

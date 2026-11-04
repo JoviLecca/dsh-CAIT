@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <img alt="版本 1.0.3" src="https://img.shields.io/badge/version-1.0.3-blue.svg" />
+  <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm 版本" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
   <img alt="13 套测试" src="https://img.shields.io/badge/tests-13%20suites-brightgreen.svg" />
   <img alt="无需 API Key" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
@@ -149,7 +149,7 @@ CAIT 以 DSH bundle 的形式安装；发布的 npm 包名为 `dsh-cait`，插�
 plugin_manager install_bundle target: dsh-cait
 ```
 
-需要固定版本时写 `dsh-cait@1.0.3`，需要最新版时写 `dsh-cait@latest`。管理器会解析 registry
+需要固定版本时写 `dsh-cait@1.0.4`，需要最新版时写 `dsh-cait@latest`。管理器会解析 registry
 上的包、应用 bundle patch 并激活插件，不需要手工在配置档里加行。
 
 使用 CLI 管理的配置档：
@@ -384,7 +384,8 @@ GitHub release 发布。
 
 见 [CHANGELOG.md](CHANGELOG.md)。`v1.0.0` 是首个公开发布版本，`v1.0.1` 增加了
 日语界面和界面内语言切换，`v1.0.2` 让「跟随 DSH 语言」真正跟随 DSH 的语言设置，
-`v1.0.3` 把包发布到 npm；项目在开发阶段使用 `0.1.0`，发布到 GitHub 前统一改为 `1.0.0`。
+`v1.0.3` 把包发布到 npm，`v1.0.4` 起后续版本改由带 provenance 的发布流水线产出；
+项目在开发阶段使用 `0.1.0`，发布到 GitHub 前统一改为 `1.0.0`。
 
 > **License：** Apache License 2.0，见 [LICENSE](LICENSE)。再分发时需保留
 > [NOTICE](NOTICE) 中的署名信息。

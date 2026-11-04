@@ -4,6 +4,21 @@ All notable changes to CAIT are documented here. The project follows
 [Semantic Versioning](https://semver.org/) and the format is based on
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.4] - 2026-11-05
+
+Provenance publishing.
+
+### Added
+
+- `README.md`, `README.zh-CN.md` and `README.ja.md` carry the live npm badge, so
+  the package page and the repository show the published version.
+
+### Changed
+
+- Releases from this version on are produced by `.github/workflows/publish.yml`,
+  which attaches npm provenance and validates the GitHub trusted publisher.
+  `npm publish` from a local checkout still works and still asks for an OTP.
+
 ## [1.0.3] - 2026-11-05
 
 npm distribution.
