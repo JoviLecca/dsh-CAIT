@@ -1,0 +1,56 @@
+{
+  "name": "cait",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CAIT — a CAT workbench for DeepSeek Harness with translation memory, glossary, document tabs, MT routes, and Office/subtitle/localization formats.",
+  "type": "module",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "cat",
+    "translation",
+    "translation-memory",
+    "glossary",
+    "docx",
+    "xlsx",
+    "pptx",
+    "xliff"
+  ],
+  "scripts": {
+    "build:client": "node scripts/build-client.mjs"
+  },
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "client",
+    "scripts",
+    "lib",
+    "cordis.patch.yml",
+    "locale",
+    "icon.svg",
+    "README.md",
+    "README.zh-CN.md",
+    "CHANGELOG.md"
+  ],
+  "peerDependencies": {
+    "@deepseek-ai/schemastery": ">=3.18.1 <4.0.0"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  }
+}

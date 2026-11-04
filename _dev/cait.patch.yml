@@ -1,0 +1,9 @@
+# Local development overlay: mounts this workspace package directly.
+# `--patch` is a launcher option. The desktop profile is managed by the
+# Electron app, so use a CLI profile (for example `web`) for overlay testing:
+#   dsh web --patch C:\Users\ShawnFu\Desktop\dsh-CAIT\_dev\cait.patch.yml
+# Do not use this overlay together with an installed `cait` bundle in the same
+# profile: both rows would mount the same plugin.
+- insert:
+    - id: cait-dev
+      name: 'C:\Users\ShawnFu\Desktop\dsh-CAIT'

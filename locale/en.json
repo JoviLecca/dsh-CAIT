@@ -1,0 +1,11 @@
+{
+  "meta": {
+    "title": "CAIT",
+    "description": "A CAT (computer-aided translation) workbench inside DSH: translation memory, glossary, segment editing, AI translation suggestions, and TXT/Markdown/DOCX/TMX import and export."
+  },
+  "match.exact": "Exact",
+  "match.near_exact": "Near exact",
+  "match.high_fuzzy": "High fuzzy",
+  "match.medium_fuzzy": "Medium fuzzy",
+  "match.low_fuzzy": "Low fuzzy"
+}
