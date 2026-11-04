@@ -136,8 +136,16 @@ JSON 路径/模板、XLSX 行号、PPTX 幻灯片/段落位置）会保存在文
 
 ### DSH 桌面端
 
-通过应用内插件管理器安装本地包（`desktop` 配置档由 Electron 应用管理）。
-等价的 Agent 调用是：
+通过应用内插件管理器安装（`desktop` 配置档由 Electron 应用管理）。npm 包名为
+`dsh-cait`，插件本身在左侧栏仍显示为 **CAIT**。
+
+从本仓库安装：
+
+```text
+plugin_manager install_bundle target: github:JoviLecca/dsh-CAIT
+```
+
+从本地目录安装：
 
 ```text
 plugin_manager install_bundle target: /absolute/path/to/dsh-CAIT
@@ -187,8 +195,8 @@ dsh web --patch C:\absolute\path\to\dsh-CAIT\_dev\cait.patch.yml
 | `dataDir` | `""` | `store.json` 和 `sources/` 的目录。为空时使用 `$DSH_HOME/cait`。支持绝对路径、相对路径和 `~/...`。 |
 
 ```yaml
-- id: cait
-  name: cait
+- id: dsh-cait
+  name: dsh-cait
   config:
     dataDir: 'D:\CAT\cait-data'
 ```

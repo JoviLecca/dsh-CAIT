@@ -147,7 +147,16 @@ is stored on the document/segments and persists in the snapshot.
 ### DSH Desktop
 
 Install the local package through the in-app plugin manager (the `desktop` profile
-is owned by the Electron app). The equivalent agent call is:
+is owned by the Electron app). The package name is `dsh-cait`; the plugin itself
+shows up as **CAIT** in the left sidebar.
+
+From this repository:
+
+```text
+plugin_manager install_bundle target: github:JoviLecca/dsh-CAIT
+```
+
+From a local checkout:
 
 ```text
 plugin_manager install_bundle target: /absolute/path/to/dsh-CAIT
@@ -198,8 +207,8 @@ not both.
 | `dataDir` | `""` | Directory for `store.json` and `sources/`. Empty means `$DSH_HOME/cait`. Absolute, relative, and `~/...` paths are accepted. |
 
 ```yaml
-- id: cait
-  name: cait
+- id: dsh-cait
+  name: dsh-cait
   config:
     dataDir: 'D:\CAT\cait-data'
 ```

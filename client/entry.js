@@ -17,19 +17,19 @@
         let t = (key) => ZH[key] || EN[key] || key
         try {
           if (ctx.locale?.register) {
-            ctx.locale.register('cait', 'zh', ZH)
-            ctx.locale.register('cait', 'en', EN)
-            t = ctx.locale.bind('cait')
+            ctx.locale.register('dsh-cait', 'zh', ZH)
+            ctx.locale.register('dsh-cait', 'en', EN)
+            t = ctx.locale.bind('dsh-cait')
           }
         } catch (error) {
-          console.warn('[cait] locale registration failed', error)
+          console.warn('[dsh-cait] locale registration failed', error)
         }
 
         ctx.slots.inject('sidebar.panellist', () =>
           ctx.slots.register(
             {
               name: 'sidebar.panellist',
-              id: 'cait',
+              id: 'dsh-cait',
               order: 25,
               label: () => t('app.title'),
             },
@@ -41,7 +41,7 @@
           ctx.slots.register(
             {
               name: 'main',
-              key: 'cait',
+              key: 'dsh-cait',
             },
             () => h(Workbench, { t }),
           ),

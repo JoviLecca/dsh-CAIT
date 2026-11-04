@@ -9,6 +9,9 @@ All notable changes to CAIT are documented here. The project follows
 First public release. CAIT was developed as `0.1.0` and renumbered to `1.0.0`
 for the first GitHub release.
 
+The npm package and Cordis entry are named `dsh-cait`; the UI entry, data
+directory (`$DSH_HOME/cait`), and API route (`/cait/api`) keep the CAIT name.
+
 ### Highlights
 
 - A complete CAT workbench inside DeepSeek Harness: sidebar entry, main panel,

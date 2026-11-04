@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync } from 'node:fs'
 
 const parts = ['helpers.js', 'styles.js', 'rpc.js', 'components.js', 'locales.js', 'entry.js']
 const header = `window.__ModuleLoader__.load({
-  id: 'cait',
+  id: 'dsh-cait',
   factory(require) {
     const React = require('react')
     const h = React.createElement

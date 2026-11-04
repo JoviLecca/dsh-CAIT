@@ -6,7 +6,7 @@ import { registerCatTools } from './lib/tools.js'
 import { registerCatApi } from './lib/api.js'
 import { createMtRuntime } from './lib/mt.js'
 
-export const name = 'cait'
+export const name = 'dsh-cait'
 
 // Cordis has no optional injection: every entry in this array is a required
 // service. CAIT targets the Web/Desktop composition, where all three exist.
