@@ -4,6 +4,26 @@ All notable changes to CAIT are documented here. The project follows
 [Semantic Versioning](https://semver.org/) and the format is based on
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.2] - 2026-11-04
+
+Interface-language fix.
+
+### Fixed
+
+- **Follow DSH language** now follows the DSH locale instead of staying on
+  English. The client plugin declared only `slots` in its inject list, so
+  Cordis rejected the `ctx.locale` access with a throw that the registration
+  `try`/`catch` swallowed: the DSH-bound translator stayed `null`, every lookup
+  fell through to the English dictionary, and a Simplified-Chinese DSH looked
+  English. `locale` is now a declared dependency.
+- `auto` resolves the locale service snapshot itself (`zh-CN` → `zh`,
+  `ja-JP` → `ja`, `en-US` → `en`) before consulting the DSH-bound translator,
+  so a locale tag without a registered fallback chain no longer degrades to
+  English. The export `resolveUiLang` covers this mapping.
+- The workbench and the sidebar label subscribe to DSH locale changes, so
+  switching the DSH language while `auto` is selected re-renders CAIT
+  immediately instead of requiring a reload.
+
 ## [1.0.1] - 2026-11-04
 
 UI languages and license metadata.

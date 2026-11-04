@@ -14,7 +14,7 @@
 </p>
 
 <p align="center">
-  <img alt="版本 1.0.1" src="https://img.shields.io/badge/version-1.0.1-blue.svg" />
+  <img alt="版本 1.0.2" src="https://img.shields.io/badge/version-1.0.2-blue.svg" />
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
   <img alt="13 套测试" src="https://img.shields.io/badge/tests-13%20suites-brightgreen.svg" />
   <img alt="无需 API Key" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
@@ -349,8 +349,8 @@ node _dev/test-mt.mjs
 ## 变更日志与版本
 
 见 [CHANGELOG.md](CHANGELOG.md)。`v1.0.0` 是首个公开发布版本，`v1.0.1` 增加了
-日语界面和界面内语言切换；项目在开发阶段使用 `0.1.0`，发布到 GitHub 前统一改为
-`1.0.0`。
+日语界面和界面内语言切换，`v1.0.2` 让「跟随 DSH 语言」真正跟随 DSH 的语言设置；
+项目在开发阶段使用 `0.1.0`，发布到 GitHub 前统一改为 `1.0.0`。
 
 > **License：** Apache License 2.0，见 [LICENSE](LICENSE)。再分发时需保留
 > [NOTICE](NOTICE) 中的署名信息。

@@ -690,6 +690,28 @@
     }
 
     /**
+     * Resolves a UI language preference to a concrete dictionary code.
+     *
+     * 'auto' means "follow the DSH locale": the DSH locale service reports the
+     * active language tag (for example 'zh', 'zh-CN' or 'en'), and we map its
+     * prefix onto one of our dictionaries. Returns '' when the preference is
+     * 'auto' and the tag is unknown, so the caller can fall back to the
+     * DSH-bound translator. (The bound translator alone is not enough: it only
+     * answers keys registered through the very same namespace, and a lookup
+     * miss silently yields the key, which used to leave 'auto' on English.)
+     */
+    function resolveUiLang(preference, activeLocale) {
+      const value = String(preference || 'auto')
+      if (value !== 'auto') return UI_LANG_CODES.includes(value) ? value : 'auto'
+      const tag = String(activeLocale || '').trim().toLowerCase()
+      if (!tag) return ''
+      if (tag.startsWith('zh')) return 'zh'
+      if (tag.startsWith('ja')) return 'ja'
+      if (tag.startsWith('en')) return 'en'
+      return ''
+    }
+
+    /**
      * Builds a translator for one UI language preference.
      * `dshTranslate` is the DSH-bound translator (or null) used by 'auto'.
      */

@@ -1579,7 +1579,17 @@
 
       // The UI language is a plugin setting; 'auto' follows the DSH locale.
       const uiLang = UI_LANG_CODES.includes(settings.uiLang) ? settings.uiLang : 'auto'
-      const t = useMemo(() => (key, vars) => translate(uiLang, key, vars), [translate, uiLang])
+      // A DSH language switch must re-render the workbench while 'auto' is
+      // selected, so subscribe to the locale service through the entry seam.
+      const [localeRevision, setLocaleRevision] = useState(0)
+      useEffect(
+        () => (i18n.subscribe ? i18n.subscribe(() => setLocaleRevision(revision => revision + 1)) : undefined),
+        [i18n],
+      )
+      const t = useMemo(
+        () => (key, vars) => translate(uiLang, key, vars),
+        [translate, uiLang, localeRevision],
+      )
       useEffect(() => {
         // Keep the sidebar label in sync with the in-app switch.
         i18n.set(uiLang)

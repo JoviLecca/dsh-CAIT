@@ -78,6 +78,7 @@ const {
   caitUiBase,
   caitUiMaxUnit,
   makeTranslator,
+  resolveUiLang,
   uiLangCodes,
 } = mod.__test || {}
 assert.equal(typeof isMountToggleDisabled, 'function')
@@ -96,6 +97,20 @@ assert.equal(makeTranslator('auto', (key) => (key === 'nav.new' ? 'DSH-NEW' : ke
 assert.equal(makeTranslator('auto', null)('nav.new'), 'New', 'auto without a DSH translator falls back to English')
 assert.equal(makeTranslator('fr', null)('nav.new'), 'New', 'unsupported languages fall back to English')
 assert.equal(makeTranslator('ja', null)('definitely.missing.key'), 'definitely.missing.key')
+
+// 'auto' has to follow the DSH locale itself: the locale snapshot reports a
+// tag such as 'zh-CN' and we resolve it onto our own dictionary before ever
+// asking the DSH-bound translator (which answers with the key on a miss).
+assert.equal(typeof resolveUiLang, 'function')
+assert.equal(resolveUiLang('auto', 'zh-CN'), 'zh')
+assert.equal(resolveUiLang('auto', 'zh'), 'zh')
+assert.equal(resolveUiLang('auto', 'ja-JP'), 'ja')
+assert.equal(resolveUiLang('auto', 'en-US'), 'en')
+assert.equal(resolveUiLang('auto', 'fr'), '', 'an unknown DSH locale has no dictionary')
+assert.equal(resolveUiLang('auto', ''), '')
+assert.equal(resolveUiLang('ja', 'zh-CN'), 'ja', 'an explicit choice beats the DSH locale')
+assert.equal(resolveUiLang('bogus', 'zh'), 'auto', 'an invalid preference degrades to auto')
+assert.equal(makeTranslator(resolveUiLang('auto', 'zh-CN'), null)('nav.new'), '新建')
 
 // Fullscreen windows need more than the old 1.4× cap; short windows must
 // still stay at the designed density instead of shrinking.
@@ -197,5 +212,9 @@ mod.apply(ctx)
 assert.equal(sidebar.id, 'dsh-cait')
 assert.equal(sidebar.order, 25)
 assert.equal(main.key, 'dsh-cait')
+// Cordis guards service access with the inject list: without 'locale' the
+// ctx.locale read throws and the DSH-bound translator stays null, which is what
+// pinned 'auto' to English.
+assert.equal((mod.inject || []).join(','), 'slots,locale')
 
 console.log('ALL MOUNT TESTS PASSED')

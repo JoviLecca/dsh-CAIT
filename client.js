@@ -2043,7 +2043,17 @@ window.__ModuleLoader__.load({
 
       // The UI language is a plugin setting; 'auto' follows the DSH locale.
       const uiLang = UI_LANG_CODES.includes(settings.uiLang) ? settings.uiLang : 'auto'
-      const t = useMemo(() => (key, vars) => translate(uiLang, key, vars), [translate, uiLang])
+      // A DSH language switch must re-render the workbench while 'auto' is
+      // selected, so subscribe to the locale service through the entry seam.
+      const [localeRevision, setLocaleRevision] = useState(0)
+      useEffect(
+        () => (i18n.subscribe ? i18n.subscribe(() => setLocaleRevision(revision => revision + 1)) : undefined),
+        [i18n],
+      )
+      const t = useMemo(
+        () => (key, vars) => translate(uiLang, key, vars),
+        [translate, uiLang, localeRevision],
+      )
       useEffect(() => {
         // Keep the sidebar label in sync with the in-app switch.
         i18n.set(uiLang)
@@ -3522,6 +3532,28 @@ window.__ModuleLoader__.load({
     }
 
     /**
+     * Resolves a UI language preference to a concrete dictionary code.
+     *
+     * 'auto' means "follow the DSH locale": the DSH locale service reports the
+     * active language tag (for example 'zh', 'zh-CN' or 'en'), and we map its
+     * prefix onto one of our dictionaries. Returns '' when the preference is
+     * 'auto' and the tag is unknown, so the caller can fall back to the
+     * DSH-bound translator. (The bound translator alone is not enough: it only
+     * answers keys registered through the very same namespace, and a lookup
+     * miss silently yields the key, which used to leave 'auto' on English.)
+     */
+    function resolveUiLang(preference, activeLocale) {
+      const value = String(preference || 'auto')
+      if (value !== 'auto') return UI_LANG_CODES.includes(value) ? value : 'auto'
+      const tag = String(activeLocale || '').trim().toLowerCase()
+      if (!tag) return ''
+      if (tag.startsWith('zh')) return 'zh'
+      if (tag.startsWith('ja')) return 'ja'
+      if (tag.startsWith('en')) return 'en'
+      return ''
+    }
+
+    /**
      * Builds a translator for one UI language preference.
      * `dshTranslate` is the DSH-bound translator (or null) used by 'auto'.
      */
@@ -3540,7 +3572,11 @@ window.__ModuleLoader__.load({
     }
 
     return {
-      inject: ['slots'],
+      // `locale` must be declared: Cordis guards service access with the inject
+      // list, and reading `ctx.locale` without it throws. The throw used to be
+      // swallowed by the try/catch below, leaving the DSH-bound translator null
+      // and every 'auto' UI stuck on the English fallback.
+      inject: ['slots', 'locale'],
       // Exposed for the Node-side pure-logic test; the Host/Client runtime
       // ignores this field.
       __test: {
@@ -3554,28 +3590,65 @@ window.__ModuleLoader__.load({
         cssScaled: CSS_SCALED,
         syncPollMs: SYNC_POLL_MS,
         makeTranslator,
+        resolveUiLang,
         uiLangCodes: UI_LANG_CODES,
       },
       apply(ctx) {
         let dshTranslate = null
+        let dshActive = ''
+        const localeListeners = new Set()
+
+        const readActiveLocale = () => {
+          try {
+            const snapshot = ctx.locale?.getSnapshot?.()
+            dshActive = typeof snapshot?.active === 'string' ? snapshot.active : ''
+          } catch {
+            dshActive = ''
+          }
+          return dshActive
+        }
+        readActiveLocale()
+
+        let stopLocale = null
         try {
           if (ctx.locale?.register) {
             ctx.locale.register('dsh-cait', 'zh', ZH)
             ctx.locale.register('dsh-cait', 'en', EN)
             ctx.locale.register('dsh-cait', 'ja', JA)
-            dshTranslate = ctx.locale.bind('dsh-cait')
+          }
+          if (ctx.locale?.bind) dshTranslate = ctx.locale.bind('dsh-cait')
+          if (ctx.locale?.subscribe) {
+            stopLocale = ctx.locale.subscribe(() => {
+              readActiveLocale()
+              localeListeners.forEach(listener => listener())
+            })
           }
         } catch (error) {
           console.warn('[dsh-cait] locale registration failed', error)
         }
+        if (stopLocale) ctx.effect(() => stopLocale)
 
         // The UI language comes from the plugin setting (`uiLang`), defaulting to
-        // 'auto' so CAIT follows the DSH locale until the user picks one.
+        // 'auto' so CAIT follows the DSH locale until the user picks one. 'auto'
+        // is resolved from the locale service snapshot first (a 'zh-CN' style
+        // tag still maps onto our 'zh' dictionary) and only then through the
+        // DSH-bound translator.
         let preference = 'auto'
-        const translate = (value, key, vars) => makeTranslator(value, dshTranslate)(key, vars)
+        const resolve = value => resolveUiLang(value, dshActive)
+        const translate = (value, key, vars) =>
+          makeTranslator(resolve(value) || 'auto', dshTranslate)(key, vars)
         const i18n = {
           get preference() {
             return preference
+          },
+          get activeLocale() {
+            return dshActive
+          },
+          resolve,
+          subscribe(listener) {
+            if (typeof listener !== 'function') return () => {}
+            localeListeners.add(listener)
+            return () => localeListeners.delete(listener)
           },
           set(value) {
             preference = UI_LANG_CODES.includes(String(value)) ? String(value) : 'auto'
