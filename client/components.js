@@ -1064,7 +1064,7 @@
               h('input', {
                 ref: inputRef,
                 type: 'file',
-                accept: '.txt,.md,.markdown,.tmx,.docx,.csv,.srt,.vtt,.po,.pot,.xliff,.xlf,.sdlxliff,.html,.htm,.json,.rtf,.xlsx,.pptx',
+                accept: '.txt,.md,.markdown,.tmx,.docx,.epub,.csv,.srt,.vtt,.po,.pot,.xliff,.xlf,.sdlxliff,.html,.htm,.json,.rtf,.xlsx,.pptx',
                 hidden: true,
                 onChange: (event) => pickFile(event.target.files?.[0]),
               }),
@@ -1108,6 +1108,7 @@
         ['target-txt', t('modal.export.targetTxt'), t('modal.export.target'), 'download'],
         ['target-md', t('modal.export.targetMd'), t('modal.export.target'), 'download'],
         ['docx', t('modal.export.docx'), t('modal.export.docxGroup'), 'file'],
+        ['epub', t('modal.export.epub'), t('modal.export.epubGroup'), 'file'],
         ['srt', t('modal.export.srt'), t('modal.export.subtitleGroup'), 'file'],
         ['vtt', t('modal.export.vtt'), t('modal.export.subtitleGroup'), 'file'],
         ['po', t('modal.export.po'), t('modal.export.localizationGroup'), 'file'],
@@ -1147,6 +1148,11 @@
         fuzzyThreshold: settings.fuzzyThreshold,
         tmLimit: settings.tmLimit,
         uiLang: settings.uiLang || 'auto',
+        preprocess: {
+          normalizeWhitespace: settings.preprocess?.normalizeWhitespace !== false,
+          stripInvisible: settings.preprocess?.stripInvisible !== false,
+          collapseBlankLines: settings.preprocess?.collapseBlankLines !== false,
+        },
         mt: {
           provider: settings.mt.provider,
           model: settings.mt.model,
@@ -1159,6 +1165,8 @@
       const routeMissing = form.mt.provider !== 'mock' && !route
 
       const setMt = (patch) => setForm((current) => ({ ...current, mt: { ...current.mt, ...patch } }))
+      const setPre = (patch) =>
+        setForm((current) => ({ ...current, preprocess: { ...current.preprocess, ...patch } }))
       const selectProvider = (provider) => {
         const nextRoute = routes.find((item) => item.id === provider)
         setForm((current) => ({
@@ -1182,6 +1190,11 @@
           fuzzyThreshold: Number(form.fuzzyThreshold),
           tmLimit: Number(form.tmLimit),
           uiLang: form.uiLang,
+          preprocess: {
+            normalizeWhitespace: Boolean(form.preprocess.normalizeWhitespace),
+            stripInvisible: Boolean(form.preprocess.stripInvisible),
+            collapseBlankLines: Boolean(form.preprocess.collapseBlankLines),
+          },
           mt: {
             provider: form.mt.provider,
             model: form.mt.model,
@@ -1245,6 +1258,24 @@
                   { className: 'cait-input', value: form.targetLang, onChange: (event) => setForm({ ...form, targetLang: event.target.value }) },
                   LANGUAGES.map(([code, label]) => h('option', { key: code, value: code }, `${label} (${code})`)),
                 ),
+              ),
+            ),
+          ),
+          h(
+            'div',
+            { className: 'cait-settings-section' },
+            h('h4', { className: 'cait-settings-title' }, t('modal.settings.preprocess')),
+            h('p', { className: 'cait-mt-hint', style: { marginTop: 0 } }, t('modal.settings.preprocessHint')),
+            ['normalizeWhitespace', 'stripInvisible', 'collapseBlankLines'].map((key) =>
+              h(
+                'label',
+                { key, className: 'cait-checkline' },
+                h('input', {
+                  type: 'checkbox',
+                  checked: Boolean(form.preprocess[key]),
+                  onChange: (event) => setPre({ [key]: event.target.checked }),
+                }),
+                t(`modal.settings.pre.${key}`),
               ),
             ),
           ),

@@ -1,6 +1,6 @@
 {
   "name": "dsh-cait",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "license": "Apache-2.0",
   "author": {
     "name": "Jovi Lecca",
@@ -17,7 +17,7 @@
   "bugs": {
     "url": "https://github.com/JoviLecca/dsh-CAIT/issues"
   },
-  "description": "CAIT — a CAT workbench for DeepSeek Harness with translation memory, glossary, document tabs, MT routes, and Office/subtitle/localization formats.",
+  "description": "CAIT — a CAT workbench for DeepSeek Harness with translation memory, glossary, document tabs, MT routes, and Office/EPUB/subtitle/localization formats.",
   "type": "module",
   "keywords": [
     "dsh-plugin",

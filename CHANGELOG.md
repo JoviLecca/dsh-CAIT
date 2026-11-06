@@ -4,6 +4,48 @@ All notable changes to CAIT are documented here. The project follows
 [Semantic Versioning](https://semver.org/) and the format is based on
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.5] - 2026-11-06
+
+EPUB support, an import preprocessing stage, and format hardening.
+
+### Added
+
+- EPUB 3 import and export. Import walks the OPF spine, turns XHTML text blocks
+  into segments, and keeps inline tags as placeholder tokens; export patches the
+  translations back into the retained source package, preserving chapters,
+  styles, images, and navigation. Documents created from plain text export as a
+  fresh EPUB 3 package. DRM, fixed-layout, and scripted EPUBs are out of scope.
+- Import preprocessing: whitespace normalization, invisible/control character
+  stripping, and blank-line collapsing before segmentation. Each step has a
+  settings toggle, applies to file imports and `createDocument`, and is stored
+  with the other settings.
+- A shared HTML/XHTML run scanner (`lib/html.js`) used by both HTML and EPUB, so
+  headings and inline markup survive import and are patched back on export.
+- CSV delimiter detection (comma, semicolon, tab, pipe) and richer RTF escapes
+  (`\cell`, `\row`, `\page`, `\sect`, symbol characters).
+
+### Changed
+
+- PDF import is explicitly out of scope. All three READMEs explain why PDF is a
+  poor fit for AI-assisted translation and recommend converting it with pandoc,
+  Acrobat, or LibreOffice first.
+- The supported-formats table, project layout, roadmap, and “Known limits”
+  sections now describe EPUB, preprocessing, and the PDF policy.
+
+### Fixed
+
+- Settings persistence now stores `uiLang` and the preprocessing flags instead of
+  falling back to defaults on reload.
+- The EPUB `mimetype` entry is written uncompressed, as the OCF specification
+  requires, and every other entry stays deflated.
+- HTML import no longer flattens headings and inline markup into blank-line
+  paragraphs.
+
+### Development
+
+- New `_dev/test-epub.mjs` and `_dev/test-preprocess.mjs` suites; the full suite
+  count is 15.
+
 ## [1.0.4] - 2026-11-05
 
 Provenance publishing.
@@ -365,3 +407,4 @@ directory (`$DSH_HOME/cait`), and API route (`/cait/api`) keep the CAIT name.
 | 2026-11-04 | First-tier exchange formats: CSV mapping, SRT, WebVTT, PO, XLIFF 1.2, metadata persistence, timeline fixes. |
 | 2026-11-04 | Second-tier formats: HTML, JSON, XLSX, PPTX, RTF; binary upload/export; source-preserving PPTX. |
 | 2026-11-04 | Responsive UI density 1×–1.8×; button contrast fix; v1.0.0 release. |
+| 2026-11-06 | EPUB 3 import/export with source-package patching, shared HTML/XHTML scanner, import preprocessing stage, CSV/RTF hardening, PDF out of scope; v1.0.5 release. |

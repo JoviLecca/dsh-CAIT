@@ -11,6 +11,7 @@ import {
   buildXliff2,
   missingInlineTokens,
   parseCsv,
+  parseJson,
   parsePo,
   parseSrt,
   parseVtt,
@@ -35,6 +36,10 @@ try {
   assert.equal(numbered.segments[0].source, 'B')
   assert.equal(numbered.segments[0].target, 'A')
   assert.equal(numbered.segments[1].source, 'D')
+
+  const semicolon = parseCsv('\uFEFFSource;Target\nHello;你好\n')
+  assert.equal(semicolon.segments[0].source, 'Hello')
+  assert.equal(semicolon.segments[0].target, '你好')
 
   const srt = '1\n00:00:01,000 --> 00:00:03,500\nHello <i>there</i>\n\n2\n00:00:04,000 --> 00:00:06,000\nSecond line\n'
   const parsedSrt = parseSrt(srt)
@@ -83,6 +88,10 @@ try {
   assert.equal(parsedVtt.segments[0].meta.settings, 'line:90%')
   assert.equal(parsedVtt.segments[0].meta.start, 1000)
   assert.equal(parsedVtt.segments[0].source, 'Hello <b>there</b>')
+  assert.match(buildVtt(parsedVtt), /cue-1\n00:00:01\.000 --> 00:00:02\.500 line:90%/)
+
+  const bomJson = parseJson('\uFEFF{"a":"Hi","b":["Two"]}')
+  assert.deepEqual(bomJson.segments.map((segment) => segment.source), ['Hi', 'Two'])
 
   const po = [
     'msgid ""',

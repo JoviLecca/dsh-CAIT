@@ -16,7 +16,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm version" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
-  <img alt="Tests: 13 suites" src="https://img.shields.io/badge/tests-13%20suites-brightgreen.svg" />
+  <img alt="Tests: 15 suites" src="https://img.shields.io/badge/tests-15%20suites-brightgreen.svg" />
   <img alt="No API key required" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
 </p>
 
@@ -37,7 +37,7 @@ translated document.
 | **TM that explains itself** | Multiple TM libraries, mounted-only lookup, exact / near-exact / high / medium / low fuzzy grades, and automatic write-back on confirm. |
 | **Glossary-aware editing** | Multiple term bases, source-language filtering, inline highlighting, click-to-insert terms, and per-term case sensitivity. |
 | **A document workflow** | Tabs, close/reopen, recent-document cleanup, duplicate-import reuse, and progress per document. |
-| **Real format coverage** | TXT, Markdown, DOCX, TMX, CSV, SRT/VTT, PO, XLIFF 1.2/2.0/SDLXLIFF, HTML, JSON, XLSX, PPTX, and RTF. |
+| **Real format coverage** | TXT, Markdown, DOCX, EPUB, TMX, CSV, SRT/VTT, PO, XLIFF 1.2/2.0/SDLXLIFF, HTML, JSON, XLSX, PPTX, and RTF. |
 | **Agent-ready** | Seven tools share the open document and store, so an agent can translate alongside you. |
 
 ## Quick start
@@ -104,6 +104,19 @@ manual reload.
   `--cait-u` multiplier of 1×–1.8×. A 1600×900 panel renders at ~1.32× and a
   2560×1440 panel at 1.8×; short windows stay at 1× rather than shrinking.
 
+### Preprocessing
+
+Imported source text passes through a preprocessing stage before segmentation:
+
+- Collapse repeated spaces and tabs, trim indentation, and merge consecutive
+  blank lines.
+- Remove zero-width characters and stray control characters.
+- Placeholder tokens (`{1}`, `{2}`, …), punctuation, casing, and paragraph order
+  are left untouched, so XLIFF/HTML/EPUB inline markup still round-trips.
+- The three steps are independently switchable in **Settings → Preprocessing** and
+  are persisted with the other settings. They apply to new imports and
+  `createDocument` calls; existing documents are not rewritten.
+
 ### MT assistance
 
 CAIT does not own an endpoint or key. The selector is built from DSH:
@@ -125,15 +138,16 @@ provider/model/code/status; the client receives only `MT_PROVIDER_FAILED`.
 | Format | Import | Export | Notes |
 | --- | :---: | :---: | --- |
 | TXT / Markdown | ✅ | ✅ | Paragraph and sentence segmentation |
-| CSV | ✅ | ✅ | Optional source/target column by header name or 1-based number; existing bilingual export |
+| CSV | ✅ | ✅ | Comma, semicolon, tab, or pipe delimiter auto-detected; source/target column by header name or 1-based number; existing bilingual export |
 | DOCX | ✅ | ✅ | Body paragraphs; table blocks are excluded from import. Export patches the original package, keeping styles, numbering, images, headers, tables, and layout. |
+| EPUB | ✅ | ✅ | EPUB 3 spine order; XHTML text blocks with inline markup kept as tokens and patched back into the retained package. DRM-protected, fixed-layout, and scripted EPUBs are not supported. |
 | TMX 1.4 | ✅ | ✅ | Common `<tu>/<tuv>/<seg>` subset; inline markup flattened with warning |
 | SRT / WebVTT | ✅ | ✅ | One cue per segment, timings/settings/identifier retained; semantic tags kept; invalid ranges rejected |
 | PO | ✅ | ✅ | Contexts, plural forms, translator comments, obsolete `#~` entries |
 | XLIFF 1.2 | ✅ | ✅ | Inline tags become `{n}` tokens; missing tokens block confirmation |
 | XLIFF 2.0 | ✅ | ✅ | Basic `<unit><segment><source>/<target>` subset |
 | SDLXLIFF | ✅ | ✅ | Basic XLIFF 1.2 path; SDL-specific extensions are not round-tripped |
-| HTML | ✅ | ✅ | Text blocks only; original markup/CSS not preserved |
+| HTML | ✅ | ✅ | Text blocks and inline tags preserved; document CSS/layout is not rebuilt |
 | JSON | ✅ | ✅ | String-path subset; object/array structure preserved via a template; keys and numbers are not translated |
 | XLSX | ✅ | ✅ | First worksheet; `Source`/`Target` headers or columns A/B; export is a new two-column workbook |
 | PPTX | ✅ | ✅* | Source-preserving export; requires the imported `.pptx` package. Body text only; notes/charts/SmartArt not imported. |
@@ -143,8 +157,28 @@ provider/model/code/status; the client receives only `MT_PROVIDER_FAILED`.
 is missing rather than silently producing an unformatted deck.
 
 Exchange metadata (subtitle timings, PO contexts/plurals/comments, XLIFF ids and
-inline token maps, JSON paths/templates, XLSX rows, PPTX slide/paragraph positions)
-is stored on the document/segments and persists in the snapshot.
+inline token maps, JSON paths/templates, XLSX rows, PPTX slide/paragraph positions,
+EPUB spine hrefs and block indexes) is stored on the document/segments and persists
+in the snapshot.
+
+### PDF is not supported
+
+CAIT does not import PDF, and future releases will not add PDF support. PDF is a
+fixed-layout print format: it has no logical paragraphs, reading order, or inline
+markup. Text extracted from it is fragmented across drawing operations, loses
+headings, tables, and inline emphasis, and produces segments that are poor input
+for translation memory and MT — in other words, PDF is extremely unsuitable for
+AI-related work.
+
+To translate PDF content, convert it to a supported format first, for example:
+
+```sh
+pandoc input.pdf -t docx -o output.docx   # or -t html, -t markdown
+```
+
+Adobe Acrobat's **Export to Word/HTML**, LibreOffice, or any other converter that
+produces DOCX, HTML, EPUB, or plain text works too. Scanned PDFs need OCR before
+conversion; CAIT has no image OCR stage.
 
 ## Install
 
@@ -161,7 +195,7 @@ In DSH Desktop (or any profile with the `plugin_manager` tool):
 plugin_manager install_bundle target: dsh-cait
 ```
 
-Pin a release with `dsh-cait@1.0.4`, or ask for the newest one with
+Pin a release with `dsh-cait@1.0.5`, or ask for the newest one with
 `dsh-cait@latest`. The manager resolves the registry package, applies the bundle
 patch, and activates the plugin — no hand-written profile rows.
 
@@ -229,7 +263,7 @@ not both.
 ```
 
 The snapshot stores documents, open tabs, TM, glossary, libraries, mounts, and
-non-secret settings. Imported DOCX/PPTX source packages live in `sources/`.
+non-secret settings. Imported DOCX/PPTX/EPUB source packages live in `sources/`.
 
 In-app settings (**Settings**) live in the snapshot rather than in the YAML
 above: source/target language, fuzzy threshold, TM result limit, MT
@@ -306,6 +340,9 @@ cait/
 │  ├─ persistence.js
 │  ├─ import-export.js
 │  ├─ formats.js            # CSV/SRT/VTT/PO/XLIFF/HTML/JSON/RTF
+│  ├─ html.js               # Shared HTML/XHTML run scanner + patcher
+│  ├─ epub.js               # EPUB package read / spine import / patch export
+│  ├─ preprocess.js         # Import-time source cleaning stage
 │  ├─ xlsx.js
 │  ├─ pptx.js
 │  ├─ segmenter.js
@@ -334,6 +371,8 @@ node --check client.js
 node _dev/test-core.mjs
 node _dev/test-imports.mjs
 node _dev/test-formats.mjs
+node _dev/test-epub.mjs
+node _dev/test-preprocess.mjs
 node _dev/test-second-tier.mjs
 node _dev/test-docx-export.mjs
 node _dev/test-api.mjs
@@ -348,7 +387,7 @@ node _dev/test-mt.mjs
 
 The import/export fixtures are `_dev/sample.docx`, `_dev/sample-table.docx`, and
 `_dev/sample-format.docx`; regenerate them with the matching
-`python _dev/make-*.py` scripts. All 13 suites should pass.
+`python _dev/make-*.py` scripts. All 15 suites should pass.
 
 ### Releasing
 
@@ -392,7 +431,10 @@ GitHub with a release.
 
 ## Known limits and roadmap
 
-- No PDF, EPUB, or image OCR import yet.
+- No PDF import; PDF is intentionally out of scope (see
+  [PDF is not supported](#pdf-is-not-supported)). No image OCR yet.
+- EPUB import follows the spine and body XHTML text blocks; DRM-protected,
+  fixed-layout, scripted, and MathML-heavy books are not supported.
 - DOCX import skips tables, headers, footnotes, fields, alt text, and tracked
   deletions. DOCX export leaves those regions in the source language.
 - Mixed-run DOCX/PPTX paragraphs inherit the first run's formatting.
@@ -402,22 +444,22 @@ GitHub with a release.
 - HTML/RTF export does not round-trip original styling; JSON translates string
   values only.
 - TM matching is lexical, not semantic; no stemming, synonyms, or embeddings.
-- Library rename/delete and per-tab mount state are not part of v1.0.0.
+- Library rename/delete and per-tab mount state are not implemented yet.
 - The workbench UI ships in Chinese, English, and Japanese, switchable in
   Settings; this README ships in English, Simplified Chinese, and Japanese, and
   the English version is the source of truth.
 
-Planned next: PDF and EPUB adapters, image/vision input through a multimodal DSH
-route, richer library management, style-preserving XLSX output, and XLIFF
-`<alt-trans>` / notes support.
+Planned next: image/vision input through a multimodal DSH route, richer library
+management, style-preserving XLSX output, and XLIFF `<alt-trans>` / notes support.
 
 ## Changelog and versioning
 
 See [CHANGELOG.md](CHANGELOG.md). `v1.0.0` was the first public release;
 `v1.0.1` adds the Japanese UI and the in-app interface language switch,
 `v1.0.2` makes *Follow DSH language* honour the DSH locale, `v1.0.3`
-publishes the package to npm, and `v1.0.4` moves later releases to the
-provenance-publishing workflow. The project was developed as `0.1.0` and
+publishes the package to npm, `v1.0.4` moves later releases to the
+provenance-publishing workflow, and `v1.0.5` adds EPUB, import preprocessing,
+and the PDF policy. The project was developed as `0.1.0` and
 renumbered for the GitHub release.
 
 > **License:** Apache License 2.0 — see [LICENSE](LICENSE). Redistributions must

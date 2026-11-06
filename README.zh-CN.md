@@ -16,7 +16,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm 版本" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
-  <img alt="13 套测试" src="https://img.shields.io/badge/tests-13%20suites-brightgreen.svg" />
+  <img alt="15 套测试" src="https://img.shields.io/badge/tests-15%20suites-brightgreen.svg" />
   <img alt="无需 API Key" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
 </p>
 
@@ -35,7 +35,7 @@ CAIT 为 DSH Web UI 和 DSH 桌面端增加一个 CAT 翻译工作台。它从�
 | **可解释的翻译记忆** | 支持多个 TM 库、仅检索已挂载库、精确/近似精确/高/中/低模糊等级，确认句段时自动写回。 |
 | **术语感知编辑** | 支持多个术语库、按源语言过滤、行内高亮、点击插入术语，以及按术语设置是否区分大小写。 |
 | **完整文档流程** | 文档标签页、关闭/重新打开、最近文档清理、重复导入复用、逐文档进度。 |
-| **真实格式覆盖** | TXT、Markdown、DOCX、TMX、CSV、SRT/VTT、PO、XLIFF 1.2/2.0/SDLXLIFF、HTML、JSON、XLSX、PPTX、RTF。 |
+| **真实格式覆盖** | TXT、Markdown、DOCX、EPUB、TMX、CSV、SRT/VTT、PO、XLIFF 1.2/2.0/SDLXLIFF、HTML、JSON、XLSX、PPTX、RTF。 |
 | **面向 Agent** | 七个工具共享当前文档和存储，Agent 可以与用户同时翻译。 |
 
 ## 快速开始
@@ -95,6 +95,17 @@ CAIT 为 DSH Web UI 和 DSH 桌面端增加一个 CAT 翻译工作台。它从�
   缩放系数。1600×900 面板约为 1.32×，2560×1440 面板为 1.8×；
   窗口较矮时保持 1×，不会继续缩小。
 
+### 预处理
+
+导入的源文在切句之前会经过预处理阶段：
+
+- 折叠重复空格与制表符、去掉行首缩进、合并连续空行。
+- 移除零宽字符和多余的控制字符。
+- 占位符 token（`{1}`、`{2}`…）、标点、大小写和段落顺序保持不变，
+  因此 XLIFF/HTML/EPUB 的内联标记仍可正确往返。
+- 三个步骤可在 **设置 → 预处理** 中分别开关，并随其他设置一起持久化。
+  它们作用于新导入和 `createDocument` 调用，不会改写已有文档。
+
 ### MT 辅助
 
 CAIT 不持有 endpoint 或 key，选择器完全来自 DSH：
@@ -114,15 +125,16 @@ provider/model/code/status，客户端只会收到 `MT_PROVIDER_FAILED`。
 | 格式 | 导入 | 导出 | 说明 |
 | --- | :---: | :---: | --- |
 | TXT / Markdown | ✅ | ✅ | 按段落和句子切分 |
-| CSV | ✅ | ✅ | 可通过表头名称或从 1 开始的列号指定源/目标列；现有双语导出 |
+| CSV | ✅ | ✅ | 自动识别逗号、分号、制表符或竖线分隔；可通过表头名称或从 1 开始的列号指定源/目标列；现有双语导出 |
 | DOCX | ✅ | ✅ | 正文段落；导入时排除表格块。导出会修改原包，保留样式、编号、图片、页眉、表格和版式。 |
+| EPUB | ✅ | ✅ | 按 EPUB 3 spine 顺序读取 XHTML 文本块，内联标记保留为 token 并回写到保留的源包。不支持 DRM、固定版式和脚本化 EPUB。 |
 | TMX 1.4 | ✅ | ✅ | 常见 `<tu>/<tuv>/<seg>` 子集；内联标记扁平化并警告 |
 | SRT / WebVTT | ✅ | ✅ | 一个字幕 cue 对应一个句段；保留时间轴/设置/标识；保留语义标签；非法时间范围会拒绝 |
 | PO | ✅ | ✅ | 支持上下文、复数形式、译者注释和废弃 `#~` 条目 |
 | XLIFF 1.2 | ✅ | ✅ | 内联标签转换为 `{n}` token；缺少 token 时阻止确认 |
 | XLIFF 2.0 | ✅ | ✅ | 基础 `<unit><segment><source>/<target>` 子集 |
 | SDLXLIFF | ✅ | ✅ | 走基础 XLIFF 1.2 路径；SDL 专有扩展不会完整往返 |
-| HTML | ✅ | ✅ | 仅文本块；不保留原始标记/CSS |
+| HTML | ✅ | ✅ | 保留文本块与内联标签；不重建文档级 CSS/版式 |
 | JSON | ✅ | ✅ | 字符串路径子集；通过模板保留对象/数组结构；key 和数字不翻译 |
 | XLSX | ✅ | ✅ | 第一个工作表；识别 `Source`/`Target` 表头或 A/B 列；导出为新的两列表格 |
 | PPTX | ✅ | ✅* | 保留源格式导出；需要导入时保留的 `.pptx` 包。仅正文；备注/图表/SmartArt 不导入。 |
@@ -132,8 +144,25 @@ provider/model/code/status，客户端只会收到 `MT_PROVIDER_FAILED`。
 而不是静默生成一个没有格式的演示文稿。
 
 交换元数据（字幕时间轴、PO 上下文/复数/注释、XLIFF id 和内联 token 映射、
-JSON 路径/模板、XLSX 行号、PPTX 幻灯片/段落位置）会保存在文档/句段上，
-并随快照持久化。
+JSON 路径/模板、XLSX 行号、PPTX 幻灯片/段落位置、EPUB spine href 和块序号）
+会保存在文档/句段上，并随快照持久化。
+
+### 不支持 PDF
+
+CAIT 不导入 PDF，后续版本也不会加入 PDF 支持。PDF 是固定版式的打印格式，
+没有逻辑段落、阅读顺序或内联标记；从中提取的文本会散落在绘图指令之间，
+丢失标题、表格和内联强调，切出的句段对翻译记忆和 MT 都是很差的输入——
+也就是说，PDF 极其不适合 AI 相关工作。
+
+如果需要翻译 PDF 内容，请先转换成支持的格式，例如：
+
+```sh
+pandoc input.pdf -t docx -o output.docx   # 或 -t html、-t markdown
+```
+
+也可以使用 Adobe Acrobat 的 **导出为 Word/HTML**、LibreOffice，或其他能生成
+DOCX、HTML、EPUB 或纯文本的工具。扫描版 PDF 在转换前还需要 OCR；
+CAIT 没有图片 OCR 阶段。
 
 ## 安装
 
@@ -149,7 +178,7 @@ CAIT 以 DSH bundle 的形式安装；发布的 npm 包名为 `dsh-cait`，插�
 plugin_manager install_bundle target: dsh-cait
 ```
 
-需要固定版本时写 `dsh-cait@1.0.4`，需要最新版时写 `dsh-cait@latest`。管理器会解析 registry
+需要固定版本时写 `dsh-cait@1.0.5`，需要最新版时写 `dsh-cait@latest`。管理器会解析 registry
 上的包、应用 bundle patch 并激活插件，不需要手工在配置档里加行。
 
 使用 CLI 管理的配置档：
@@ -214,7 +243,7 @@ dsh web --patch C:\absolute\path\to\dsh-CAIT\_dev\cait.patch.yml
 ```
 
 快照保存文档、打开的标签页、TM、术语库、库、挂载关系和非敏感设置。
-导入的 DOCX/PPTX 源包放在 `sources/` 下。
+导入的 DOCX/PPTX/EPUB 源包放在 `sources/` 下。
 
 界面内的**设置**保存在快照里，而不是上面的 YAML：源语言/目标语言、模糊阈值、
 TM 返回条数、MT 路由/模型/温度，以及界面语言（`uiLang`：`auto` | `zh` | `en` |
@@ -286,6 +315,9 @@ cait/
 │  ├─ persistence.js
 │  ├─ import-export.js
 │  ├─ formats.js            # CSV/SRT/VTT/PO/XLIFF/HTML/JSON/RTF
+│  ├─ html.js               # 共享 HTML/XHTML 文本块扫描与回写
+│  ├─ epub.js               # EPUB 包读取 / spine 导入 / 回写导出
+│  ├─ preprocess.js         # 导入期源文预处理阶段
 │  ├─ xlsx.js
 │  ├─ pptx.js
 │  ├─ segmenter.js
@@ -314,6 +346,8 @@ node --check client.js
 node _dev/test-core.mjs
 node _dev/test-imports.mjs
 node _dev/test-formats.mjs
+node _dev/test-epub.mjs
+node _dev/test-preprocess.mjs
 node _dev/test-second-tier.mjs
 node _dev/test-docx-export.mjs
 node _dev/test-api.mjs
@@ -328,7 +362,7 @@ node _dev/test-mt.mjs
 
 导入/导出 fixture 为 `_dev/sample.docx`、`_dev/sample-table.docx` 和
 `_dev/sample-format.docx`；可用对应的 `python _dev/make-*.py` 脚本重新生成。
-13 套测试应全部通过。
+15 套测试应全部通过。
 
 ### 发布
 
@@ -366,7 +400,10 @@ GitHub release 发布。
 
 ## 已知限制与路线图
 
-- 暂不支持 PDF、EPUB 或图片 OCR 导入。
+- 不支持 PDF 导入；PDF 已被明确排除在范围外（见
+  [不支持 PDF](#不支持-pdf)）。暂不支持图片 OCR。
+- EPUB 导入只覆盖 spine 中的正文 XHTML 文本块；不支持 DRM、固定版式、
+  脚本化以及大量使用 MathML 的电子书。
 - DOCX 导入会跳过表格、页眉、脚注、域、替代文本和修订删除内容。
   DOCX 导出时这些区域保持源语言。
 - DOCX/PPTX 中混合 run 的段落会继承第一个 run 的格式。
@@ -374,18 +411,19 @@ GitHub release 发布。
 - XLSX 导入/导出是两列表格；不保留单元格样式、公式、合并单元格、图片和额外工作表。
 - HTML/RTF 导出不往返原始样式；JSON 只翻译字符串值。
 - TM 匹配是词法级的，不是语义级；没有词干、同义词或向量。
-- 库重命名/删除和逐标签页挂载状态不属于 v1.0.0。
+- 库重命名/删除和逐标签页挂载状态尚未实现。
 - 工作台界面提供中文、English、日本語三种语言，可在设置中切换；README 提供英文、简体中文和日文三个版本，以英文版为准。
 
-后续计划：PDF 与 EPUB 适配器、通过多模态 DSH 路由支持图片/视觉输入、
-更完整的库管理、保留样式的 XLSX 输出，以及 XLIFF `<alt-trans>` / 注释支持。
+后续计划：通过多模态 DSH 路由支持图片/视觉输入、更完整的库管理、
+保留样式的 XLSX 输出，以及 XLIFF `<alt-trans>` / 注释支持。
 
 ## 变更日志与版本
 
 见 [CHANGELOG.md](CHANGELOG.md)。`v1.0.0` 是首个公开发布版本，`v1.0.1` 增加了
 日语界面和界面内语言切换，`v1.0.2` 让「跟随 DSH 语言」真正跟随 DSH 的语言设置，
-`v1.0.3` 把包发布到 npm，`v1.0.4` 起后续版本改由带 provenance 的发布流水线产出；
-项目在开发阶段使用 `0.1.0`，发布到 GitHub 前统一改为 `1.0.0`。
+`v1.0.3` 把包发布到 npm，`v1.0.4` 起后续版本改由带 provenance 的发布流水线产出，
+`v1.0.5` 增加 EPUB、导入预处理和 PDF 政策；项目在开发阶段使用 `0.1.0`，
+发布到 GitHub 前统一改为 `1.0.0`。
 
 > **License：** Apache License 2.0，见 [LICENSE](LICENSE)。再分发时需保留
 > [NOTICE](NOTICE) 中的署名信息。

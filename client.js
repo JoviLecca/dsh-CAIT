@@ -421,7 +421,7 @@ window.__ModuleLoader__.load({
 
     function filePayload(file) {
       const extension = (file.name.match(/\.([a-z0-9]+)$/i)?.[1] || '').toLowerCase()
-      if (extension === 'docx' || extension === 'xlsx' || extension === 'pptx') {
+      if (extension === 'docx' || extension === 'xlsx' || extension === 'pptx' || extension === 'epub') {
         return file.arrayBuffer().then((buffer) => {
           const bytes = new Uint8Array(buffer)
           let binary = ''
@@ -1528,7 +1528,7 @@ window.__ModuleLoader__.load({
               h('input', {
                 ref: inputRef,
                 type: 'file',
-                accept: '.txt,.md,.markdown,.tmx,.docx,.csv,.srt,.vtt,.po,.pot,.xliff,.xlf,.sdlxliff,.html,.htm,.json,.rtf,.xlsx,.pptx',
+                accept: '.txt,.md,.markdown,.tmx,.docx,.epub,.csv,.srt,.vtt,.po,.pot,.xliff,.xlf,.sdlxliff,.html,.htm,.json,.rtf,.xlsx,.pptx',
                 hidden: true,
                 onChange: (event) => pickFile(event.target.files?.[0]),
               }),
@@ -1572,6 +1572,7 @@ window.__ModuleLoader__.load({
         ['target-txt', t('modal.export.targetTxt'), t('modal.export.target'), 'download'],
         ['target-md', t('modal.export.targetMd'), t('modal.export.target'), 'download'],
         ['docx', t('modal.export.docx'), t('modal.export.docxGroup'), 'file'],
+        ['epub', t('modal.export.epub'), t('modal.export.epubGroup'), 'file'],
         ['srt', t('modal.export.srt'), t('modal.export.subtitleGroup'), 'file'],
         ['vtt', t('modal.export.vtt'), t('modal.export.subtitleGroup'), 'file'],
         ['po', t('modal.export.po'), t('modal.export.localizationGroup'), 'file'],
@@ -1611,6 +1612,11 @@ window.__ModuleLoader__.load({
         fuzzyThreshold: settings.fuzzyThreshold,
         tmLimit: settings.tmLimit,
         uiLang: settings.uiLang || 'auto',
+        preprocess: {
+          normalizeWhitespace: settings.preprocess?.normalizeWhitespace !== false,
+          stripInvisible: settings.preprocess?.stripInvisible !== false,
+          collapseBlankLines: settings.preprocess?.collapseBlankLines !== false,
+        },
         mt: {
           provider: settings.mt.provider,
           model: settings.mt.model,
@@ -1623,6 +1629,8 @@ window.__ModuleLoader__.load({
       const routeMissing = form.mt.provider !== 'mock' && !route
 
       const setMt = (patch) => setForm((current) => ({ ...current, mt: { ...current.mt, ...patch } }))
+      const setPre = (patch) =>
+        setForm((current) => ({ ...current, preprocess: { ...current.preprocess, ...patch } }))
       const selectProvider = (provider) => {
         const nextRoute = routes.find((item) => item.id === provider)
         setForm((current) => ({
@@ -1646,6 +1654,11 @@ window.__ModuleLoader__.load({
           fuzzyThreshold: Number(form.fuzzyThreshold),
           tmLimit: Number(form.tmLimit),
           uiLang: form.uiLang,
+          preprocess: {
+            normalizeWhitespace: Boolean(form.preprocess.normalizeWhitespace),
+            stripInvisible: Boolean(form.preprocess.stripInvisible),
+            collapseBlankLines: Boolean(form.preprocess.collapseBlankLines),
+          },
           mt: {
             provider: form.mt.provider,
             model: form.mt.model,
@@ -1709,6 +1722,24 @@ window.__ModuleLoader__.load({
                   { className: 'cait-input', value: form.targetLang, onChange: (event) => setForm({ ...form, targetLang: event.target.value }) },
                   LANGUAGES.map(([code, label]) => h('option', { key: code, value: code }, `${label} (${code})`)),
                 ),
+              ),
+            ),
+          ),
+          h(
+            'div',
+            { className: 'cait-settings-section' },
+            h('h4', { className: 'cait-settings-title' }, t('modal.settings.preprocess')),
+            h('p', { className: 'cait-mt-hint', style: { marginTop: 0 } }, t('modal.settings.preprocessHint')),
+            ['normalizeWhitespace', 'stripInvisible', 'collapseBlankLines'].map((key) =>
+              h(
+                'label',
+                { key, className: 'cait-checkline' },
+                h('input', {
+                  type: 'checkbox',
+                  checked: Boolean(form.preprocess[key]),
+                  onChange: (event) => setPre({ [key]: event.target.checked }),
+                }),
+                t(`modal.settings.pre.${key}`),
               ),
             ),
           ),
@@ -2899,7 +2930,7 @@ window.__ModuleLoader__.load({
       'empty.demo': '加载演示文档',
       'empty.demoHint': '没有素材？',
       'empty.drop': '拖入文件，或点击选择',
-      'empty.formats': '支持 TXT · Markdown · DOCX · TMX · CSV · SRT · VTT · PO · XLIFF · HTML · JSON · RTF · XLSX · PPTX',
+      'empty.formats': '支持 TXT · Markdown · DOCX · EPUB · TMX · CSV · SRT · VTT · PO · XLIFF · HTML · JSON · RTF · XLSX · PPTX',
       'empty.features.tm': '翻译记忆',
       'empty.features.tmDesc': '精确 + 模糊匹配',
       'empty.features.glossary': '术语库',
@@ -2913,7 +2944,7 @@ window.__ModuleLoader__.load({
       'modal.new.targetLang': '目标语言',
       'modal.new.create': '创建文档',
       'modal.new.importing': '正在导入…',
-      'modal.new.dropHint': 'TXT · Markdown · DOCX · TMX · CSV · SRT · VTT · PO · XLIFF · HTML · JSON · RTF · XLSX · PPTX',
+      'modal.new.dropHint': 'TXT · Markdown · DOCX · EPUB · TMX · CSV · SRT · VTT · PO · XLIFF · HTML · JSON · RTF · XLSX · PPTX',
       'modal.new.csvSource': 'CSV 源文列',
       'modal.new.csvTarget': 'CSV 译文列',
       'modal.new.csvColumnPlaceholder': '列名或列号，例如 Source / 2',
@@ -2998,6 +3029,8 @@ window.__ModuleLoader__.load({
       'modal.export.targetMd': 'Markdown',
       'modal.export.docx': 'Word DOCX',
       'modal.export.docxGroup': '保留源格式',
+      'modal.export.epub': 'EPUB 电子书',
+      'modal.export.epubGroup': '保留源排版',
       'modal.export.json': '文档 JSON',
       'modal.export.subtitleGroup': '字幕',
       'modal.export.localizationGroup': '本地化交换',
@@ -3020,6 +3053,11 @@ window.__ModuleLoader__.load({
       'modal.settings.uiAuto': '跟随 DSH 语言',
       'modal.settings.uiHint': '只影响 CAIT 界面，不会改变文档的源语言和目标语言。',
       'modal.settings.languages': '语言',
+      'modal.settings.preprocess': '预处理',
+      'modal.settings.preprocessHint': '在导入切句之前清理源文，占位符与标点不会被改写。',
+      'modal.settings.pre.normalizeWhitespace': '折叠多余空格与制表符',
+      'modal.settings.pre.stripInvisible': '移除零宽字符与控制字符',
+      'modal.settings.pre.collapseBlankLines': '合并连续空行',
       'modal.settings.tm': '翻译记忆',
       'modal.settings.fuzzy': '模糊匹配阈值',
       'modal.settings.limit': '返回匹配数',
@@ -3123,7 +3161,7 @@ window.__ModuleLoader__.load({
       'empty.demo': 'Load demo document',
       'empty.demoHint': 'No material?',
       'empty.drop': 'Drop a file, or click to choose',
-      'empty.formats': 'TXT · Markdown · DOCX · TMX · CSV · SRT · VTT · PO · XLIFF · HTML · JSON · RTF · XLSX · PPTX',
+      'empty.formats': 'TXT · Markdown · DOCX · EPUB · TMX · CSV · SRT · VTT · PO · XLIFF · HTML · JSON · RTF · XLSX · PPTX',
       'empty.features.tm': 'Translation memory',
       'empty.features.tmDesc': 'Exact + fuzzy matching',
       'empty.features.glossary': 'Glossary',
@@ -3137,7 +3175,7 @@ window.__ModuleLoader__.load({
       'modal.new.targetLang': 'Target language',
       'modal.new.create': 'Create document',
       'modal.new.importing': 'Importing…',
-      'modal.new.dropHint': 'TXT · Markdown · DOCX · TMX · CSV · SRT · VTT · PO · XLIFF · HTML · JSON · RTF · XLSX · PPTX',
+      'modal.new.dropHint': 'TXT · Markdown · DOCX · EPUB · TMX · CSV · SRT · VTT · PO · XLIFF · HTML · JSON · RTF · XLSX · PPTX',
       'modal.new.csvSource': 'CSV source column',
       'modal.new.csvTarget': 'CSV target column',
       'modal.new.csvColumnPlaceholder': 'Column name or number, e.g. Source / 2',
@@ -3222,6 +3260,8 @@ window.__ModuleLoader__.load({
       'modal.export.targetMd': 'Markdown',
       'modal.export.docx': 'Word DOCX',
       'modal.export.docxGroup': 'Preserve source formatting',
+      'modal.export.epub': 'EPUB ebook',
+      'modal.export.epubGroup': 'Preserve source layout',
       'modal.export.json': 'Document JSON',
       'modal.export.subtitleGroup': 'Subtitles',
       'modal.export.localizationGroup': 'Localization exchange',
@@ -3244,6 +3284,11 @@ window.__ModuleLoader__.load({
       'modal.settings.uiAuto': 'Follow DSH language',
       'modal.settings.uiHint': 'Changes only the CAIT interface; document source and target languages are unaffected.',
       'modal.settings.languages': 'Languages',
+      'modal.settings.preprocess': 'Preprocessing',
+      'modal.settings.preprocessHint': 'Cleans imported source text before segmentation. Placeholders and punctuation are left untouched.',
+      'modal.settings.pre.normalizeWhitespace': 'Collapse extra spaces and tabs',
+      'modal.settings.pre.stripInvisible': 'Remove zero-width and control characters',
+      'modal.settings.pre.collapseBlankLines': 'Merge consecutive blank lines',
       'modal.settings.tm': 'Translation memory',
       'modal.settings.fuzzy': 'Fuzzy-match threshold',
       'modal.settings.limit': 'Matches returned',
@@ -3347,7 +3392,7 @@ window.__ModuleLoader__.load({
       'empty.demo': 'デモ文書を読み込む',
       'empty.demoHint': '素材がありませんか？',
       'empty.drop': 'ファイルをドロップ、またはクリックして選択',
-      'empty.formats': 'TXT · Markdown · DOCX · TMX · CSV · SRT · VTT · PO · XLIFF · HTML · JSON · RTF · XLSX · PPTX に対応',
+      'empty.formats': 'TXT · Markdown · DOCX · EPUB · TMX · CSV · SRT · VTT · PO · XLIFF · HTML · JSON · RTF · XLSX · PPTX に対応',
       'empty.features.tm': '翻訳メモリ',
       'empty.features.tmDesc': '完全一致＋あいまい一致',
       'empty.features.glossary': '用語集',
@@ -3361,7 +3406,7 @@ window.__ModuleLoader__.load({
       'modal.new.targetLang': '訳文言語',
       'modal.new.create': '文書を作成',
       'modal.new.importing': 'インポート中…',
-      'modal.new.dropHint': 'TXT · Markdown · DOCX · TMX · CSV · SRT · VTT · PO · XLIFF · HTML · JSON · RTF · XLSX · PPTX',
+      'modal.new.dropHint': 'TXT · Markdown · DOCX · EPUB · TMX · CSV · SRT · VTT · PO · XLIFF · HTML · JSON · RTF · XLSX · PPTX',
       'modal.new.csvSource': 'CSV 原文列',
       'modal.new.csvTarget': 'CSV 訳文列',
       'modal.new.csvColumnPlaceholder': '列名または列番号（例：Source / 2）',
@@ -3446,6 +3491,8 @@ window.__ModuleLoader__.load({
       'modal.export.targetMd': 'Markdown',
       'modal.export.docx': 'Word DOCX',
       'modal.export.docxGroup': '元の書式を保持',
+      'modal.export.epub': 'EPUB 電子書',
+      'modal.export.epubGroup': '元のレイアウトを保持',
       'modal.export.json': '文書 JSON',
       'modal.export.subtitleGroup': '字幕',
       'modal.export.localizationGroup': 'ローカライズ交換',
@@ -3468,6 +3515,11 @@ window.__ModuleLoader__.load({
       'modal.settings.uiAuto': 'DSH の言語に合わせる',
       'modal.settings.uiHint': 'CAIT の表示だけを切り替えます。文書の原文言語・訳文言語には影響しません。',
       'modal.settings.languages': '言語',
+      'modal.settings.preprocess': '前処理',
+      'modal.settings.preprocessHint': '取り込みと分割の前に原文を整えます。プレースホルダーと句読点は変更しません。',
+      'modal.settings.pre.normalizeWhitespace': '余分な空白とタブをまとめる',
+      'modal.settings.pre.stripInvisible': 'ゼロ幅文字と制御文字を除去',
+      'modal.settings.pre.collapseBlankLines': '連続する空行をまとめる',
       'modal.settings.tm': '翻訳メモリ',
       'modal.settings.fuzzy': 'あいまい一致のしきい値',
       'modal.settings.limit': '返す一致件数',

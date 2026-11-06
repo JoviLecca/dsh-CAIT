@@ -51,7 +51,7 @@
 
     function filePayload(file) {
       const extension = (file.name.match(/\.([a-z0-9]+)$/i)?.[1] || '').toLowerCase()
-      if (extension === 'docx' || extension === 'xlsx' || extension === 'pptx') {
+      if (extension === 'docx' || extension === 'xlsx' || extension === 'pptx' || extension === 'epub') {
         return file.arrayBuffer().then((buffer) => {
           const bytes = new Uint8Array(buffer)
           let binary = ''
