@@ -4,6 +4,34 @@ All notable changes to CAIT are documented here. The project follows
 [Semantic Versioning](https://semver.org/) and the format is based on
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.1.1] - 2026-11-07
+
+A library workspace that works without a document open.
+
+### Added
+
+- **Library workspace.** A new top-level view (topbar `Documents` / `Libraries`)
+  browses every translation-memory entry and glossary term, whether or not a
+  document is open and whether or not the library is mounted. It pages through
+  entries, filters by language, scopes the search to any combination of
+  libraries, and edits entries in a side panel without leaving the table.
+- **Library exports.** A translation-memory library exports to TMX and a
+  glossary exports to TBX, CSV, or JSON, straight from the workspace.
+- **Segment pagination.** The segment rail pages through filtered segments with a
+  20/50/100/200 page size (remembered in `localStorage`) and accepts a typed
+  segment number to jump to, clearing the filter when the target is hidden.
+- **Panel-to-library jump.** The right panel's library button opens the workspace
+  with the panel's current search text (and the glossary tab) applied, so looking
+  something up in the panel continues in the full list.
+
+### Changed
+
+- The glossary tab no longer dumps the mounted glossary into the side panel with
+  a hard 200-term cut-off. It lists only the terms that match the current
+  segment and links to the workspace for everything else.
+- Glossary entries can be edited or deleted in libraries that are not mounted;
+  mounting a library is still the explicit toggle it was.
+
 ## [1.1.0] - 2026-11-07
 
 Agent-assisted pre-translation and a stacked review workbench.

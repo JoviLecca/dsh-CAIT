@@ -16,12 +16,12 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm 版本" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
-  <img alt="15 套测试" src="https://img.shields.io/badge/tests-15%20suites-brightgreen.svg" />
+  <img alt="24 套测试" src="https://img.shields.io/badge/tests-24%20suites-brightgreen.svg" />
   <img alt="无需 API Key" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
 </p>
 
 CAIT 为 DSH Web UI 和 DSH 桌面端增加一个 CAT 翻译工作台。它从左侧栏入口打开，
-工作台与七个 Agent 工具共用一个数据存储，覆盖从导入源文件到导出译文的完整流程。
+工作台与十个 Agent 工具共用一个数据存储，覆盖从导入源文件到导出译文的完整流程。
 
 > **已在 DSH `0.2.2-rc.1` 中验证。** CAIT 使用 DSH 自己的模型路由和凭据，
 > 不会要求用户填写 API Key。内部回退提供方仍叫 `mock`，界面显示为
@@ -36,7 +36,7 @@ CAIT 为 DSH Web UI 和 DSH 桌面端增加一个 CAT 翻译工作台。它从�
 | **术语感知编辑** | 支持多个术语库、按源语言过滤、行内高亮、点击插入术语，以及按术语设置是否区分大小写。 |
 | **完整文档流程** | 文档标签页、关闭/重新打开、最近文档清理、重复导入复用、逐文档进度。 |
 | **真实格式覆盖** | TXT、Markdown、DOCX、EPUB、TMX、CSV、SRT/VTT、PO、XLIFF 1.2/2.0/SDLXLIFF、HTML、JSON、XLSX、PPTX、RTF。 |
-| **面向 Agent** | 七个工具共享当前文档和存储，Agent 可以与用户同时翻译。 |
+| **面向 Agent** | 十个工具共享当前文档和存储，Agent 可以与用户同时翻译。 |
 
 ## 快速开始
 
@@ -77,6 +77,20 @@ CAIT 为 DSH Web UI 和 DSH 桌面端增加一个 CAT 翻译工作台。它从�
 - 支持 CSV/TSV 导入、术语备注、源语言过滤，以及工作台和
   `cat_lookup_glossary` 都遵循的 `caseSensitive` 标记。
 - 语言代码会规范化（`EN` → `en`，`ZH_cn` → `zh-CN`）。
+- 任何库（无论是否挂载）里的条目都能编辑或删除；挂载状态只决定工作台搜索
+  和写入哪些库。
+
+### 库页面
+
+顶栏的「文档 / 库」在两个工作区之间切换，库页面不需要打开文档。
+
+- TM 一张表、术语一张表，支持分页（20/50/100/200，会记住）、语言筛选，以及
+  可限定在任意若干库内的搜索。
+- 右侧边栏直接编辑选中的条目、新增条目，并在有未保存改动时提示。
+- TM 导出 **TMX**；术语库导出 **TBX**、**CSV** 或 **JSON**。导入与清空仍在同一
+  个工具栏里。
+- 右侧面板的库按钮会把面板当前的搜索词一起带进库页面，在面板里查到的东西
+  可以接着在完整列表里看。
 
 ### 工作台
 
@@ -84,6 +98,8 @@ CAIT 为 DSH Web UI 和 DSH 桌面端增加一个 CAT 翻译工作台。它从�
 - 句段三态：**待译** → **待审** → **已确认**，同时记录每句译文的来源
   （`tm`、`mt`、`agent`、`manual`）。句段栏可按状态筛选，搜索覆盖原文、
   译文和建议。
+- **句段分页**：句段栏按 20/50/100/200 的页大小分页，并有一个输入框可直接
+  跳到某个编号。如果目标句段被当前筛选隐藏，跳转时会先清空筛选。
 - **预翻译** 用 TM 精确命中加机器翻译把整篇铺底：按小块推进，显示
   `已完成/总数`，可在块与块之间停止；已确认或已有译文的句段永远不会被覆盖。
 - **上下排列的审校区**：原文、机器/agent 基线、可编辑译文从上到下依次排列，
@@ -190,7 +206,7 @@ CAIT 以 DSH bundle 的形式安装；发布的 npm 包名为 `dsh-cait`，插�
 plugin_manager install_bundle target: dsh-cait
 ```
 
-需要固定版本时写 `dsh-cait@1.1.0`，需要最新版时写 `dsh-cait@latest`。管理器会解析 registry
+需要固定版本时写 `dsh-cait@1.1.1`，需要最新版时写 `dsh-cait@latest`。管理器会解析 registry
 上的包、应用 bundle patch 并激活插件，不需要手工在配置档里加行。
 
 使用 CLI 管理的配置档：
@@ -297,7 +313,7 @@ TM 返回条数、MT 路由/模型/温度，以及界面语言（`uiLang`：`aut
 flowchart LR
   UI["DSH Web UI<br/>(侧栏 + 工作台)"] --> Client["client.js<br/>生成的 Web bundle"]
   Client --> API["/cait/api/rpc<br/>同源 JSON"]
-  Tools["7 个 Agent 工具"] --> Store["CatStore"]
+  Tools["10 个 Agent 工具"] --> Store["CatStore"]
   API --> Store
   Store --> Snapshot[("store.json<br/>+ sources/")]
 ```
@@ -431,6 +447,9 @@ GitHub release 发布。
 - XLSX 导入/导出是两列表格；不保留单元格样式、公式、合并单元格、图片和额外工作表。
 - HTML/RTF 导出不往返原始样式；JSON 只翻译字符串值。
 - TM 匹配是词法级的，不是语义级；没有词干、同义词或向量。
+- 同一语言对下，同一原文只存一条译文：没有上下文层，重复的句子会复用第一次
+  记住的译文。
+- TBX 与 JSON 术语导出是单向的；只有 TMX 和 CSV 能再导入回来。
 - 工作台界面提供中文、English、日本語三种语言，可在设置中切换；README 提供英文、简体中文和日文三个版本，以英文版为准。
 
 后续计划：通过多模态 DSH 路由支持图片/视觉输入、保留样式的 XLSX 输出，
@@ -442,7 +461,8 @@ GitHub release 发布。
 日语界面和界面内语言切换，`v1.0.2` 让「跟随 DSH 语言」真正跟随 DSH 的语言设置，
 `v1.0.3` 把包发布到 npm，`v1.0.4` 起后续版本改由带 provenance 的发布流水线产出，
 `v1.0.5` 增加 EPUB、导入预处理和 PDF 政策，`v1.1.0` 增加 agent 驱动的预翻译、
-句段三态、上下排列的审校区和轻量 QA；项目在开发阶段使用 `0.1.0`，
+句段三态、上下排列的审校区和轻量 QA，`v1.1.1` 增加带 TMX/TBX/CSV/JSON 导出的
+库页面、句段分页，以及从右侧面板跳进库页面；项目在开发阶段使用 `0.1.0`，
 发布到 GitHub 前统一改为 `1.0.0`。
 
 > **License：** Apache License 2.0，见 [LICENSE](LICENSE)。再分发时需保留

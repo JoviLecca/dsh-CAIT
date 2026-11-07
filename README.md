@@ -16,7 +16,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm version" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
-  <img alt="Tests: 15 suites" src="https://img.shields.io/badge/tests-15%20suites-brightgreen.svg" />
+  <img alt="Tests: 24 suites" src="https://img.shields.io/badge/tests-24%20suites-brightgreen.svg" />
   <img alt="No API key required" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
 </p>
 
@@ -83,6 +83,23 @@ manual reload.
 - CSV/TSV import, per-term notes, source-language filtering, and a
   `caseSensitive` flag honored by both the workbench and `cat_lookup_glossary`.
 - Language codes are canonicalized (`EN` → `en`, `ZH_cn` → `zh-CN`).
+- Entries can be edited or deleted in any library, mounted or not; mount state
+  only decides what the workbench searches and writes.
+
+### Library workspace
+
+`Documents` / `Libraries` in the topbar switches between the translator and the
+library manager. The library view needs no open document.
+
+- One table for translation memory, one for glossaries, with paging
+  (20/50/100/200, remembered), language filters, and a search that can be scoped
+  to any combination of libraries.
+- A side panel edits the selected entry in place, adds entries, and shows when a
+  draft is unsaved.
+- Translation memory exports to **TMX**; glossaries export to **TBX**, **CSV**, or
+  **JSON**. Import and clear stay available in the same toolbar.
+- The right panel's library button opens this workspace with the panel's search
+  text already applied, so a lookup in the panel continues in the full list.
 
 ### Workbench
 
@@ -90,6 +107,9 @@ manual reload.
 - Segment states: **pending** → **translated** → **confirmed**, with the origin of
   each translation (`tm`, `mt`, `agent`, `manual`) kept alongside the text. The
   rail filters by state and search covers source, target, and suggestions.
+- **Segment paging**: the rail pages through the filtered segments with a page
+  size of 20/50/100/200 and a box to jump straight to a segment number. Jumping
+  clears the filter when the target segment would otherwise be hidden.
 - **Pre-translate** fills the whole document from exact TM matches and machine
   translation in small blocks, shows `done/total`, and can be stopped between
   blocks. Confirmed and already-translated segments are never overwritten.
@@ -213,7 +233,7 @@ In DSH Desktop (or any profile with the `plugin_manager` tool):
 plugin_manager install_bundle target: dsh-cait
 ```
 
-Pin a release with `dsh-cait@1.1.0`, or ask for the newest one with
+Pin a release with `dsh-cait@1.1.1`, or ask for the newest one with
 `dsh-cait@latest`. The manager resolves the registry package, applies the bundle
 patch, and activates the plugin — no hand-written profile rows.
 
@@ -326,7 +346,7 @@ document the user has open.
 flowchart LR
   UI["DSH Web UI<br/>(sidebar + workbench)"] --> Client["client.js<br/>generated Web bundle"]
   Client --> API["/cait/api/rpc<br/>same-origin JSON"]
-  Tools["7 agent tools"] --> Store["CatStore"]
+  Tools["10 agent tools"] --> Store["CatStore"]
   API --> Store
   Store --> Snapshot[("store.json<br/>+ sources/")]
 ```
@@ -361,6 +381,8 @@ cait/
 │  ├─ errors.js
 │  ├─ store-utils.js
 │  ├─ libraries.js          # TM/glossary registries + mounts
+│  ├─ library-view.js       # Library paging/search + export entry points
+│  ├─ library-export.js     # Glossary TBX / CSV / JSON builders
 │  ├─ tm.js
 │  ├─ glossary.js
 │  ├─ persistence.js
@@ -369,6 +391,8 @@ cait/
 │  ├─ html.js               # Shared HTML/XHTML run scanner + patcher
 │  ├─ epub.js               # EPUB package read / spine import / patch export
 │  ├─ preprocess.js         # Import-time source cleaning stage
+│  ├─ pre-translate.js      # Block pre-translation methods
+│  ├─ qa.js                 # Derived QA report (never persisted)
 │  ├─ xlsx.js
 │  ├─ pptx.js
 │  ├─ segmenter.js
@@ -409,11 +433,20 @@ node _dev/test-libraries.mjs
 node _dev/test-mounts.mjs
 node _dev/test-ui-scale.mjs
 node _dev/test-mt.mjs
+node _dev/test-mt-routes.mjs
+node _dev/test-three-state.mjs
+node _dev/test-pretranslate.mjs
+node _dev/test-qa.mjs
+node _dev/test-library-crud.mjs
+node _dev/test-library-view.mjs
+node _dev/test-pagination.mjs
+node _dev/test-theme-tokens.mjs
+node _dev/test-e2e-1.1.mjs
 ```
 
 The import/export fixtures are `_dev/sample.docx`, `_dev/sample-table.docx`, and
 `_dev/sample-format.docx`; regenerate them with the matching
-`python _dev/make-*.py` scripts. All 15 suites should pass.
+`python _dev/make-*.py` scripts. All 24 suites should pass.
 
 ### Releasing
 
@@ -470,6 +503,9 @@ GitHub with a release.
 - HTML/RTF export does not round-trip original styling; JSON translates string
   values only.
 - TM matching is lexical, not semantic; no stemming, synonyms, or embeddings.
+- One translation per source text per language pair: with no context layer, a
+  repeated sentence reuses the first remembered translation.
+- TBX and JSON glossary exports are one-way; only TMX and CSV import back.
 - The workbench UI ships in Chinese, English, and Japanese, switchable in
   Settings; this README ships in English, Simplified Chinese, and Japanese, and
   the English version is the source of truth.
@@ -484,8 +520,10 @@ See [CHANGELOG.md](CHANGELOG.md). `v1.0.0` was the first public release;
 `v1.0.2` makes *Follow DSH language* honour the DSH locale, `v1.0.3`
 publishes the package to npm, `v1.0.4` moves later releases to the
 provenance-publishing workflow, `v1.0.5` adds EPUB, import preprocessing,
-and the PDF policy, and `v1.1.0` adds agent-driven pre-translation, the
-three-state segment model, stacked review, and advisory QA. The project
+and the PDF policy, `v1.1.0` adds agent-driven pre-translation, the
+three-state segment model, stacked review, and advisory QA, and `v1.1.1` adds
+the library workspace with TMX/TBX/CSV/JSON export, segment paging, and the
+panel-to-library jump. The project
 was developed as `0.1.0` and renumbered for the GitHub release.
 
 > **License:** Apache License 2.0 — see [LICENSE](LICENSE). Redistributions must

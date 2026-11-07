@@ -141,15 +141,20 @@ try {
   assert.equal(reloaded.tm.filter((entry) => entry.tmId === legalTmId).length, legalTmBefore)
   assert.throws(() => reloaded.clearTM({ tmIds: [legalTmId] }), /未挂载/)
 
-  // D2: update/delete refuse entries in an unmounted glossary.
+  // D2: single-entry edit/delete works on any library, mounted or not (the
+  // library page manages unmounted ones too), but never mounts it as a side
+  // effect. Bulk clear stays mount-scoped, which is the guard that matters.
   const legalTerm = reloaded.glossary.find((entry) => entry.glossaryId === legalGlossaryId)
   assert.ok(legalTerm)
-  assert.throws(
-    () => reloaded.updateGlossary({ id: legalTerm.id, target: '不应更新。' }),
-    /未挂载/,
-  )
-  assert.throws(() => reloaded.deleteGlossary({ id: legalTerm.id }), /未挂载/)
-  assert.equal(reloaded.glossary.find((entry) => entry.id === legalTerm.id).target, legalTerm.target)
+  const mountsBefore = reloaded.mounts.glossaryIds.slice()
+  const editedTerm = reloaded.updateGlossary({ id: legalTerm.id, target: '不应更新的术语。' })
+  assert.equal(editedTerm.entry.target, '不应更新的术语。')
+  assert.deepEqual(reloaded.mounts.glossaryIds, mountsBefore, 'editing must not mount the library')
+  reloaded.deleteGlossary({ id: legalTerm.id })
+  assert.equal(reloaded.glossary.some((entry) => entry.id === legalTerm.id), false)
+  assert.deepEqual(reloaded.mounts.glossaryIds, mountsBefore)
+
+  reloaded.addGlossary({ source: 'Another term', target: '另一个术语', glossaryId: legalGlossaryId })
 
   const clearedGlossary = reloaded.clearGlossary({})
   assert.equal(clearedGlossary.scope, 'mounted')

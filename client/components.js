@@ -299,10 +299,13 @@
       pre,
       onPreTranslate,
       onCancelPreTranslate,
+      view,
+      onView,
     }) {
       const progress = doc?.progress || { percent: 0, confirmed: 0, total: 0 }
       const openIds = new Set((data.openDocuments || []).map((item) => item.id))
       const closedDocuments = (data.documents || []).filter((item) => !openIds.has(item.id))
+      const documentsView = view !== 'libraries'
       return h(
         'header',
         { className: 'cait-topbar' },
@@ -314,39 +317,63 @@
         ),
         h(
           'div',
-          { className: 'cait-docbar' },
-          h(DocTabs, {
-            t,
-            documents: data.openDocuments || data.documents || [],
-            activeId: doc?.id,
-            busy,
-            onOpen: onOpenDoc,
-            onClose: onCloseDoc,
-            onNew: onNewTab,
-          }),
-          h(ClosedDocPicker, { t, documents: closedDocuments, busy, onOpen: onOpenDoc }),
-          closedDocuments.length
-            ? h(
-                'button',
-                {
-                  type: 'button',
-                  className: 'cait-doc-clean',
-                  title: t('doc.clean'),
-                  'aria-label': t('doc.clean'),
-                  disabled: Boolean(busy),
-                  onClick: onCleanClosed,
-                },
-                h(Icon, { name: 'trash', size: 13 }),
-              )
-            : null,
-          doc
-            ? h('span', { className: 'cait-doc-progress' }, `${progress.confirmed}/${progress.total} · ${progress.percent}%`)
-            : null,
+          { className: 'cait-viewtabs' },
+          h(
+            'button',
+            {
+              type: 'button',
+              className: `cait-viewtab${documentsView ? ' active' : ''}`,
+              onClick: () => onView('documents'),
+            },
+            t('nav.documents'),
+          ),
+          h(
+            'button',
+            {
+              type: 'button',
+              className: `cait-viewtab${documentsView ? '' : ' active'}`,
+              onClick: () => onView('libraries'),
+            },
+            t('nav.libraries'),
+          ),
         ),
+        documentsView
+          ? h(
+              'div',
+              { className: 'cait-docbar' },
+              h(DocTabs, {
+                t,
+                documents: data.openDocuments || data.documents || [],
+                activeId: doc?.id,
+                busy,
+                onOpen: onOpenDoc,
+                onClose: onCloseDoc,
+                onNew: onNewTab,
+              }),
+              h(ClosedDocPicker, { t, documents: closedDocuments, busy, onOpen: onOpenDoc }),
+              closedDocuments.length
+                ? h(
+                    'button',
+                    {
+                      type: 'button',
+                      className: 'cait-doc-clean',
+                      title: t('doc.clean'),
+                      'aria-label': t('doc.clean'),
+                      disabled: Boolean(busy),
+                      onClick: onCleanClosed,
+                    },
+                    h(Icon, { name: 'trash', size: 13 }),
+                  )
+                : null,
+              doc
+                ? h('span', { className: 'cait-doc-progress' }, `${progress.confirmed}/${progress.total} · ${progress.percent}%`)
+                : null,
+            )
+          : h('div', { className: 'cait-docbar' }),
         h(
           'div',
           { className: 'cait-actions' },
-          pre && pre.running
+          documentsView && pre && pre.running
             ? h(
                 'span',
                 { className: 'cait-pre-status', title: t('pretranslate.running') },
@@ -364,7 +391,9 @@
                   h(Icon, { name: 'close', size: 13 }),
                 ),
               )
-            : h(
+            : null,
+          documentsView && !(pre && pre.running)
+            ? h(
                 'button',
                 {
                   className: 'cait-btn',
@@ -374,25 +403,32 @@
                 },
                 h(Icon, { name: 'sparkles', size: 14 }),
                 h('span', { className: 'cait-btn-label' }, t('pretranslate.start')),
-              ),
-          h(
-            'button',
-            { className: 'cait-btn', onClick: onNew, disabled: Boolean(busy), title: t('nav.new') },
-            h(Icon, { name: 'plus', size: 14 }),
-            h('span', { className: 'cait-btn-label' }, t('nav.new')),
-          ),
-          h(
-            'button',
-            { className: 'cait-btn', onClick: onImport, disabled: Boolean(busy), title: t('nav.import') },
-            h(Icon, { name: 'upload', size: 14 }),
-            h('span', { className: 'cait-btn-label' }, t('nav.import')),
-          ),
-          h(
-            'button',
-            { className: 'cait-btn', onClick: onExport, disabled: Boolean(busy) || !doc, title: t('nav.export') },
-            h(Icon, { name: 'download', size: 14 }),
-            h('span', { className: 'cait-btn-label' }, t('nav.export')),
-          ),
+              )
+            : null,
+          documentsView
+            ? h(
+                'button',
+                { className: 'cait-btn', onClick: onNew, disabled: Boolean(busy), title: t('nav.new') },
+                h(Icon, { name: 'plus', size: 14 }),
+                h('span', { className: 'cait-btn-label' }, t('nav.new')),
+              )
+            : null,
+          documentsView
+            ? h(
+                'button',
+                { className: 'cait-btn', onClick: onImport, disabled: Boolean(busy), title: t('nav.import') },
+                h(Icon, { name: 'upload', size: 14 }),
+                h('span', { className: 'cait-btn-label' }, t('nav.import')),
+              )
+            : null,
+          documentsView
+            ? h(
+                'button',
+                { className: 'cait-btn', onClick: onExport, disabled: Boolean(busy) || !doc, title: t('nav.export') },
+                h(Icon, { name: 'download', size: 14 }),
+                h('span', { className: 'cait-btn-label' }, t('nav.export')),
+              )
+            : null,
           h('button', { className: 'cait-iconbtn', onClick: onSettings, disabled: Boolean(busy), title: t('nav.settings') }, h(Icon, { name: 'settings', size: 15 })),
         ),
       )
@@ -402,6 +438,12 @@
 
     function SegmentRail({ t, doc, selected, query, setQuery, filter, setFilter, onSelect, onConfirmAll, busy, qa }) {
       const activeRef = useRef(null)
+      const storage = typeof localStorage !== 'undefined' ? localStorage : null
+      const [pageSize, setPageSize] = useState(() => readPageSize(storage))
+      const [page, setPage] = useState(1)
+      const [gotoText, setGotoText] = useState('')
+      const [gotoBad, setGotoBad] = useState(false)
+      const lastSelected = useRef(selected)
       useEffect(() => {
         if (activeRef.current) activeRef.current.scrollIntoView({ block: 'nearest' })
       }, [selected, filter])
@@ -422,7 +464,7 @@
         confirmed: doc.progress.confirmed,
       }
       const needle = query.trim().toLowerCase()
-      const items = doc.segments
+      const filtered = doc.segments
         .map((segment, index) => ({ segment, index }))
         .filter(({ segment }) => filter === 'all' || segment.status === filter)
         .filter(({ segment }) => {
@@ -434,13 +476,69 @@
           )
         })
 
+      // A rail window is a view over the filtered list: the page is clamped to
+      // the result count instead of being reset, so narrowing a filter keeps the
+      // reader near where they were.
+      const bounds = pageBounds(page, filtered.length, pageSize)
+      const firstRow = bounds.start === 0 ? 0 : bounds.start - 1
+      const visible = filtered.slice(firstRow, bounds.end)
+
+      useEffect(() => {
+        if (bounds.page !== page) setPage(bounds.page)
+      }, [bounds.page, page])
+
+      // Selection can move from outside the rail (next-unconfirmed, batch
+      // confirm), so follow it onto the page that holds it.
+      useEffect(() => {
+        if (lastSelected.current === selected) return
+        lastSelected.current = selected
+        const position = filtered.findIndex((item) => item.index === selected)
+        if (position < 0) return
+        const target = Math.floor(position / pageSize) + 1
+        if (target !== bounds.page) setPage(target)
+      }, [selected])
+
+      const changePageSize = (value) => {
+        const size = writePageSize(storage, value)
+        setPageSize(size)
+        setPage(1)
+      }
+
+      const submitGoto = () => {
+        const index = segmentNumberToIndex(gotoText, doc.progress.total)
+        if (index === null) {
+          setGotoBad(true)
+          return
+        }
+        setGotoBad(false)
+        setGotoText('')
+        // A number is useless while a filter or a search hides it, so jumping is
+        // an explicit "show me this segment" and clears both.
+        if (needle || filter !== 'all') {
+          setQuery('')
+          setFilter('all')
+        }
+        lastSelected.current = index
+        setPage(Math.floor(index / pageSize) + 1)
+        onSelect(index)
+      }
+
       return h(
         'aside',
         { className: 'cait-rail' },
         h(
           'div',
           { className: 'cait-rail-head' },
-          h('div', { className: 'cait-rail-title' }, h('span', null, t('rail.title')), h('span', { className: 'cait-count' }, doc.progress.total)),
+          h(
+            'div',
+            { className: 'cait-rail-title' },
+            h('span', null, t('rail.title')),
+            h(
+              'span',
+              { className: 'cait-count', title: `${filtered.length} / ${doc.progress.total}` },
+              needle || filter !== 'all' ? `${filtered.length}/${doc.progress.total}` : doc.progress.total,
+            ),
+          ),
           h('div', { className: 'cait-mini-progress' }, h('i', { style: { width: `${doc.progress.percent}%` } })),
           h(
             'div',
@@ -472,6 +570,37 @@
                 `${t('rail.confirmAll')} · ${doc.progress.translated}`,
               )
             : null,
+          h(
+            'div',
+            { className: 'cait-rail-goto' },
+            h('input', {
+              className: `cait-goto-input${gotoBad ? ' bad' : ''}`,
+              value: gotoText,
+              onChange: (event) => {
+                setGotoText(event.target.value)
+                setGotoBad(false)
+              },
+              onKeyDown: (event) => {
+                if (event.key === 'Enter') submitGoto()
+              },
+              placeholder: t('rail.goto'),
+              'aria-label': t('rail.goto'),
+              title: gotoBad ? t('rail.gotoInvalid') : t('rail.goto'),
+              inputMode: 'numeric',
+            }),
+            h(
+              'button',
+              {
+                type: 'button',
+                className: 'cait-gotobtn',
+                onClick: submitGoto,
+                disabled: Boolean(busy),
+                title: t('rail.goto'),
+                'aria-label': t('rail.goto'),
+              },
+              h(Icon, { name: 'arrowRight', size: 12 }),
+            ),
+          ),
         ),
         h(
           'div',
@@ -482,8 +611,8 @@
         h(
           'div',
           { className: 'cait-rail-list' },
-          items.length
-            ? items.map(({ segment, index }) =>
+          visible.length
+            ? visible.map(({ segment, index }) =>
                 h(
                   'button',
                   {
@@ -515,6 +644,46 @@
                 ),
               )
             : h('div', { className: 'cait-empty-note' }, t('rail.empty')),
+        ),
+        h(
+          'div',
+          { className: 'cait-rail-page' },
+          h(
+            'button',
+            {
+              type: 'button',
+              className: 'cait-pagebtn',
+              onClick: () => setPage(bounds.page - 1),
+              disabled: bounds.page <= 1,
+              title: t('library.prev'),
+              'aria-label': t('library.prev'),
+            },
+            h(Icon, { name: 'chevronLeft', size: 12 }),
+          ),
+          h('span', { className: 'cait-pageinfo' }, t('rail.pageInfo', { start: bounds.start, end: bounds.end, total: bounds.total })),
+          h(
+            'button',
+            {
+              type: 'button',
+              className: 'cait-pagebtn',
+              onClick: () => setPage(bounds.page + 1),
+              disabled: bounds.page >= bounds.pages,
+              title: t('library.next'),
+              'aria-label': t('library.next'),
+            },
+            h(Icon, { name: 'chevronRight', size: 12 }),
+          ),
+          h(
+            'select',
+            {
+              className: 'cait-pagesize',
+              value: String(pageSize),
+              onChange: (event) => changePageSize(Number(event.target.value)),
+              title: t('library.pageSize'),
+              'aria-label': t('library.pageSize'),
+            },
+            PAGE_SIZE_OPTIONS.map((size) => h('option', { key: size, value: String(size) }, String(size))),
+          ),
         ),
       )
     }
@@ -811,7 +980,7 @@
       onApplyMt,
       onCopy,
       onOpenSettings,
-      onOpenLibraries,
+      onSearchLibrary,
       busy,
     }) {
       const [termQuery, setTermQuery] = useState('')
@@ -858,7 +1027,7 @@
               'button',
               {
                 className: 'cait-btn cait-libopen',
-                onClick: onOpenLibraries,
+                onClick: () => onSearchLibrary(tab === 'glossary' ? 'glossary' : 'tm', tab === 'tm' ? tmQuery : ''),
                 disabled: Boolean(busy),
                 title: t('libraries.open'),
               },
@@ -980,75 +1149,20 @@
                       ),
                     )
                   : h('p', { className: 'cait-empty-note' }, t('panel.noHits')),
+                // The panel is a per-segment view: whole-library browsing,
+                // adding and editing live on the library page, so the panel
+                // stays short instead of dumping the mounted glossary.
+                h('p', { className: 'cait-mt-hint' }, t('panel.glossaryMatchesOnly')),
                 h(
                   'div',
-                  { className: 'cait-subhead' },
-                  h('span', null, t('panel.allTerms')),
-                  h('button', { className: 'cait-linkbtn', onClick: () => setShowTermForm((value) => !value) }, `+ ${t('panel.addTerm')}`),
+                  { className: 'cait-panel-foot' },
+                  h(
+                    'button',
+                    { className: 'cait-btn', onClick: () => onSearchLibrary('glossary', ''), disabled: Boolean(busy) },
+                    h(Icon, { name: 'book', size: 12 }),
+                    t('panel.viewAll'),
+                  ),
                 ),
-                showTermForm
-                  ? h(
-                      'form',
-                      { className: 'cait-termform', onSubmit: submitTerm },
-                      h('input', {
-                        className: 'cait-input',
-                        value: termForm.source,
-                        onChange: (event) => setTermForm({ ...termForm, source: event.target.value }),
-                        placeholder: t('panel.termSource'),
-                        autoFocus: true,
-                      }),
-                      h(
-                        'div',
-                        { className: 'cait-formrow' },
-                        h('input', {
-                          className: 'cait-input',
-                          value: termForm.target,
-                          onChange: (event) => setTermForm({ ...termForm, target: event.target.value }),
-                          placeholder: t('panel.termTarget'),
-                        }),
-                        h('input', {
-                          className: 'cait-input',
-                          value: termForm.note,
-                          onChange: (event) => setTermForm({ ...termForm, note: event.target.value }),
-                          placeholder: t('panel.termNote'),
-                        }),
-                      ),
-                      h(
-                        'div',
-                        { className: 'cait-formrow' },
-                        h('button', { className: 'cait-btn cait-btn-primary', type: 'submit', disabled: Boolean(busy) || !termForm.source.trim() || !termForm.target.trim() }, t('panel.saveTerm')),
-                        h('button', { className: 'cait-btn cait-btn-ghost', type: 'button', onClick: () => setShowTermForm(false) }, t('panel.cancel')),
-                      ),
-                    )
-                  : null,
-                h(
-                  'div',
-                  { className: 'cait-search' },
-                  h(Icon, { name: 'search', size: 13 }),
-                  h('input', { value: termQuery, onChange: (event) => setTermQuery(event.target.value), placeholder: t('panel.termSearch'), 'aria-label': t('panel.termSearch') }),
-                ),
-                terms.length
-                  ? terms.map((term) =>
-                      h(
-                        'div',
-                        { key: term.id, className: 'cait-term' },
-                        h(
-                          'div',
-                          { className: 'cait-term-main' },
-                          h('strong', null, term.source),
-                          h(Icon, { name: 'arrowRight', size: 11, className: 'cait-term-arrow' }),
-                          h('span', null, term.target),
-                        ),
-                        term.note ? h('div', { className: 'cait-muted cait-tiny', style: { marginTop: 2 } }, term.note) : null,
-                        h(
-                          'div',
-                          { className: 'cait-term-actions' },
-                          h('button', { className: 'cait-minibtn', onClick: () => onApplyTerm(term) }, t('panel.apply')),
-                          h('button', { className: 'cait-deletebtn', onClick: () => onDeleteTerm(term), title: t('panel.delete') }, h(Icon, { name: 'trash', size: 11 })),
-                        ),
-                      ),
-                    )
-                  : h('p', { className: 'cait-empty-note' }, t('panel.noTerms')),
                 h(
                   'div',
                   { className: 'cait-panel-foot' },
@@ -1298,6 +1412,762 @@
           { className: 'cait-demo-row' },
           h('span', null, t('modal.new.sample')),
           h('button', { className: 'cait-linkbtn', onClick: () => onCreate({ demo: true }), disabled: Boolean(busy) }, t('modal.new.demo')),
+        ),
+      )
+    }
+
+    /**
+     * The library workspace: browse, search, page through, edit and export the
+     * translation memories and glossaries themselves. It deliberately does not
+     * need an open document — the rail and the right panel stay document-scoped
+     * and this page is the only place that manages whole libraries.
+     */
+    function LibraryPage({
+      t,
+      data,
+      settings,
+      busy,
+      notify,
+      report,
+      seed,
+      onApplyState,
+      onConfirm,
+      onCreateLibrary,
+      onRenameLibrary,
+      onDeleteLibrary,
+    }) {
+      const storage = typeof localStorage !== 'undefined' ? localStorage : null
+      const [kind, setKind] = useState(seed?.kind === 'glossary' ? 'glossary' : 'tm')
+      const [scopeIds, setScopeIds] = useState([])
+      const [query, setQuery] = useState(seed?.query || '')
+      const [debouncedQuery, setDebouncedQuery] = useState('')
+      const [lang, setLang] = useState('')
+      const [page, setPage] = useState(1)
+      const [pageSize, setPageSize] = useState(() => readPageSize(storage))
+      const [rows, setRows] = useState(null)
+      const [loading, setLoading] = useState(false)
+      const [working, setWorking] = useState('')
+      const [selectedId, setSelectedId] = useState('')
+      const [draft, setDraft] = useState(null)
+      const [renamingId, setRenamingId] = useState('')
+      const [renameText, setRenameText] = useState('')
+      const [newLibraryName, setNewLibraryName] = useState('')
+      const [adding, setAdding] = useState(false)
+      const [exportFormat, setExportFormat] = useState('tbx')
+      const fileRef = useRef(null)
+      const importMode = useRef('')
+
+      const libraries = (kind === 'tm' ? data?.libraries?.tm : data?.libraries?.glossary) || []
+      const idKey = kind === 'tm' ? 'tmId' : 'glossaryId'
+      const labelKey = 'name'
+      const scopeKey = scopeIds.join(',')
+      const targetLibraryId = scopeIds[0] || (kind === 'tm' ? data?.mounts?.defaultTmId : data?.mounts?.defaultGlossaryId) || libraries[0]?.[idKey] || ''
+
+      useEffect(() => {
+        const timer = setTimeout(() => setDebouncedQuery(query), 250)
+        return () => clearTimeout(timer)
+      }, [query])
+
+      // The panel can jump into the library with its current search text; a
+      // fresh nonce means "apply this seed now" even when the values repeat.
+      useEffect(() => {
+        if (!seed) return
+        setKind(seed.kind === 'glossary' ? 'glossary' : 'tm')
+        setQuery(seed.query || '')
+        setPage(1)
+      }, [seed?.nonce])
+
+      // Switching kind resets the scope: library ids are not interchangeable.
+      useEffect(() => {
+        setScopeIds([])
+        setPage(1)
+        setSelectedId('')
+        setLang('')
+      }, [kind])
+
+      const loadRows = async () => {
+        setLoading(true)
+        try {
+          const params =
+            kind === 'tm'
+              ? { tmIds: scopeIds, query: debouncedQuery, page, pageSize }
+              : { glossaryIds: scopeIds, query: debouncedQuery, page, pageSize }
+          if (lang) params.sourceLang = lang
+          const result = await rpc(kind === 'tm' ? 'listTmEntries' : 'listGlossaryEntries', params)
+          setRows(result)
+          if (result.page !== page) setPage(result.page)
+        } catch (error) {
+          report(error)
+          setRows(null)
+        } finally {
+          setLoading(false)
+        }
+      }
+
+      useEffect(() => {
+        let alive = true
+        const run = async () => {
+          if (!alive) return
+          await loadRows()
+        }
+        run()
+        return () => {
+          alive = false
+        }
+      }, [kind, scopeKey, debouncedQuery, lang, page, pageSize, data?.revision])
+
+      useEffect(() => {
+        const entry = (rows?.entries || []).find((item) => item.id === selectedId)
+        setDraft(entry ? { ...entry } : null)
+      }, [selectedId, rows])
+
+      const dirty =
+        draft &&
+        rows?.entries?.some(
+          (item) =>
+            item.id === draft.id &&
+            (item.source !== draft.source ||
+              item.target !== draft.target ||
+              (item.note || '') !== (draft.note || '') ||
+              Boolean(item.caseSensitive) !== Boolean(draft.caseSensitive)),
+        )
+
+      const selectKind = (next) => setKind(next)
+
+      const toggleScope = (id) => {
+        setPage(1)
+        setScopeIds((current) => (current.includes(id) ? current.filter((item) => item !== id) : [...current, id]))
+      }
+
+      const allLanguages = rows?.languages
+        ? [...new Set([...(rows.languages.source || []), ...(rows.languages.target || [])])].filter(Boolean)
+        : []
+
+      const changePageSize = (value) => {
+        const size = writePageSize(storage, value)
+        setPageSize(size)
+        setPage(1)
+      }
+
+      const saveEntry = async () => {
+        if (!draft) return
+        setWorking('save')
+        try {
+          const result =
+            kind === 'tm'
+              ? await rpc('updateTM', {
+                  id: draft.id,
+                  source: draft.source,
+                  target: draft.target,
+                  note: draft.note,
+                })
+              : await rpc('updateGlossary', {
+                  id: draft.id,
+                  source: draft.source,
+                  target: draft.target,
+                  note: draft.note,
+                  sourceLang: draft.sourceLang,
+                  caseSensitive: Boolean(draft.caseSensitive),
+                })
+          if (result?.state) onApplyState(result.state)
+          notify(t('library.entrySaved'))
+          setAdding(false)
+          await loadRows()
+        } catch (error) {
+          report(error)
+        } finally {
+          setWorking('')
+        }
+      }
+
+      const addEntry = async () => {
+        if (!draft) return
+        setWorking('add')
+        try {
+          const result =
+            kind === 'tm'
+              ? await rpc('addTM', {
+                  source: draft.source,
+                  target: draft.target,
+                  tmId: targetLibraryId,
+                  sourceLang: draft.sourceLang || settings.sourceLang,
+                  targetLang: draft.targetLang || settings.targetLang,
+                })
+              : await rpc('addGlossary', {
+                  source: draft.source,
+                  target: draft.target,
+                  note: draft.note,
+                  glossaryId: targetLibraryId,
+                  sourceLang: draft.sourceLang || '',
+                  caseSensitive: Boolean(draft.caseSensitive),
+                })
+          if (result?.state) onApplyState(result.state)
+          notify(t('library.entryCreated'))
+          setAdding(false)
+          setSelectedId('')
+          await loadRows()
+        } catch (error) {
+          report(error)
+        } finally {
+          setWorking('')
+        }
+      }
+
+      const deleteEntry = () => {
+        if (!draft || adding) return
+        onConfirm({
+          title: t('library.deleteEntry'),
+          message: kind === 'tm' ? t('modal.confirm.deleteTm') : t('library.deleteEntry'),
+          confirmLabel: t('library.deleteEntry'),
+          action: async () => {
+            const result = await rpc(kind === 'tm' ? 'deleteTM' : 'deleteGlossary', { id: draft.id })
+            if (result?.state) onApplyState(result.state)
+            setSelectedId('')
+            notify(t('library.entryDeleted'))
+            await loadRows()
+          },
+        })
+      }
+
+      const clearLibrary = () => {
+        if (!targetLibraryId) return
+        onConfirm({
+          title: t('library.clear'),
+          message: t('modal.confirm.clearTm'),
+          confirmLabel: t('library.clear'),
+          action: async () => {
+            const result =
+              kind === 'tm'
+                ? await rpc('clearTM', { tmIds: [targetLibraryId], confirm: true })
+                : await rpc('clearGlossary', { glossaryIds: [targetLibraryId], confirm: true })
+            if (result?.state) onApplyState(result.state)
+            setSelectedId('')
+            await loadRows()
+          },
+        })
+      }
+
+      const exportLibrary = async () => {
+        if (!targetLibraryId) return
+        setWorking('export')
+        try {
+          const result =
+            kind === 'tm'
+              ? await rpc('exportTM', { tmId: targetLibraryId, format: 'tmx' })
+              : await rpc('exportGlossary', { glossaryId: targetLibraryId, format: exportFormat })
+          downloadFile(result.filename, result.content, result.mime)
+          notify(t('library.exported'))
+        } catch (error) {
+          report(error)
+        } finally {
+          setWorking('')
+        }
+      }
+
+      const pickImport = (mode) => {
+        importMode.current = mode
+        if (fileRef.current) {
+          fileRef.current.value = ''
+          fileRef.current.click()
+        }
+      }
+
+      const runImport = async (file) => {
+        if (!file || !targetLibraryId) return
+        setWorking('import')
+        try {
+          const text = await file.text()
+          if (importMode.current === 'glossary') {
+            const result = await rpc('importGlossary', { text, glossaryId: targetLibraryId })
+            if (result?.state) onApplyState(result.state)
+            notify(`${t('toast.glossaryImported')} · +${result.added} / ~${result.updated}`)
+          } else {
+            const result = await rpc('importTmx', {
+              text,
+              importAs: 'tm',
+              tmId: targetLibraryId,
+              sourceLang: kind === 'tm' ? undefined : settings.sourceLang,
+              targetLang: settings.targetLang,
+            })
+            if (result?.state) onApplyState(result.state)
+            notify(`${t('toast.tmImported')} · +${result.added} / ~${result.updated}`)
+          }
+          await loadRows()
+        } catch (error) {
+          report(error)
+        } finally {
+          setWorking('')
+        }
+      }
+
+      const submitRename = async (library) => {
+        const name = renameText.trim()
+        setRenamingId('')
+        if (!name || name === library[labelKey]) return
+        await onRenameLibrary({ kind, id: library[idKey], name })
+      }
+
+      const submitNewLibrary = async () => {
+        const name = newLibraryName.trim()
+        if (!name) return
+        const ok = await onCreateLibrary({ kind, name })
+        if (ok) setNewLibraryName('')
+      }
+
+      const confirmDeleteLibrary = (library) => {
+        if (libraries.length <= 1) return
+        onConfirm({
+          title: t('library.deleteLibrary'),
+          message: t('library.deleteLibraryMessage', { name: library[labelKey] }),
+          confirmLabel: t('library.deleteLibrary'),
+          action: async () => {
+            await onDeleteLibrary({ kind, id: library[idKey], name: library[labelKey] })
+            if (scopeIds.includes(library[idKey])) {
+              setScopeIds((current) => current.filter((item) => item !== library[idKey]))
+            }
+          },
+        })
+      }
+
+      const startAdding = () => {
+        setAdding(true)
+        setSelectedId('')
+        setDraft(
+          kind === 'tm'
+            ? {
+                id: '',
+                source: '',
+                target: '',
+                note: '',
+                sourceLang: settings.sourceLang,
+                targetLang: settings.targetLang,
+              }
+            : { id: '', source: '', target: '', note: '', sourceLang: settings.sourceLang, caseSensitive: false },
+        )
+      }
+
+      const bounds = pageBounds(rows?.page || 1, rows?.total || 0, rows?.pageSize || pageSize)
+      const columns = kind === 'tm'
+        ? [t('library.colSource'), t('library.colTarget'), t('library.colNote'), t('library.colLang'), t('library.colUpdated')]
+        : [t('library.colSource'), t('library.colTarget'), t('library.colNote'), t('library.colLang'), t('library.colCase'), t('library.colUpdated')]
+
+      return h(
+        'div',
+        { className: 'cait-libpage' },
+        h(
+          'div',
+          { className: 'cait-libpage-head' },
+          h(
+            'div',
+            { className: 'cait-libtabs' },
+            h(
+              'button',
+              { className: `cait-libtabs-item${kind === 'tm' ? ' active' : ''}`, onClick: () => selectKind('tm') },
+              t('library.tmTab'),
+              h('span', { className: 'cait-libtabs-count' }, data?.libraries?.tm?.length || 0),
+            ),
+            h(
+              'button',
+              { className: `cait-libtabs-item${kind === 'glossary' ? ' active' : ''}`, onClick: () => selectKind('glossary') },
+              t('library.glossaryTab'),
+              h('span', { className: 'cait-libtabs-count' }, data?.libraries?.glossary?.length || 0),
+            ),
+          ),
+          h('span', { className: 'cait-libhint' }, t('library.noDocHint')),
+        ),
+        h(
+          'div',
+          { className: 'cait-libpage-body' },
+          h(
+            'div',
+            { className: 'cait-liblist' },
+            h(
+              'div',
+              { className: 'cait-liblist-head' },
+              t('library.title'),
+            ),
+            libraries.map((library) =>
+              h(
+                'div',
+                { key: library[idKey], className: `cait-librow${scopeIds.includes(library[idKey]) ? ' scoped' : ''}` },
+                h('input', {
+                  type: 'checkbox',
+                  checked: scopeIds.includes(library[idKey]),
+                  onChange: () => toggleScope(library[idKey]),
+                  title: t('library.scope'),
+                  'aria-label': t('library.scope'),
+                }),
+                renamingId === library[idKey]
+                  ? h('input', {
+                      className: 'cait-librename',
+                      value: renameText,
+                      autoFocus: true,
+                      onChange: (event) => setRenameText(event.target.value),
+                      onKeyDown: (event) => {
+                        if (event.key === 'Enter') submitRename(library)
+                        if (event.key === 'Escape') setRenamingId('')
+                      },
+                      onBlur: () => submitRename(library),
+                    })
+                  : h(
+                      'button',
+                      {
+                        type: 'button',
+                        className: 'cait-libname',
+                        onClick: () => toggleScope(library[idKey]),
+                        title: library[labelKey],
+                      },
+                      h('span', { className: 'cait-libname-text' }, library[labelKey]),
+                      h('span', { className: 'cait-libcount' }, library.entryCount),
+                      library.mounted ? h('span', { className: 'cait-libmounted' }, '●') : null,
+                    ),
+                h(
+                  'span',
+                  { className: 'cait-libactions' },
+                  h(
+                    'button',
+                    {
+                      type: 'button',
+                      className: 'cait-minibtn',
+                      title: t('library.rename'),
+                      onClick: () => {
+                        setRenamingId(library[idKey])
+                        setRenameText(library[labelKey])
+                      },
+                    },
+                    h(Icon, { name: 'pencil', size: 12 }),
+                  ),
+                  h(
+                    'button',
+                    {
+                      type: 'button',
+                      className: 'cait-deletebtn',
+                      title: t('library.deleteLibrary'),
+                      disabled: libraries.length <= 1,
+                      onClick: () => confirmDeleteLibrary(library),
+                    },
+                    h(Icon, { name: 'trash', size: 12 }),
+                  ),
+                ),
+              ),
+            ),
+            h(
+              'div',
+              { className: 'cait-libnew' },
+              h('input', {
+                value: newLibraryName,
+                placeholder: t('library.newLibrary'),
+                onChange: (event) => setNewLibraryName(event.target.value),
+                onKeyDown: (event) => {
+                  if (event.key === 'Enter') submitNewLibrary()
+                },
+              }),
+              h(
+                'button',
+                { type: 'button', className: 'cait-minibtn', onClick: submitNewLibrary, disabled: !newLibraryName.trim() },
+                h(Icon, { name: 'plus', size: 12 }),
+              ),
+            ),
+          ),
+          h(
+            'div',
+            { className: 'cait-libmain' },
+            h(
+              'div',
+              { className: 'cait-libtoolbar' },
+              h(
+                'div',
+                { className: 'cait-libsearch' },
+                h(Icon, { name: 'search', size: 13 }),
+                h('input', {
+                  value: query,
+                  onChange: (event) => {
+                    setQuery(event.target.value)
+                    setPage(1)
+                  },
+                  placeholder: t('library.search'),
+                  'aria-label': t('library.search'),
+                }),
+              ),
+              h(
+                'select',
+                {
+                  className: 'cait-liblang',
+                  value: lang,
+                  onChange: (event) => {
+                    setLang(event.target.value)
+                    setPage(1)
+                  },
+                  title: t('library.language'),
+                  'aria-label': t('library.language'),
+                },
+                h('option', { value: '' }, t('library.language')),
+                allLanguages.map((code) => h('option', { key: code, value: code }, code)),
+              ),
+              kind === 'glossary'
+                ? h(
+                    'select',
+                    {
+                      className: 'cait-liblang',
+                      value: exportFormat,
+                      onChange: (event) => setExportFormat(event.target.value),
+                      title: t('library.exportFormat'),
+                      'aria-label': t('library.exportFormat'),
+                    },
+                    ['tbx', 'csv', 'json'].map((format) => h('option', { key: format, value: format }, format.toUpperCase())),
+                  )
+                : null,
+              h(
+                'button',
+                { type: 'button', className: 'cait-btn', onClick: startAdding, disabled: Boolean(busy) },
+                h(Icon, { name: 'plus', size: 13 }),
+                h('span', { className: 'cait-btn-label' }, t('library.add')),
+              ),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'cait-btn',
+                  onClick: () => pickImport(kind),
+                  disabled: Boolean(busy) || !targetLibraryId,
+                  title: t('library.import'),
+                },
+                h(Icon, { name: 'upload', size: 13 }),
+                h('span', { className: 'cait-btn-label' }, t('library.import')),
+              ),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'cait-btn',
+                  onClick: exportLibrary,
+                  disabled: Boolean(busy) || working === 'export' || !targetLibraryId,
+                  title: t('library.export'),
+                },
+                h(Icon, { name: 'download', size: 13 }),
+                h('span', { className: 'cait-btn-label' }, kind === 'tm' ? 'TMX' : exportFormat.toUpperCase()),
+              ),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'cait-btn',
+                  onClick: clearLibrary,
+                  disabled: Boolean(busy) || !targetLibraryId,
+                  title: t('library.clear'),
+                },
+                h(Icon, { name: 'trash', size: 13 }),
+              ),
+              h('input', {
+                ref: fileRef,
+                type: 'file',
+                accept: kind === 'tm' ? '.tmx' : '.tbx,.csv,.json',
+                style: { display: 'none' },
+                onChange: (event) => {
+                  const file = event.target.files && event.target.files[0]
+                  if (file) runImport(file)
+                },
+              }),
+            ),
+            h(
+              'div',
+              { className: 'cait-libscope' },
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: `cait-filterchip${scopeIds.length === 0 ? ' active' : ''}`,
+                  onClick: () => {
+                    setScopeIds([])
+                    setPage(1)
+                  },
+                },
+                t('library.scopeAll'),
+              ),
+              libraries.map((library) =>
+                h(
+                  'button',
+                  {
+                    key: library[idKey],
+                    type: 'button',
+                    className: `cait-filterchip${scopeIds.includes(library[idKey]) ? ' active' : ''}`,
+                    onClick: () => toggleScope(library[idKey]),
+                  },
+                  library[labelKey],
+                ),
+              ),
+            ),
+            h(
+              'div',
+              { className: 'cait-libtable-wrap' },
+              loading && !rows?.entries?.length
+                ? h('div', { className: 'cait-center' }, h(Spinner), t('common.loading'))
+                : rows?.entries?.length
+                  ? h(
+                      'table',
+                      { className: 'cait-libtable' },
+                      h('thead', null, h('tr', null, columns.map((column) => h('th', { key: column }, column)))),
+                      h(
+                        'tbody',
+                        null,
+                        rows.entries.map((entry) =>
+                          h(
+                            'tr',
+                            {
+                              key: entry.id,
+                              className: entry.id === selectedId ? 'active' : '',
+                              onClick: () => {
+                                setAdding(false)
+                                setSelectedId(entry.id)
+                              },
+                            },
+                            h('td', { className: 'src', title: entry.source }, entry.source),
+                            h('td', { className: 'tgt', title: entry.target }, entry.target),
+                            h('td', { className: 'note' }, entry.note || ''),
+                            h(
+                              'td',
+                              { className: 'lang' },
+                              kind === 'tm' ? `${entry.sourceLang} → ${entry.targetLang}` : entry.sourceLang || '—',
+                            ),
+                            kind === 'glossary'
+                              ? h('td', { className: 'case' }, entry.caseSensitive ? '✓' : '')
+                              : null,
+                            h('td', { className: 'upd' }, String(entry.updatedAt || '').slice(0, 10)),
+                          ),
+                        ),
+                      ),
+                    )
+                  : h('div', { className: 'cait-empty-note' }, query || lang ? t('library.noMatch') : t('library.empty')),
+            ),
+            h(
+              'div',
+              { className: 'cait-rail-page cait-libpage-bar' },
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'cait-pagebtn',
+                  onClick: () => setPage(Math.max(1, (rows?.page || 1) - 1)),
+                  disabled: (rows?.page || 1) <= 1,
+                  title: t('library.prev'),
+                  'aria-label': t('library.prev'),
+                },
+                h(Icon, { name: 'chevronLeft', size: 12 }),
+              ),
+              h('span', { className: 'cait-pageinfo' }, t('library.pageInfo', { start: bounds.start, end: bounds.end, total: bounds.total })),
+              h(
+                'button',
+                {
+                  type: 'button',
+                  className: 'cait-pagebtn',
+                  onClick: () => setPage((rows?.page || 1) + 1),
+                  disabled: (rows?.page || 1) >= (rows?.totalPages || 1),
+                  title: t('library.next'),
+                  'aria-label': t('library.next'),
+                },
+                h(Icon, { name: 'chevronRight', size: 12 }),
+              ),
+              h(
+                'select',
+                {
+                  className: 'cait-pagesize',
+                  value: String(pageSize),
+                  onChange: (event) => changePageSize(Number(event.target.value)),
+                  title: t('library.pageSize'),
+                  'aria-label': t('library.pageSize'),
+                },
+                PAGE_SIZE_OPTIONS.map((size) => h('option', { key: size, value: String(size) }, String(size))),
+              ),
+            ),
+          ),
+          h(
+            'aside',
+            { className: 'cait-libdetail' },
+            h('div', { className: 'cait-libdetail-title' }, t('library.detail')),
+            draft
+              ? h(
+                  'div',
+                  { className: 'cait-libform' },
+                  h('label', null, t('library.colSource')),
+                  h('textarea', {
+                    className: 'cait-libinput',
+                    value: draft.source,
+                    onChange: (event) => setDraft({ ...draft, source: event.target.value }),
+                  }),
+                  h('label', null, t('library.colTarget')),
+                  h('textarea', {
+                    className: 'cait-libinput',
+                    value: draft.target,
+                    onChange: (event) => setDraft({ ...draft, target: event.target.value }),
+                  }),
+                  h('label', null, t('library.colNote')),
+                  h('input', {
+                    className: 'cait-libinput',
+                    value: draft.note || '',
+                    onChange: (event) => setDraft({ ...draft, note: event.target.value }),
+                  }),
+                  h('label', null, t('library.colLang')),
+                  h('input', {
+                    className: 'cait-libinput',
+                    value: draft.sourceLang || '',
+                    disabled: adding,
+                    onChange: (event) => setDraft({ ...draft, sourceLang: event.target.value }),
+                  }),
+                  kind === 'glossary'
+                    ? h(
+                        'label',
+                        { className: 'cait-libcheck' },
+                        h('input', {
+                          type: 'checkbox',
+                          checked: Boolean(draft.caseSensitive),
+                          onChange: (event) => setDraft({ ...draft, caseSensitive: event.target.checked }),
+                        }),
+                        h('span', null, t('library.colCase')),
+                      )
+                    : null,
+                  kind === 'glossary' ? h('p', { className: 'cait-libnote' }, t('library.caseSensitiveHint')) : null,
+                  h(
+                    'div',
+                    { className: 'cait-libform-actions' },
+                    h(
+                      'button',
+                      {
+                        type: 'button',
+                        className: 'cait-btn cait-btn-primary',
+                        onClick: adding ? addEntry : saveEntry,
+                        disabled: Boolean(busy) || working !== '' || !draft.source.trim() || !draft.target.trim(),
+                      },
+                      adding ? t('library.add') : t('library.save'),
+                    ),
+                    adding
+                      ? h(
+                          'button',
+                          {
+                            type: 'button',
+                            className: 'cait-btn',
+                            onClick: () => {
+                              setAdding(false)
+                              setDraft(null)
+                            },
+                          },
+                          t('panel.cancel'),
+                        )
+                      : h(
+                          'button',
+                          {
+                            type: 'button',
+                            className: 'cait-btn',
+                            onClick: deleteEntry,
+                            disabled: Boolean(busy) || working !== '',
+                          },
+                          h(Icon, { name: 'trash', size: 13 }),
+                          t('library.deleteEntry'),
+                        ),
+                  ),
+                  dirty ? h('p', { className: 'cait-libnote' }, t('editor.unsaved')) : null,
+                )
+              : h('div', { className: 'cait-empty-note' }, t('library.detailEmpty')),
+          ),
         ),
       )
     }
@@ -1619,206 +2489,6 @@
       )
     }
 
-    function LibrariesModal({ t, data, busy, onClose, onSetMounts, onCreate, onRename, onDeleteLibrary }) {
-      const libraries = data.libraries || { tm: [], glossary: [] }
-      const mounts = data.mounts || {
-        tmIds: [],
-        glossaryIds: [],
-        defaultTmId: '',
-        defaultGlossaryId: '',
-      }
-      const [tmName, setTmName] = useState('')
-      const [glossaryName, setGlossaryName] = useState('')
-      const [editing, setEditing] = useState(null)
-      const [editName, setEditName] = useState('')
-
-      const startRename = (kind, id, name) => {
-        setEditing({ kind, id })
-        setEditName(name)
-      }
-
-      const submitRename = async () => {
-        if (!editing || !editName.trim()) return
-        const ok = await onRename({ kind: editing.kind, id: editing.id, name: editName.trim() })
-        if (ok) setEditing(null)
-      }
-
-      const toggle = (kind, id, checked) => {
-        const current = kind === 'tm' ? mounts.tmIds : mounts.glossaryIds
-        const next = computeNextMountIds(current, id, checked)
-        if (!next) return
-        onSetMounts(kind === 'tm' ? { tmIds: next } : { glossaryIds: next })
-      }
-
-      const create = async (kind, name, reset) => {
-        if (!name.trim()) return
-        const ok = await onCreate({ kind, name: name.trim() })
-        if (ok) reset('')
-      }
-
-      const section = (kind, title, list, defaultId, ids) =>
-        h(
-          'div',
-          { className: 'cait-libsection' },
-          h(
-            'div',
-            { className: 'cait-libhead' },
-            h('h4', { className: 'cait-settings-title' }, title),
-            h('span', { className: 'cait-count' }, `${ids.length}/${list.length}`),
-          ),
-          list.length
-            ? list.map((library) => {
-                const id = kind === 'tm' ? library.tmId : library.glossaryId
-                const mounted = ids.includes(id)
-                return h(
-                  'div',
-                  { className: 'cait-librow', key: id },
-                  h(
-                    'label',
-                    { className: 'cait-libcheck' },
-                    h('input', {
-                      type: 'checkbox',
-                      checked: mounted,
-                      disabled: isMountToggleDisabled({
-                        mounted,
-                        mountedCount: ids.length,
-                        busy: Boolean(busy),
-                      }),
-                      onChange: (event) => toggle(kind, id, event.target.checked),
-                    }),
-                    h(
-                      'span',
-                      { className: 'cait-libmeta' },
-                      editing && editing.kind === kind && editing.id === id
-                        ? h('input', {
-                            className: 'cait-input cait-librename',
-                            value: editName,
-                            autoFocus: true,
-                            disabled: Boolean(busy),
-                            onChange: (event) => setEditName(event.target.value),
-                            onKeyDown: (event) => {
-                              if (event.key === 'Enter') {
-                                event.preventDefault()
-                                submitRename()
-                              }
-                              if (event.key === 'Escape') setEditing(null)
-                            },
-                          })
-                        : h('strong', null, library.name),
-                      h(
-                        'small',
-                        null,
-                        `${library.entryCount || 0} ${t('libraries.entries')}${
-                          library.mounted ? '' : ` · ${t('libraries.notMounted')}`
-                        }`,
-                      ),
-                    ),
-                  ),
-                  h(
-                    'div',
-                    { className: 'cait-libactions' },
-                    editing && editing.kind === kind && editing.id === id
-                      ? h(
-                          'span',
-                          { className: 'cait-formrow' },
-                          h(
-                            'button',
-                            {
-                              className: 'cait-minibtn',
-                              onClick: submitRename,
-                              disabled: Boolean(busy) || !editName.trim(),
-                            },
-                            t('libraries.save'),
-                          ),
-                          h('button', { className: 'cait-minibtn', onClick: () => setEditing(null) }, t('panel.cancel')),
-                        )
-                      : h(
-                          'button',
-                          {
-                            className: 'cait-deletebtn',
-                            onClick: () => startRename(kind, id, library.name),
-                            disabled: Boolean(busy),
-                            title: t('libraries.rename'),
-                          },
-                          h(Icon, { name: 'pencil', size: 11 }),
-                        ),
-                    h(
-                      'button',
-                      {
-                        className: 'cait-deletebtn',
-                        onClick: () => onDeleteLibrary({ kind, id, name: library.name }),
-                        disabled: Boolean(busy) || list.length <= 1,
-                        title: t('libraries.delete'),
-                      },
-                      h(Icon, { name: 'trash', size: 11 }),
-                    ),
-                  ),
-                  h(
-                    'label',
-                    { className: 'cait-libdefault' },
-                    h('input', {
-                      type: 'radio',
-                      name: `cait-default-${kind}`,
-                      checked: defaultId === id,
-                      disabled: Boolean(busy) || !mounted,
-                      onChange: () =>
-                        onSetMounts(
-                          kind === 'tm'
-                            ? { defaultTmId: id }
-                            : { defaultGlossaryId: id },
-                        ),
-                    }),
-                    t(kind === 'tm' ? 'libraries.defaultTm' : 'libraries.defaultGlossary'),
-                  ),
-                )
-              })
-            : h('p', { className: 'cait-empty-note' }, t('libraries.empty')),
-          h(
-            'form',
-            {
-              className: 'cait-libcreate',
-              onSubmit: (event) => {
-                event.preventDefault()
-                create(kind, kind === 'tm' ? tmName : glossaryName, kind === 'tm' ? setTmName : setGlossaryName)
-              },
-            },
-            h('input', {
-              className: 'cait-input',
-              value: kind === 'tm' ? tmName : glossaryName,
-              onChange: (event) =>
-                kind === 'tm' ? setTmName(event.target.value) : setGlossaryName(event.target.value),
-              placeholder: t('libraries.namePlaceholder'),
-              disabled: Boolean(busy),
-            }),
-            h(
-              'button',
-              { className: 'cait-btn', type: 'submit', disabled: Boolean(busy) },
-              h(Icon, { name: 'plus', size: 12 }),
-              t('libraries.create'),
-            ),
-          ),
-        )
-
-      return h(
-        Modal,
-        { title: t('libraries.title'), onClose, wide: true },
-        h('p', { className: 'cait-mt-hint', style: { marginTop: 0 } }, t('libraries.desc')),
-        section('tm', t('libraries.tm'), libraries.tm, mounts.defaultTmId, mounts.tmIds),
-        section(
-          'glossary',
-          t('libraries.glossary'),
-          libraries.glossary,
-          mounts.defaultGlossaryId,
-          mounts.glossaryIds,
-        ),
-        h(
-          'div',
-          { className: 'cait-modal-actions' },
-          h('button', { className: 'cait-btn cait-btn-primary', onClick: onClose }, t('libraries.done')),
-        ),
-      )
-    }
-
     function ConfirmModal({ t, state, busy, onClose, onConfirm }) {
       return h(
         Modal,
@@ -1872,6 +2542,16 @@
       const [tab, setTab] = useState('tm')
       const [railQuery, setRailQuery] = useState('')
       const [railFilter, setRailFilter] = useState('all')
+      // Two top-level workspaces: the translator's document and the library
+      // manager. The latter needs no document, so it must not be a modal.
+      const [view, setView] = useState('documents')
+      // A seed carries the panel's search text into the library workspace.
+      const [libSeed, setLibSeed] = useState(null)
+
+      const openLibrary = (kind, query) => {
+        setLibSeed({ kind: kind === 'glossary' ? 'glossary' : 'tm', query: query || '', nonce: Date.now() })
+        setView('libraries')
+      }
       const [pre, setPre] = useState({ running: false, done: 0, total: 0, filled: 0, failed: 0 })
       const [qa, setQa] = useState(null)
       const [tmQuery, setTmQuery] = useState('')
@@ -2792,9 +3472,28 @@
           pre,
           onPreTranslate: runPreTranslate,
           onCancelPreTranslate: cancelPreTranslate,
+          view,
+          onView: setView,
         }),
         h(SaveBanner, { t, storage: data?.storage, stale, onRefresh: refreshState }),
-        h(
+        view === 'libraries'
+          ? h(LibraryPage, {
+              t,
+              data,
+              settings,
+              busy,
+              notify,
+              report,
+              seed: libSeed,
+              onApplyState: (state) => setData(state),
+              onConfirm: openConfirm,
+              onCreateLibrary: createLibrary,
+              onRenameLibrary: renameLibrary,
+              onDeleteLibrary: deleteLibrary,
+            })
+          : null,
+        view === 'documents'
+          ? h(
           'div',
           { className: `cait-body${doc ? '' : ' cait-no-doc'}` },
           doc ? h(SegmentRail, { t, doc, selected: index, query: railQuery, setQuery: setRailQuery, filter: railFilter, setFilter: setRailFilter, onSelect: chooseSegment, onConfirmAll: confirmAllTranslated, busy, qa }) : null,
@@ -2860,12 +3559,13 @@
                   },
                   onCopy: copy,
                   onOpenSettings: () => setModal({ type: 'settings' }),
-                  onOpenLibraries: () => setModal({ type: 'libraries' }),
+                  onSearchLibrary: openLibrary,
                   busy,
                 })
               : null,
           ),
-        ),
+        )
+          : null,
         modal?.type === 'new'
           ? h(NewDocModal, {
               t,
@@ -2881,18 +3581,6 @@
           : null,
         modal?.type === 'settings'
           ? h(SettingsModal, { t, settings, mtRoutes, busy, onClose: () => setModal(null), onSave: saveSettings })
-          : null,
-        modal?.type === 'libraries'
-          ? h(LibrariesModal, {
-              t,
-              data,
-              busy,
-              onClose: () => setModal(null),
-              onSetMounts: setMounts,
-              onCreate: createLibrary,
-              onRename: renameLibrary,
-              onDeleteLibrary: deleteLibrary,
-            })
           : null,
         modal?.type === 'recent'
           ? h(RecentDocsModal, {

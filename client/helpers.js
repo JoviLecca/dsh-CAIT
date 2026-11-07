@@ -123,3 +123,84 @@
       if (explicit === 'dark') return 'dark'
       return 'light'
     }
+
+    // --- paging -------------------------------------------------------------
+    // Both the segment rail and the library page page through server-side
+    // windows, so the arithmetic lives here: one place to clamp, one place to
+    // validate a typed segment number, one place to remember the page size.
+    const PAGE_SIZE_OPTIONS = [20, 50, 100, 200]
+    const PAGE_SIZE_DEFAULT = 50
+    const PAGE_SIZE_STORAGE_KEY = 'cait:pageSize'
+
+    function normalizePageSize(value) {
+      // A missing setting arrives as null (localStorage) or undefined, and
+      // Number(null) is 0, which would snap to the smallest page instead of the
+      // documented default.
+      if (value === null || value === undefined || value === '') return PAGE_SIZE_DEFAULT
+      const size = Number(value)
+      if (!Number.isFinite(size)) return PAGE_SIZE_DEFAULT
+      let best = PAGE_SIZE_OPTIONS[0]
+      let bestGap = Infinity
+      for (const option of PAGE_SIZE_OPTIONS) {
+        const gap = Math.abs(option - size)
+        if (gap < bestGap) {
+          best = option
+          bestGap = gap
+        }
+      }
+      return best
+    }
+
+    function readPageSize(storage) {
+      try {
+        return normalizePageSize(storage?.getItem?.(PAGE_SIZE_STORAGE_KEY))
+      } catch {
+        return PAGE_SIZE_DEFAULT
+      }
+    }
+
+    function writePageSize(storage, value) {
+      const size = normalizePageSize(value)
+      try {
+        storage?.setItem?.(PAGE_SIZE_STORAGE_KEY, String(size))
+      } catch {
+        // A blocked storage must not break paging; the in-memory value wins.
+      }
+      return size
+    }
+
+    function pageCount(total, pageSize) {
+      const size = normalizePageSize(pageSize)
+      const count = Number(total)
+      if (!Number.isFinite(count) || count <= 0) return 1
+      return Math.max(1, Math.ceil(count / size))
+    }
+
+    function clampPage(page, total, pageSize) {
+      const last = pageCount(total, pageSize)
+      const wanted = Number(page)
+      if (!Number.isFinite(wanted)) return 1
+      return Math.min(last, Math.max(1, Math.trunc(wanted)))
+    }
+
+    // Returns 1-based inclusive bounds plus the row count, so callers can print
+    // "x–y of n" without repeating the arithmetic.
+    function pageBounds(page, total, pageSize) {
+      const size = normalizePageSize(pageSize)
+      const count = Math.max(0, Number(total) || 0)
+      const current = clampPage(page, count, size)
+      const start = count === 0 ? 0 : (current - 1) * size + 1
+      const end = Math.min(count, current * size)
+      return { page: current, pageSize: size, start, end, total: count, pages: pageCount(count, size) }
+    }
+
+    // A translator types "42" meaning segment 42, so the input is 1-based; the
+    // return value is the 0-based index the store uses.
+    function segmentNumberToIndex(value, total) {
+      const text = String(value ?? '').trim()
+      if (!/^\d+$/.test(text)) return null
+      const number = Number(text)
+      const count = Number(total)
+      if (!Number.isFinite(count) || number < 1 || number > count) return null
+      return number - 1
+    }
