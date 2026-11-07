@@ -1,8 +1,8 @@
 # CAIT 1.1.2 需求：上下文感知的翻译记忆
 
-> 状态：**草案，未开发**
+> 状态：**已实现（2026-11-07）**
 > 基线：`v1.1.1`（`b7aa4e1`）
-> 目标版本：`1.1.2`
+> 目标版本：`1.1.2`（已发布）
 > 关联：`docs/REQUIREMENTS-1.1.1.md`（库管理，已实现）
 
 ## 一、为什么做
@@ -190,3 +190,17 @@ function contextOf(doc, index) {
 - 改写中文文件只用 `edit` / `write`，不要用 `Set-Content`（会写成 ANSI 并损坏文件）。
 - 因此 1.1.2 不需要改这个字符串；若想留一道防线，可以在 1.1.2 的测试里断言
   `lib/tmx.js` 的这条 message 含「内联占位符」等关键片段即可，不必再做编码转换。
+
+## 十一、实现记录
+
+- 指纹集中在新增的 `lib/context.js`：`normalizeContext` 存的是**规范化后的**相邻源文
+  （小写、压空白），`contextHashOf` 为 FNV-1a 32 位十六进制；加载存档时按 context
+  重新算 hash，不信任文件里的值。
+- 匹配阈值与排序：`lookupTM` 里 `scoreFloor` 对 ICE 不生效（`item.ice || item.score >= floor`），
+  输出新增 `contextMatch: 'ice' | null`，`percent` 在 ICE 时为 `101`。
+- 预翻译的 `tmEntryForSegment` 在同 key 有多个变种时先看 hash，再看通用条目，最后回落
+  `latest`；`cat_pre_translate` 的文本输出补了 `(N context matches)`。
+- 库页面新增「上下文」列（TM 页签），匹配卡在原文下方显示 `上文 … · 下文 …`。
+- 未做（与需求一致）：旧条目不回填、界面不能手工编辑上下文、术语没有上下文层。
+- 回归：新增 `_dev/test-tm-context.mjs`（10 节），共 25 个套件全绿；存档版本 4，
+  v1–v3 存档读入后条目 `context` 为 null，行为与 1.1.1 相同。

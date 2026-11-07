@@ -4,6 +4,36 @@ All notable changes to CAIT are documented here. The project follows
 [Semantic Versioning](https://semver.org/) and the format is based on
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.1.2] - 2026-11-07
+
+Context-aware translation memory: the same sentence can now keep one
+translation per surrounding text, and an exact context match scores 101%.
+
+### Added
+
+- **Context matches (ICE).** Every confirmation stores the two neighbouring
+  source segments with the entry, hashed into `contextHash`. When a segment is
+  looked up with the same neighbours, it scores **101%** and is graded
+  `context`; a text match with different neighbours stays at 100%. Covered in
+  the review panel by a 101% badge and a `previous · next` line under the source.
+- **Pre-translation uses context.** The block loop resolves ICE first, falls back
+  to the generic entry, then to machine translation, and each filled segment
+  reports `ice: true`, which `cat_pre_translate` summarises.
+- **Library context column.** The library workspace shows each TM entry's
+  neighbouring text, so variants of one source can be told apart.
+
+### Changed
+
+- Translation memory is keyed by `(library, language pair, normalised source,
+  contextHash)` instead of the source alone. `addTM` / `importTM` without a
+  context write the generic variant; confirming a segment writes its variant.
+- Each key keeps at most 8 context variants; the oldest is evicted (the
+  generic entry never is).
+- TMX export writes `<prop type="x-context">` and import reads it back, so
+  context survives a round-trip; TMX import now dedupes by key **and** context.
+- Store version 4. Version 1–3 stores load unchanged: entries get a null
+  context, which behaves exactly like before.
+
 ## [1.1.1] - 2026-11-07
 
 A library workspace that works without a document open.

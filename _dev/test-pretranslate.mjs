@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CatStore } from '../lib/store.js'
 import { PRETRANSLATE_BLOCK_MAX } from '../lib/pre-translate.js'
+import { STORE_VERSION } from '../lib/store-utils.js'
 
 const silent = { log() {}, warn() {}, error() {} }
 const roots = []
@@ -150,7 +151,7 @@ try {
     await store.preTranslate({ documentId: document.id, from: 0, count: 2 })
 
     const raw = JSON.parse(readFileSync(join(dataDir, 'store.json'), 'utf8'))
-    assert.equal(raw.version, 3)
+    assert.equal(raw.version, STORE_VERSION)
     const segment = raw.documents.find((item) => item.id === document.id).segments[0]
     assert.equal(segment.target, 'MT(Disk one.)')
     assert.equal(segment.origin, 'mt')

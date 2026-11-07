@@ -34,7 +34,7 @@ translated document.
 | | |
 |---|---|
 | **Native to DSH** | A real sidebar panel, a main workbench, DSH theme tokens, and the same store for humans and agents. No iframe, no separate app. |
-| **TM that explains itself** | Multiple TM libraries, mounted-only lookup, exact / near-exact / high / medium / low fuzzy grades, and automatic write-back on confirm. |
+| **TM that explains itself** | Multiple TM libraries, mounted-only lookup, 101% context (ICE) matches, exact / near-exact / high / medium / low fuzzy grades, and automatic write-back on confirm. |
 | **Glossary-aware editing** | Multiple term bases, source-language filtering, inline highlighting, click-to-insert terms, and per-term case sensitivity. |
 | **A document workflow** | Tabs, close/reopen, recent-document cleanup, duplicate-import reuse, and progress per document. |
 | **Real format coverage** | TXT, Markdown, DOCX, EPUB, TMX, CSV, SRT/VTT, PO, XLIFF 1.2/2.0/SDLXLIFF, HTML, JSON, XLSX, PPTX, and RTF. |
@@ -60,6 +60,10 @@ manual reload.
 ### Translation memory
 
 - Multiple TM libraries with id, name, mount state, and a default write library.
+- **Context match (ICE) at 101%.** Each confirmation records the two neighbouring
+  source sentences. A later segment with the same neighbours scores 101% and is
+  graded `context`; identical text with different neighbours stays at 100%. A key
+  keeps up to 8 context variants and always keeps the context-free one.
 - Exact, near-exact, and three fuzzy bands:
   - `near_exact` compares a key that ignores digits, punctuation, and whitespace;
     it does not depend on a score cutoff.
@@ -74,7 +78,8 @@ manual reload.
   `bootstrap().tm.count` is the mounted count and `bootstrap().tm.total` is the
   all-library count. Use `cat_lookup_tm` or the library modal for full data.
 - TMX 1.4 `<tu>/<tuv>/<seg>` import/export. Inline TMX placeholders are flattened
-  to plain text with an explicit warning.
+  to plain text with an explicit warning. Context travels as
+  `<prop type="x-context">`, so a CAIT round-trip keeps 101% matches.
 
 ### Glossary
 
@@ -179,7 +184,7 @@ provider/model/code/status; the client receives only `MT_PROVIDER_FAILED`.
 | CSV | ✅ | ✅ | Comma, semicolon, tab, or pipe delimiter auto-detected; source/target column by header name or 1-based number; existing bilingual export |
 | DOCX | ✅ | ✅ | Body paragraphs; table blocks are excluded from import. Export patches the original package, keeping styles, numbering, images, headers, tables, and layout. |
 | EPUB | ✅ | ✅ | EPUB 3 spine order; XHTML text blocks with inline markup kept as tokens and patched back into the retained package. DRM-protected, fixed-layout, and scripted EPUBs are not supported. |
-| TMX 1.4 | ✅ | ✅ | Common `<tu>/<tuv>/<seg>` subset; inline markup flattened with warning |
+| TMX 1.4 | ✅ | ✅ | Common `<tu>/<tuv>/<seg>` subset; inline markup flattened with warning; context kept in `<prop type="x-context">` |
 | SRT / WebVTT | ✅ | ✅ | One cue per segment, timings/settings/identifier retained; semantic tags kept; invalid ranges rejected |
 | PO | ✅ | ✅ | Contexts, plural forms, translator comments, obsolete `#~` entries |
 | XLIFF 1.2 | ✅ | ✅ | Inline tags become `{n}` tokens; missing tokens block confirmation |
@@ -233,7 +238,7 @@ In DSH Desktop (or any profile with the `plugin_manager` tool):
 plugin_manager install_bundle target: dsh-cait
 ```
 
-Pin a release with `dsh-cait@1.1.1`, or ask for the newest one with
+Pin a release with `dsh-cait@1.1.2`, or ask for the newest one with
 `dsh-cait@latest`. The manager resolves the registry package, applies the bundle
 patch, and activates the plugin — no hand-written profile rows.
 
@@ -503,8 +508,11 @@ GitHub with a release.
 - HTML/RTF export does not round-trip original styling; JSON translates string
   values only.
 - TM matching is lexical, not semantic; no stemming, synonyms, or embeddings.
-- One translation per source text per language pair: with no context layer, a
-  repeated sentence reuses the first remembered translation.
+- One translation per source text per context: a repeated sentence keeps a
+  separate variant for each surrounding pair, capped at 8 variants per key, and
+  reuses the generic entry when the neighbours differ.
+- Context is the two neighbouring source sentences only; document, customer, or
+  project metadata is not part of the match.
 - TBX and JSON glossary exports are one-way; only TMX and CSV import back.
 - The workbench UI ships in Chinese, English, and Japanese, switchable in
   Settings; this README ships in English, Simplified Chinese, and Japanese, and
@@ -521,9 +529,10 @@ See [CHANGELOG.md](CHANGELOG.md). `v1.0.0` was the first public release;
 publishes the package to npm, `v1.0.4` moves later releases to the
 provenance-publishing workflow, `v1.0.5` adds EPUB, import preprocessing,
 and the PDF policy, `v1.1.0` adds agent-driven pre-translation, the
-three-state segment model, stacked review, and advisory QA, and `v1.1.1` adds
+three-state segment model, stacked review, and advisory QA, `v1.1.1` adds
 the library workspace with TMX/TBX/CSV/JSON export, segment paging, and the
-panel-to-library jump. The project
+panel-to-library jump, and `v1.1.2` adds context-aware memory with 101% (ICE)
+matches. The project
 was developed as `0.1.0` and renumbered for the GitHub release.
 
 > **License:** Apache License 2.0 — see [LICENSE](LICENSE). Redistributions must

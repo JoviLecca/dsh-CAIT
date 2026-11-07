@@ -397,6 +397,7 @@ window.__ModuleLoader__.load({
 .cait-tmedit-input{min-height:64px;font-size:11.5px}
 .cait-score{display:inline-flex;align-items:center;height:18px;padding:0 6px;border-radius:5px;background:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 13%,transparent);color:var(--dsw-alias-state-warn-primary);font-size:9.5px;font-weight:750;font-variant-numeric:tabular-nums}
 .cait-score.exact{background:color-mix(in srgb,var(--dsw-alias-state-success-primary) 13%,transparent);color:var(--dsw-alias-state-success-primary)}
+.cait-score.context{background:color-mix(in srgb,var(--dsw-alias-state-success-primary) 20%,transparent);color:var(--dsw-alias-state-success-primary)}
 .cait-score.near_exact{background:color-mix(in srgb,var(--dsw-alias-brand-primary) 13%,transparent);color:var(--dsw-alias-brand-primary)}
 .cait-score.high_fuzzy{background:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 13%,transparent);color:var(--dsw-alias-state-warn-primary)}
 .cait-score.medium_fuzzy{background:color-mix(in srgb,var(--dsw-alias-state-idle-primary) 13%,transparent);color:var(--dsw-alias-state-idle-primary)}
@@ -405,6 +406,7 @@ window.__ModuleLoader__.load({
 .cait-minibtn{margin-left:auto;height:23px;padding:0 7px;border:1px solid var(--dsw-alias-border-l1);border-radius:5px;background:transparent;color:var(--dsw-alias-label-secondary);font-size:10px;font-weight:600}
 .cait-minibtn:hover{background:color-mix(in srgb,var(--dsw-alias-brand-primary) 8%,transparent);border-color:color-mix(in srgb,var(--dsw-alias-brand-primary) 30%,var(--dsw-alias-border-l1));color:var(--dsw-alias-brand-primary)}
 .cait-card-source{margin:0 0 5px;font-size:11px;line-height:1.45;color:var(--dsw-alias-label-secondary);overflow-wrap:anywhere}
+.cait-card-context{margin:0 0 5px;font-size:9.5px;line-height:1.5;color:var(--dsw-alias-label-secondary);opacity:.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cait-card-target{margin:0;font-size:12.5px;line-height:1.5;font-weight:500;overflow-wrap:anywhere}
 .cait-tiny{font-size:10px}
 .cait-muted{color:var(--dsw-alias-label-secondary)}
@@ -544,9 +546,10 @@ window.__ModuleLoader__.load({
 .cait-libtable tbody tr{cursor:pointer}
 .cait-libtable tbody tr:hover{background:color-mix(in srgb,var(--dsw-alias-label-primary) 4%,transparent)}
 .cait-libtable tbody tr.active{background:color-mix(in srgb,var(--dsw-alias-brand-primary) 9%,transparent)}
-.cait-libtable td.note,.cait-libtable td.lang{color:var(--dsw-alias-label-secondary)}
-.cait-libtable th:nth-child(1),.cait-libtable td:nth-child(1){width:34%}
-.cait-libtable th:nth-child(2),.cait-libtable td:nth-child(2){width:32%}
+.cait-libtable td.note,.cait-libtable td.lang,.cait-libtable td.ctx{color:var(--dsw-alias-label-secondary)}
+.cait-libtable td.ctx{font-size:10.5px}  
+.cait-libtable th:nth-child(1),.cait-libtable td:nth-child(1){width:30%}
+.cait-libtable th:nth-child(2),.cait-libtable td:nth-child(2){width:28%}
 .cait-libpage-bar{border-top:1px solid var(--dsw-alias-border-l1);padding:7px 12px}
 .cait-libdetail{display:flex;flex-direction:column;min-height:0;overflow-y:auto;padding:10px 12px 14px;border-left:1px solid var(--dsw-alias-border-l1);background:color-mix(in srgb,var(--dsw-alias-bg-layer-1) 45%,var(--dsw-alias-bg-base))}
 .cait-libdetail-title{padding:2px 0 8px;font-size:10px;font-weight:650;letter-spacing:.06em;text-transform:uppercase;color:var(--dsw-alias-label-secondary)}
@@ -1584,6 +1587,13 @@ window.__ModuleLoader__.load({
           ),
         ),
         h('p', { className: 'cait-card-source' }, match.source),
+        match.context
+          ? h(
+              'p',
+              { className: 'cait-card-context' },
+              `${t('panel.contextPrev')} ${match.context.prev || '—'} · ${t('panel.contextNext')} ${match.context.next || '—'}`,
+            )
+          : null,
         editing
           ? h(
               'div',
@@ -2420,8 +2430,10 @@ window.__ModuleLoader__.load({
       }
 
       const bounds = pageBounds(rows?.page || 1, rows?.total || 0, rows?.pageSize || pageSize)
+      const contextLabel = (entry) =>
+        entry.context ? `${entry.context.prev || '—'} · ${entry.context.next || '—'}` : '—'
       const columns = kind === 'tm'
-        ? [t('library.colSource'), t('library.colTarget'), t('library.colNote'), t('library.colLang'), t('library.colUpdated')]
+        ? [t('library.colSource'), t('library.colTarget'), t('library.colNote'), t('library.colContext'), t('library.colLang'), t('library.colUpdated')]
         : [t('library.colSource'), t('library.colTarget'), t('library.colNote'), t('library.colLang'), t('library.colCase'), t('library.colUpdated')]
 
       return h(
@@ -2697,6 +2709,13 @@ window.__ModuleLoader__.load({
                             h('td', { className: 'src', title: entry.source }, entry.source),
                             h('td', { className: 'tgt', title: entry.target }, entry.target),
                             h('td', { className: 'note' }, entry.note || ''),
+                            kind === 'tm'
+                              ? h(
+                                  'td',
+                                  { className: 'ctx', title: contextLabel(entry) },
+                                  contextLabel(entry),
+                                )
+                              : null,
                             h(
                               'td',
                               { className: 'lang' },
@@ -4427,6 +4446,9 @@ window.__ModuleLoader__.load({
       'match.high_fuzzy': '高模糊',
       'match.medium_fuzzy': '中模糊',
       'match.low_fuzzy': '低模糊',
+      'match.context': '上下文匹配',
+      'panel.contextPrev': '上文',
+      'panel.contextNext': '下文',
       'panel.apply': '应用',
       'panel.importTmx': '导入 TMX',
       'panel.clearTm': '清空记忆库',
@@ -4573,6 +4595,7 @@ window.__ModuleLoader__.load({
       'library.colSource': '原文',
       'library.colTarget': '译文',
       'library.colNote': '备注',
+      'library.colContext': '上下文',
       'library.colLang': '语言',
       'library.colCase': '区分大小写',
       'library.colUpdated': '更新时间',
@@ -4751,6 +4774,9 @@ window.__ModuleLoader__.load({
       'match.high_fuzzy': 'High fuzzy',
       'match.medium_fuzzy': 'Medium fuzzy',
       'match.low_fuzzy': 'Low fuzzy',
+      'match.context': 'Context match',
+      'panel.contextPrev': 'Prev',
+      'panel.contextNext': 'Next',
       'panel.apply': 'Apply',
       'panel.importTmx': 'Import TMX',
       'panel.clearTm': 'Clear TM',
@@ -4897,6 +4923,7 @@ window.__ModuleLoader__.load({
       'library.colSource': 'Source',
       'library.colTarget': 'Target',
       'library.colNote': 'Note',
+      'library.colContext': 'Context',
       'library.colLang': 'Language',
       'library.colCase': 'Case-sensitive',
       'library.colUpdated': 'Updated',
@@ -5075,6 +5102,9 @@ window.__ModuleLoader__.load({
       'match.high_fuzzy': '高あいまい一致',
       'match.medium_fuzzy': '中あいまい一致',
       'match.low_fuzzy': '低あいまい一致',
+      'match.context': 'コンテキスト一致',
+      'panel.contextPrev': '前文',
+      'panel.contextNext': '後文',
       'panel.apply': '適用',
       'panel.importTmx': 'TMX をインポート',
       'panel.clearTm': 'TM をクリア',
@@ -5221,6 +5251,7 @@ window.__ModuleLoader__.load({
       'library.colSource': '原文',
       'library.colTarget': '訳文',
       'library.colNote': 'メモ',
+      'library.colContext': 'コンテキスト',
       'library.colLang': '言語',
       'library.colCase': '大文字小文字を区別',
       'library.colUpdated': '更新日時',

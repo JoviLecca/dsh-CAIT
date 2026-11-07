@@ -147,8 +147,13 @@ section('TMX roundtrip')
   assert.equal(parsed.targetLang, 'zh-CN')
 
   const imported = store.importTM({ pairs: [{ source: 'Hello world.', target: '你好，世界。' }], sourceLang: 'en', targetLang: 'zh-CN' })
-  assert.equal(imported.added, 0)
-  assert.equal(imported.updated, 1)
+  // The confirmed entry carries context now, so a context-free import is a
+  // separate generic entry instead of an overwrite.
+  assert.equal(imported.added, 1)
+  assert.equal(imported.updated, 0)
+  const again = store.importTM({ pairs: [{ source: 'Hello world.', target: '你好，世界。' }], sourceLang: 'en', targetLang: 'zh-CN' })
+  assert.equal(again.added, 0)
+  assert.equal(again.updated, 1)
 
   const withPlaceholder = parseTmx(
     '<?xml version="1.0"?><tmx version="1.4"><header srclang="en"/><body><tu><tuv xml:lang="en"><seg>Hello <ph>{1}</ph>world</seg></tuv><tuv xml:lang="zh-CN"><seg>你好<ph>{1}</ph>世界</seg></tuv></tu></body></tmx>',

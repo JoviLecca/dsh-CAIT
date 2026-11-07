@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CatStore } from '../lib/store.js'
-import { normalizeSegmentState, segmentStatus } from '../lib/store-utils.js'
+import { STORE_VERSION, normalizeSegmentState, segmentStatus } from '../lib/store-utils.js'
 
 const silent = { warn() {}, error() {} }
 const roots = []
@@ -162,7 +162,7 @@ try {
     store.saveDraft({ documentId: 'doc_legacy', index: 2, target: '空。' })
     store.confirmSegment({ documentId: 'doc_legacy', index: 2, addToTm: false })
     const snapshot = JSON.parse(readFileSync(file, 'utf8'))
-    assert.equal(snapshot.version, 3)
+    assert.equal(snapshot.version, STORE_VERSION)
     assert.equal(snapshot.documents[0].segments[1].status, 'translated')
   }
 

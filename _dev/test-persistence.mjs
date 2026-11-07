@@ -39,7 +39,7 @@ try {
 
   const snapshot = JSON.parse(readFileSync(file, 'utf8'))
   assert.equal(snapshot.version, STORE_VERSION)
-  assert.equal(STORE_VERSION, 3, 'the three-state model needs a new store version')
+  assert.equal(STORE_VERSION, 4, 'context-aware TM needs a new store version')
   assert.equal(snapshot.activeDocId, documentId)
   assert.deepEqual(snapshot.openDocIds, [documentId])
   assert.equal(snapshot.documents.length, 1)

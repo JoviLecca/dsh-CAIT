@@ -6,6 +6,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CatStore } from '../lib/store.js'
+import { STORE_VERSION } from '../lib/store-utils.js'
 
 const silent = { log() {}, warn() {}, error() {} }
 const dir = mkdtempSync(join(tmpdir(), 'cait-e2e-'))
@@ -83,7 +84,7 @@ try {
   section('everything survives a reload, including the store version')
   settle(store)
   const raw = JSON.parse(readFileSync(join(dir, 'store.json'), 'utf8'))
-  assert.equal(raw.version, 3)
+  assert.equal(raw.version, STORE_VERSION)
   const reopened = open(dir)
   const again = reopened.docs.get(docId)
   assert.equal(again.segments.length, 3)

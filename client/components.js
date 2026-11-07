@@ -922,6 +922,13 @@
           ),
         ),
         h('p', { className: 'cait-card-source' }, match.source),
+        match.context
+          ? h(
+              'p',
+              { className: 'cait-card-context' },
+              `${t('panel.contextPrev')} ${match.context.prev || '—'} · ${t('panel.contextNext')} ${match.context.next || '—'}`,
+            )
+          : null,
         editing
           ? h(
               'div',
@@ -1758,8 +1765,10 @@
       }
 
       const bounds = pageBounds(rows?.page || 1, rows?.total || 0, rows?.pageSize || pageSize)
+      const contextLabel = (entry) =>
+        entry.context ? `${entry.context.prev || '—'} · ${entry.context.next || '—'}` : '—'
       const columns = kind === 'tm'
-        ? [t('library.colSource'), t('library.colTarget'), t('library.colNote'), t('library.colLang'), t('library.colUpdated')]
+        ? [t('library.colSource'), t('library.colTarget'), t('library.colNote'), t('library.colContext'), t('library.colLang'), t('library.colUpdated')]
         : [t('library.colSource'), t('library.colTarget'), t('library.colNote'), t('library.colLang'), t('library.colCase'), t('library.colUpdated')]
 
       return h(
@@ -2035,6 +2044,13 @@
                             h('td', { className: 'src', title: entry.source }, entry.source),
                             h('td', { className: 'tgt', title: entry.target }, entry.target),
                             h('td', { className: 'note' }, entry.note || ''),
+                            kind === 'tm'
+                              ? h(
+                                  'td',
+                                  { className: 'ctx', title: contextLabel(entry) },
+                                  contextLabel(entry),
+                                )
+                              : null,
                             h(
                               'td',
                               { className: 'lang' },
