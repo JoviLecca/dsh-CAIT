@@ -93,10 +93,10 @@ manual reload.
 - **Pre-translate** fills the whole document from exact TM matches and machine
   translation in small blocks, shows `done/total`, and can be stopped between
   blocks. Confirmed and already-translated segments are never overwritten.
-- **Three-column review**: source, the machine/agent baseline, and the editable
-  target sit side by side on wide panes; narrower panes fold back to two columns
-  and then to the stacked layout. **Confirm all** accepts every segment awaiting
-  review after one confirmation dialog.
+- **Stacked review**: source, the machine/agent baseline, and the editable target
+  are laid out top to bottom, so each block gets the full pane width.
+  **Confirm all** accepts every segment awaiting review after one confirmation
+  dialog.
 - Draft saving, confirm-and-next, previous/next navigation, and progress. The
   selected segment and the draft are persisted (debounced) so a restart resumes
   where you left off.
@@ -485,7 +485,7 @@ See [CHANGELOG.md](CHANGELOG.md). `v1.0.0` was the first public release;
 publishes the package to npm, `v1.0.4` moves later releases to the
 provenance-publishing workflow, `v1.0.5` adds EPUB, import preprocessing,
 and the PDF policy, and `v1.1.0` adds agent-driven pre-translation, the
-three-state segment model, three-column review, and advisory QA. The project
+three-state segment model, stacked review, and advisory QA. The project
 was developed as `0.1.0` and renumbered for the GitHub release.
 
 > **License:** Apache License 2.0 — see [LICENSE](LICENSE). Redistributions must

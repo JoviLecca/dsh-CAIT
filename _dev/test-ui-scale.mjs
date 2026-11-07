@@ -188,12 +188,12 @@ const leftover = [...stripCalc(cssScaled).matchAll(/(-?(?:\d+\.?\d*|\.\d+))px/g)
   .map((match) => Number(match[1]))
   .filter((value) => Math.abs(value) > 1)
 const leftoverKinds = [...new Set(leftover)].sort((a, b) => a - b)
-// 700/1010 belong to the three-column container queries: container widths are
-// measured in real pixels, while columns scale with --cait-u, so those
-// thresholds must stay unscaled on purpose.
+// 700/940/1180 are media query breakpoints: they are measured in real viewport
+// pixels, so they must stay unscaled even though lengths inside scale with
+// --cait-u.
 assert.deepEqual(
   leftoverKinds,
-  [700, 940, 1010, 1180],
+  [700, 940, 1180],
   `unscaled lengths should only be breakpoints, got ${leftoverKinds}`,
 )
 

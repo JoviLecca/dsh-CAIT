@@ -6,7 +6,7 @@ All notable changes to CAIT are documented here. The project follows
 
 ## [1.1.0] - 2026-11-07
 
-Agent-assisted pre-translation and a three-column review workbench.
+Agent-assisted pre-translation and a stacked review workbench.
 
 ### Added
 
@@ -16,11 +16,10 @@ Agent-assisted pre-translation and a three-column review workbench.
   already carry a target are skipped, so repeated or interrupted runs never
   overwrite human work. The workbench adds a topbar button that walks the
   document block by block, shows `done/total`, and can be stopped between blocks.
-- **Three-column review.** The editor now lays out source, the machine/agent
-  baseline, and the editable target side by side once the pane is wide enough;
-  narrower panes fold back to two columns and then to the previous stack. The
-  baseline is stored on `suggestion`, so editing in the right column always has
-  the original to compare against.
+- **Stacked review.** The editor lays source, the machine/agent baseline, and the
+  editable target out top to bottom, so each block gets the full pane width. The
+  baseline is stored on `suggestion`, so editing the target always has the
+  original to compare against.
 - **Suggestion adoption.** `adoptSuggestion` copies a suggestion into the target
   while keeping its origin and the suggestion itself for later comparison.
 - **Batch reading and confirmation for agents.** `cat_get_segments` lists a
@@ -50,7 +49,7 @@ Agent-assisted pre-translation and a three-column review workbench.
   with `origin: manual`.
 - UI scaling is damped above the design size (`1 + (fit - 1) × 0.6`, capped at
   1.45×) so a maximized window no longer grows the interface far beyond the host
-  UI, and three columns keep enough horizontal room.
+  UI.
 - MT route discovery no longer filters providers by what the loader configuration
   happens to mention: every registered provider is listed, configured ones first,
   and providers without models stay visible but disabled.
