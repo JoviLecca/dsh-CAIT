@@ -62,7 +62,7 @@ CAIT 为 DSH Web UI 和 DSH 桌面端增加一个 CAT 翻译工作台。它从�
 - 支持精确、近似精确和三个模糊等级：
   - `near_exact` 使用忽略数字、标点和空白后的 key 比较，不依赖分数阈值。
   - `high_fuzzy` 为 `>= 0.85`，`medium_fuzzy` 为 `0.75–0.85`，
-    `low_fuzzy` 低于 `0.75`（高于可配置下限，默认 `0.55`）。
+    `low_fuzzy` 低于 `0.75`（高于可配置下限，默认 `0.70`）。
 - 模糊评分是词法级的：72% 字符二元组 Dice + 28% token Jaccard。
   拉丁文本按单词切分，CJK 文本按单字切分；不做词干、同义词或语义匹配。
 - 检索只查已挂载的库。`cat_submit_translation` 支持可选 `targetTmId`；

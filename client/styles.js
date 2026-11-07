@@ -237,6 +237,10 @@
 .cait-segmented button{flex:1;height:27px;border:0;border-radius:5px;background:transparent;color:var(--dsw-alias-label-secondary);font-size:11px;font-weight:550}
 .cait-segmented button.active{background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-primary);box-shadow:0 1px 3px color-mix(in srgb,var(--dsw-alias-label-primary) 12%,transparent)}
 .cait-field{display:flex;flex-direction:column;gap:4px;margin-bottom:9px}
+.cait-fieldhead{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.cait-fieldhead>span{font-size:10px;font-weight:600;color:var(--dsw-alias-label-secondary)}
+.cait-fieldreset{font-size:10px;padding:1px 0}
+.cait-fieldhint{margin:0;font-size:9.5px;line-height:1.5;color:var(--dsw-alias-label-tertiary)}
 .cait-field>span{font-size:10px;font-weight:600;color:var(--dsw-alias-label-secondary)}
 .cait-field .cait-input,.cait-field select{height:30px}
 .cait-grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}

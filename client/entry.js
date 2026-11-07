@@ -27,6 +27,8 @@
         pageSizeOptions: PAGE_SIZE_OPTIONS,
         pageSizeDefault: PAGE_SIZE_DEFAULT,
         pageSizeStorageKey: PAGE_SIZE_STORAGE_KEY,
+        defaultFuzzyThreshold: DEFAULT_FUZZY_THRESHOLD,
+        fuzzyPercent,
         cssScaled: CSS_SCALED,
         syncPollMs: SYNC_POLL_MS,
         makeTranslator,

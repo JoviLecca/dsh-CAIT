@@ -41,6 +41,10 @@ terminology with evidence instead of guessing.
   and never block confirming or exporting.
 - `proposeTranslation` writes only a `suggestion` plus its reason, never the
   target: an agent can propose, the user keeps the last word.
+- The fuzzy-match threshold now defaults to **70%** instead of 55%: below that a
+  match usually shares only function words, so showing it costs review time and
+  saves none. Settings explains this and offers a **Reset** button that appears
+  only while the slider sits away from the default.
 
 ### Fixed
 

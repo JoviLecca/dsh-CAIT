@@ -212,6 +212,18 @@ window.__ModuleLoader__.load({
       return number - 1
     }
 
+    // --- settings defaults ---------------------------------------------------
+    // Below ~70% a fuzzy match usually shares little more than function words,
+    // so it costs review time and saves none. The settings modal offers a reset
+    // button only while the slider sits away from this value.
+    const DEFAULT_FUZZY_THRESHOLD = 0.7
+
+    function fuzzyPercent(value) {
+      const number = Number(value)
+      if (!Number.isFinite(number)) return Math.round(DEFAULT_FUZZY_THRESHOLD * 100)
+      return Math.round(Math.min(1, Math.max(0, number)) * 100)
+    }
+
     const CSS = `
 .cait-root{--cait-u:1;position:relative;display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden;background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);font-family:inherit;font-size:13px;line-height:1.5;color-scheme:light}
 .cait-root[data-cait-theme="dark"]{color-scheme:dark}
@@ -451,6 +463,10 @@ window.__ModuleLoader__.load({
 .cait-segmented button{flex:1;height:27px;border:0;border-radius:5px;background:transparent;color:var(--dsw-alias-label-secondary);font-size:11px;font-weight:550}
 .cait-segmented button.active{background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-primary);box-shadow:0 1px 3px color-mix(in srgb,var(--dsw-alias-label-primary) 12%,transparent)}
 .cait-field{display:flex;flex-direction:column;gap:4px;margin-bottom:9px}
+.cait-fieldhead{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.cait-fieldhead>span{font-size:10px;font-weight:600;color:var(--dsw-alias-label-secondary)}
+.cait-fieldreset{font-size:10px;padding:1px 0}
+.cait-fieldhint{margin:0;font-size:9.5px;line-height:1.5;color:var(--dsw-alias-label-tertiary)}
 .cait-field>span{font-size:10px;font-weight:600;color:var(--dsw-alias-label-secondary)}
 .cait-field .cait-input,.cait-field select{height:30px}
 .cait-grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -3532,9 +3548,26 @@ window.__ModuleLoader__.load({
             { className: 'cait-settings-section' },
             h('h4', { className: 'cait-settings-title' }, t('modal.settings.tm')),
             h(
-              'label',
+              'div',
               { className: 'cait-field' },
-              h('span', null, `${t('modal.settings.fuzzy')} · ${Math.round(Number(form.fuzzyThreshold) * 100)}%`),
+              h(
+                'div',
+                { className: 'cait-fieldhead' },
+                h('span', null, `${t('modal.settings.fuzzy')} · ${fuzzyPercent(form.fuzzyThreshold)}%`),
+                // Offered only while the slider is away from the default, so the
+                // control never takes space in the usual case.
+                fuzzyPercent(form.fuzzyThreshold) === fuzzyPercent(DEFAULT_FUZZY_THRESHOLD)
+                  ? null
+                  : h(
+                      'button',
+                      {
+                        className: 'cait-linkbtn cait-fieldreset',
+                        type: 'button',
+                        onClick: () => setForm({ ...form, fuzzyThreshold: DEFAULT_FUZZY_THRESHOLD }),
+                      },
+                      t('modal.settings.resetDefault'),
+                    ),
+              ),
               h('input', {
                 className: 'cait-range',
                 type: 'range',
@@ -3544,6 +3577,7 @@ window.__ModuleLoader__.load({
                 value: form.fuzzyThreshold,
                 onChange: (event) => setForm({ ...form, fuzzyThreshold: event.target.value }),
               }),
+              h('p', { className: 'cait-fieldhint' }, t('modal.settings.fuzzyHint')),
             ),
             h(
               'label',
@@ -3737,7 +3771,7 @@ window.__ModuleLoader__.load({
       const settings = data?.settings || {
         sourceLang: 'en',
         targetLang: 'zh-CN',
-        fuzzyThreshold: 0.55,
+        fuzzyThreshold: DEFAULT_FUZZY_THRESHOLD,
         tmLimit: 5,
         uiLang: 'auto',
         mt: { provider: 'mock', model: 'cait-mock', temperature: 0.2 },
@@ -5019,6 +5053,8 @@ window.__ModuleLoader__.load({
       'modal.settings.pre.collapseBlankLines': '合并连续空行',
       'modal.settings.tm': '翻译记忆',
       'modal.settings.fuzzy': '模糊匹配阈值',
+      'modal.settings.fuzzyHint': '低于 70% 的匹配通常只共享虚词，改起来比重译更慢；70% 是主流 CAT 工具的默认值。',
+      'modal.settings.resetDefault': '恢复默认',
       'modal.settings.limit': '返回匹配数',
       'modal.settings.mt': '机器翻译',
       'modal.settings.provider': 'MT provider 路由',
@@ -5386,6 +5422,9 @@ window.__ModuleLoader__.load({
       'modal.settings.pre.collapseBlankLines': 'Merge consecutive blank lines',
       'modal.settings.tm': 'Translation memory',
       'modal.settings.fuzzy': 'Fuzzy-match threshold',
+      'modal.settings.fuzzyHint':
+        'Below 70% a match usually shares only function words, so editing it takes longer than retranslating. 70% is what mainstream CAT tools default to.',
+      'modal.settings.resetDefault': 'Reset',
       'modal.settings.limit': 'Matches returned',
       'modal.settings.mt': 'Machine translation',
       'modal.settings.provider': 'MT provider route',
@@ -5753,6 +5792,9 @@ window.__ModuleLoader__.load({
       'modal.settings.pre.collapseBlankLines': '連続する空行をまとめる',
       'modal.settings.tm': '翻訳メモリ',
       'modal.settings.fuzzy': 'あいまい一致のしきい値',
+      'modal.settings.fuzzyHint':
+        '70% を下回る一致は機能語だけが重なることが多く、訳し直すより遅くなります。主流の CAT ツールも 70% を既定にしています。',
+      'modal.settings.resetDefault': '既定に戻す',
       'modal.settings.limit': '返す一致件数',
       'modal.settings.mt': '機械翻訳',
       'modal.settings.provider': 'MT プロバイダーのルート',
@@ -5973,6 +6015,8 @@ window.__ModuleLoader__.load({
         pageSizeOptions: PAGE_SIZE_OPTIONS,
         pageSizeDefault: PAGE_SIZE_DEFAULT,
         pageSizeStorageKey: PAGE_SIZE_STORAGE_KEY,
+        defaultFuzzyThreshold: DEFAULT_FUZZY_THRESHOLD,
+        fuzzyPercent,
         cssScaled: CSS_SCALED,
         syncPollMs: SYNC_POLL_MS,
         makeTranslator,

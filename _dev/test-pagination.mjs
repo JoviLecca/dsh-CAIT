@@ -50,6 +50,8 @@ const {
   pageSizeOptions,
   pageSizeDefault,
   pageSizeStorageKey,
+  defaultFuzzyThreshold,
+  fuzzyPercent,
 } = mod.__test
 
 section('page size options are the four documented sizes')
@@ -128,5 +130,12 @@ assert.equal(segmentNumberToIndex('1.5', 10), null)
 assert.equal(segmentNumberToIndex('abc', 10), null)
 assert.equal(segmentNumberToIndex('', 10), null)
 assert.equal(segmentNumberToIndex('1', 0), null)
+
+section('the fuzzy threshold default is 70%, and the reset button keys off it')
+assert.equal(defaultFuzzyThreshold, 0.7)
+assert.equal(fuzzyPercent(defaultFuzzyThreshold), 70)
+assert.equal(fuzzyPercent('0.85'), 85)
+assert.equal(fuzzyPercent(0.3), 30)
+assert.equal(fuzzyPercent('nonsense'), 70)
 
 console.log('\nALL PAGINATION TESTS PASSED')

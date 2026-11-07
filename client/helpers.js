@@ -204,3 +204,15 @@
       if (!Number.isFinite(count) || number < 1 || number > count) return null
       return number - 1
     }
+
+    // --- settings defaults ---------------------------------------------------
+    // Below ~70% a fuzzy match usually shares little more than function words,
+    // so it costs review time and saves none. The settings modal offers a reset
+    // button only while the slider sits away from this value.
+    const DEFAULT_FUZZY_THRESHOLD = 0.7
+
+    function fuzzyPercent(value) {
+      const number = Number(value)
+      if (!Number.isFinite(number)) return Math.round(DEFAULT_FUZZY_THRESHOLD * 100)
+      return Math.round(Math.min(1, Math.max(0, number)) * 100)
+    }

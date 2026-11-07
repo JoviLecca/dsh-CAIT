@@ -233,6 +233,8 @@
       'modal.settings.pre.collapseBlankLines': '合并连续空行',
       'modal.settings.tm': '翻译记忆',
       'modal.settings.fuzzy': '模糊匹配阈值',
+      'modal.settings.fuzzyHint': '低于 70% 的匹配通常只共享虚词，改起来比重译更慢；70% 是主流 CAT 工具的默认值。',
+      'modal.settings.resetDefault': '恢复默认',
       'modal.settings.limit': '返回匹配数',
       'modal.settings.mt': '机器翻译',
       'modal.settings.provider': 'MT provider 路由',
@@ -600,6 +602,9 @@
       'modal.settings.pre.collapseBlankLines': 'Merge consecutive blank lines',
       'modal.settings.tm': 'Translation memory',
       'modal.settings.fuzzy': 'Fuzzy-match threshold',
+      'modal.settings.fuzzyHint':
+        'Below 70% a match usually shares only function words, so editing it takes longer than retranslating. 70% is what mainstream CAT tools default to.',
+      'modal.settings.resetDefault': 'Reset',
       'modal.settings.limit': 'Matches returned',
       'modal.settings.mt': 'Machine translation',
       'modal.settings.provider': 'MT provider route',
@@ -967,6 +972,9 @@
       'modal.settings.pre.collapseBlankLines': '連続する空行をまとめる',
       'modal.settings.tm': '翻訳メモリ',
       'modal.settings.fuzzy': 'あいまい一致のしきい値',
+      'modal.settings.fuzzyHint':
+        '70% を下回る一致は機能語だけが重なることが多く、訳し直すより遅くなります。主流の CAT ツールも 70% を既定にしています。',
+      'modal.settings.resetDefault': '既定に戻す',
       'modal.settings.limit': '返す一致件数',
       'modal.settings.mt': '機械翻訳',
       'modal.settings.provider': 'MT プロバイダーのルート',

@@ -2831,9 +2831,26 @@
             { className: 'cait-settings-section' },
             h('h4', { className: 'cait-settings-title' }, t('modal.settings.tm')),
             h(
-              'label',
+              'div',
               { className: 'cait-field' },
-              h('span', null, `${t('modal.settings.fuzzy')} · ${Math.round(Number(form.fuzzyThreshold) * 100)}%`),
+              h(
+                'div',
+                { className: 'cait-fieldhead' },
+                h('span', null, `${t('modal.settings.fuzzy')} · ${fuzzyPercent(form.fuzzyThreshold)}%`),
+                // Offered only while the slider is away from the default, so the
+                // control never takes space in the usual case.
+                fuzzyPercent(form.fuzzyThreshold) === fuzzyPercent(DEFAULT_FUZZY_THRESHOLD)
+                  ? null
+                  : h(
+                      'button',
+                      {
+                        className: 'cait-linkbtn cait-fieldreset',
+                        type: 'button',
+                        onClick: () => setForm({ ...form, fuzzyThreshold: DEFAULT_FUZZY_THRESHOLD }),
+                      },
+                      t('modal.settings.resetDefault'),
+                    ),
+              ),
               h('input', {
                 className: 'cait-range',
                 type: 'range',
@@ -2843,6 +2860,7 @@
                 value: form.fuzzyThreshold,
                 onChange: (event) => setForm({ ...form, fuzzyThreshold: event.target.value }),
               }),
+              h('p', { className: 'cait-fieldhint' }, t('modal.settings.fuzzyHint')),
             ),
             h(
               'label',
@@ -3036,7 +3054,7 @@
       const settings = data?.settings || {
         sourceLang: 'en',
         targetLang: 'zh-CN',
-        fuzzyThreshold: 0.55,
+        fuzzyThreshold: DEFAULT_FUZZY_THRESHOLD,
         tmLimit: 5,
         uiLang: 'auto',
         mt: { provider: 'mock', model: 'cait-mock', temperature: 0.2 },

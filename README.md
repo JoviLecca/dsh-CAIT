@@ -68,7 +68,7 @@ manual reload.
   - `near_exact` compares a key that ignores digits, punctuation, and whitespace;
     it does not depend on a score cutoff.
   - `high_fuzzy` is `>= 0.85`, `medium_fuzzy` is `0.75–0.85`, `low_fuzzy` is
-    below `0.75` (above the configurable floor, default `0.55`).
+    below `0.75` (above the configurable floor, default `0.70`).
 - Fuzzy scoring is lexical: 72% character-bigram Dice + 28% token Jaccard.
   Latin text uses words; CJK text uses individual characters. There is no
   stemming, synonym, or semantic matching.

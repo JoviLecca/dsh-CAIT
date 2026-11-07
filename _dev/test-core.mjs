@@ -30,6 +30,8 @@ section('similarity')
 section('document + TM + glossary')
 {
   const store = new CatStore()
+  // The 70% floor is what the settings dialog offers to reset to.
+  assert.equal(store.settings.fuzzyThreshold, 0.7)
   const source = 'Computer-aided translation tools help translators work faster.\n\nA translation memory stores previously translated sentences.'
   const created = store.createDocument({ name: 'Demo', text: source, sourceLang: 'en', targetLang: 'zh-CN' })
   console.log(created)
@@ -219,10 +221,10 @@ section('settings + MT mock')
   assert.equal(result.provider, 'mock')
   assert.ok(result.note.includes('未配置 DSH 模型路由'))
   const saved = store.saveSettings({
-    fuzzyThreshold: 0.7,
+    fuzzyThreshold: 0.75,
     mt: { provider: 'mock', model: 'cait-mock', temperature: 0.3 },
   })
-  assert.equal(saved.settings.fuzzyThreshold, 0.7)
+  assert.equal(saved.settings.fuzzyThreshold, 0.75)
   assert.equal(saved.settings.mt.provider, 'mock')
   assert.equal(saved.settings.mt.model, 'cait-mock')
   assert.equal(Object.hasOwn(saved.settings.mt, 'hasApiKey'), false)
