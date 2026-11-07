@@ -50,7 +50,7 @@ const ctx = {
 }
 
 plugin.apply(ctx, { dataDir })
-assert.equal(tools.size, 10)
+assert.equal(tools.size, 15)
 assert.deepEqual([...tools.keys()], [
   'cat_get_segment',
   'cat_submit_translation',
@@ -62,6 +62,11 @@ assert.deepEqual([...tools.keys()], [
   'cat_pre_translate',
   'cat_get_segments',
   'cat_confirm_segments',
+  'cat_propose_translation',
+  'cat_align',
+  'cat_consistency_report',
+  'cat_term_candidates',
+  'cat_add_terms',
 ])
 assert.equal(route.path, '/cait/api')
 

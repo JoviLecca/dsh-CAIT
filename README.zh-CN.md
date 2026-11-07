@@ -16,12 +16,12 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm 版本" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
-  <img alt="24 套测试" src="https://img.shields.io/badge/tests-24%20suites-brightgreen.svg" />
+  <img alt="29 套测试" src="https://img.shields.io/badge/tests-29%20suites-brightgreen.svg" />
   <img alt="无需 API Key" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
 </p>
 
 CAIT 为 DSH Web UI 和 DSH 桌面端增加一个 CAT 翻译工作台。它从左侧栏入口打开，
-工作台与十个 Agent 工具共用一个数据存储，覆盖从导入源文件到导出译文的完整流程。
+工作台与十五个 Agent 工具共用一个数据存储，覆盖从导入源文件到导出译文的完整流程。
 
 > **已在 DSH `0.2.2-rc.1` 中验证。** CAIT 使用 DSH 自己的模型路由和凭据，
 > 不会要求用户填写 API Key。内部回退提供方仍叫 `mock`，界面显示为
@@ -83,10 +83,14 @@ CAIT 为 DSH Web UI 和 DSH 桌面端增加一个 CAT 翻译工作台。它从�
 - 语言代码会规范化（`EN` → `en`，`ZH_cn` → `zh-CN`）。
 - 任何库（无论是否挂载）里的条目都能编辑或删除；挂载状态只决定工作台搜索
   和写入哪些库。
+- **术语提取**：术语库工具栏的「从文档提取术语」会列出候选词，带出现次数、
+  记忆库里已有的译法和「已有」标记。统计负责找候选并排序（拉丁 n-gram；
+  中日韩重复子串用左右邻接熵过滤），模型只判断一份短名单——这正是模型擅长
+  的部分。
 
 ### 库页面
 
-顶栏的「文档 / 库」在两个工作区之间切换，库页面不需要打开文档。
+顶栏的「文档 / 库 / 对齐」在三个工作区之间切换，库页面不需要打开文档。
 
 - TM 一张表、术语一张表，支持分页（20/50/100/200，会记住）、语言筛选，以及
   可限定在任意若干库内的搜索。
@@ -95,6 +99,18 @@ CAIT 为 DSH Web UI 和 DSH 桌面端增加一个 CAT 翻译工作台。它从�
   个工具栏里。
 - 右侧面板的库按钮会把面板当前的搜索词一起带进库页面，在面板里查到的东西
   可以接着在完整列表里看。
+
+### 对齐
+
+顶栏的「文档 / 库 / 对齐」第三个视图用两份成品文件建记忆库：源文一份、
+译文一份，可以是完全不同的语言，格式任选。
+
+- 跨语言打分：共享锚点（数字、`{0}` 占位符、URL、首字母大写的名字）、按语言
+  归一化的长度比例、段落结构。刻意不用字面相似度，因为它比不了两种语言。
+- 分块动态规划可以配对 1:1、1:0、0:1、2:1、1:2；每行分高置信 / 待确认 / 可疑
+  三档，只有高置信默认勾选。
+- 写入前每行都能与下一行合并、按换行拆开或删除；目标库在工具栏里选，完全
+  相同的条目会被跳过而不是重复写入。
 
 ### 工作台
 
@@ -110,8 +126,12 @@ CAIT 为 DSH Web UI 和 DSH 桌面端增加一个 CAT 翻译工作台。它从�
   每一块都占满面板宽度。**全部确认** 在一次确认弹窗后接受所有待审句段。
 - 支持保存草稿、确认并下一句、上一句/下一句导航和进度。当前句段与草稿会
   防抖落盘，重启后能回到原位。
+- **重复句段自动同步**：确认一句后，本文档里其它相同原文的未确认句段会填上
+  同一译文（来源 `auto`），编辑草稿也会同步；「铺满重复句段」可一次性处理整篇。
+  已确认的句段永远不动。
 - 句段栏里的 QA 提醒与导出前的汇总：占位符/标签缺失、数字不一致、
-  术语未使用、空译文。只提醒，不阻挡导出，也不写盘。
+  术语未使用、空译文、译文仍是原文、同一原文多种译法。只提醒，不阻挡导出，
+  也不写盘。
 - 文档标签页；关闭标签页不会删除文档。
 - **打开已有文档** 可重新打开已关闭的文档。
 - **设置 → 界面** 提供界面语言切换：跟随 DSH 语言（默认）、简体中文、English、
@@ -210,7 +230,7 @@ CAIT 以 DSH bundle 的形式安装；发布的 npm 包名为 `dsh-cait`，插�
 plugin_manager install_bundle target: dsh-cait
 ```
 
-需要固定版本时写 `dsh-cait@1.1.2`，需要最新版时写 `dsh-cait@latest`。管理器会解析 registry
+需要固定版本时写 `dsh-cait@1.1.3`，需要最新版时写 `dsh-cait@latest`。管理器会解析 registry
 上的包、应用 bundle patch 并激活插件，不需要手工在配置档里加行。
 
 使用 CLI 管理的配置档：
@@ -304,10 +324,16 @@ TM 返回条数、MT 路由/模型/温度，以及界面语言（`uiLang`：`aut
 | `cat_pre_translate` | 用 TM + MT 填一块，跳过已确认/已有译文的句段，返回 `next` |
 | `cat_get_segments` | 取一段有界句段窗口，含状态、来源和建议 |
 | `cat_confirm_segments` | 确认索引列表、一段窗口，或全部待审句段 |
+| `cat_propose_translation` | 只留下建议和理由，不动已确认的译文 |
+| `cat_align` | 对齐两段文本，报告高置信 / 待确认 / 可疑的配对 |
+| `cat_consistency_report` | 按原文分组列出译文不一致的句段 |
+| `cat_term_candidates` | 术语候选短名单：频次、例句、记忆库里已有的译法 |
+| `cat_add_terms` | 一次性把选中的术语写进术语库 |
 
 因此 Agent 可以完全不点界面就把整篇铺底：反复调用 `cat_pre_translate`
 （`from: next`）直到 `next` 为 `null`，用 `cat_get_segments` 查看，再用
-`cat_confirm_segments` 批量接受。
+`cat_confirm_segments` 批量接受。做术语时读 `cat_term_candidates`，判断这份
+短名单，再用 `cat_add_terms` 写入。
 
 工作台和工具共用一个 `CatStore`，因此 Agent 可以翻译用户当前打开的同一份文档。
 
@@ -317,7 +343,7 @@ TM 返回条数、MT 路由/模型/温度，以及界面语言（`uiLang`：`aut
 flowchart LR
   UI["DSH Web UI<br/>(侧栏 + 工作台)"] --> Client["client.js<br/>生成的 Web bundle"]
   Client --> API["/cait/api/rpc<br/>同源 JSON"]
-  Tools["10 个 Agent 工具"] --> Store["CatStore"]
+  Tools["15 个 Agent 工具"] --> Store["CatStore"]
   API --> Store
   Store --> Snapshot[("store.json<br/>+ sources/")]
 ```
@@ -468,7 +494,8 @@ GitHub release 发布。
 `v1.0.5` 增加 EPUB、导入预处理和 PDF 政策，`v1.1.0` 增加 agent 驱动的预翻译、
 句段三态、上下排列的审校区和轻量 QA，`v1.1.1` 增加带 TMX/TBX/CSV/JSON 导出的
 库页面、句段分页，以及从右侧面板跳进库页面，`v1.1.2` 增加带 101%（ICE）
-匹配的上下文记忆；项目在开发阶段使用 `0.1.0`，
+匹配的上下文记忆，`v1.1.3` 增加双文件对齐、重复句段自动同步、术语提取，
+以及 agent 写建议用的原语；项目在开发阶段使用 `0.1.0`，
 发布到 GitHub 前统一改为 `1.0.0`。
 
 > **License：** Apache License 2.0，见 [LICENSE](LICENSE)。再分发时需保留

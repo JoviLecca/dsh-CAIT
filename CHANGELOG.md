@@ -4,6 +4,48 @@ All notable changes to CAIT are documented here. The project follows
 [Semantic Versioning](https://semver.org/) and the format is based on
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.1.3] - 2026-11-07
+
+Alignment, repetition and terminology: CAIT can now build a translation memory
+out of two finished files, fill repeated sentences by itself, and propose
+terminology with evidence instead of guessing.
+
+### Added
+
+- **Aligner.** Give it the source file and the translated file — two independent
+  documents, different languages allowed — and it pairs them segment by segment.
+  Scoring is cross-language: anchors (numbers, `{0}` placeholders, URLs,
+  capitalised names), length normalised per language, and paragraph structure.
+  Word-level similarity is deliberately not used, because it cannot compare two
+  languages. Blocked dynamic programming admits 1:1, 1:0, 0:1, 2:1 and 1:2 pairs;
+  rows are graded high / to-review / doubtful, and each row can be merged,
+  split or removed before writing to a library.
+- **`readUploadText`** reads text out of any supported upload (docx, epub, xlsx,
+  pptx, html, csv, srt, vtt, po, json, rtf, xliff, markdown, plain text) without
+  creating a document.
+- **Automatic propagation.** Confirming a segment copies its translation into
+  every other unconfirmed segment with the same source (`origin: auto`); editing
+  a draft keeps those copies in sync. "Fill repeated segments" does the same for
+  the whole document, and the rail only offers it when something would change.
+- **Terminology mining.** `lib/term-extract.js` counts candidates — Latin word
+  n-grams and repeated CJK substrings filtered by boundary entropy — and ranks
+  them C-value style. The library workspace lists them with occurrence counts,
+  existing glossary hits and any wording translation memory already contains.
+- **Agent tools** `cat_propose_translation`, `cat_align`,
+  `cat_consistency_report`, `cat_term_candidates` and `cat_add_terms`.
+
+### Changed
+
+- QA gained two checks: `UNTRANSLATED_RESIDUE` (the target is still the source)
+  and `INCONSISTENT_TARGET` (one source, several translations). Both are advisory
+  and never block confirming or exporting.
+- `proposeTranslation` writes only a `suggestion` plus its reason, never the
+  target: an agent can propose, the user keeps the last word.
+
+### Fixed
+
+- Editing one copy of a repeated sentence no longer leaves its siblings stale.
+
 ## [1.1.2] - 2026-11-07
 
 Context-aware translation memory: the same sentence can now keep one

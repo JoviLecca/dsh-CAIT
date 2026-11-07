@@ -30,6 +30,8 @@ try {
       NUMBER_MISMATCH: 0,
       TERM_NOT_USED: 0,
       EMPTY_TARGET: 0,
+      UNTRANSLATED_RESIDUE: 0,
+      INCONSISTENT_TARGET: 0,
     })
   }
 
@@ -102,6 +104,53 @@ try {
     assert.equal(Object.hasOwn(doc, 'qa'), false)
     const raw = JSON.stringify(store.bootstrap())
     assert.equal(raw.includes('issueCount'), false)
+  }
+
+  section('an untouched copy of the source is reported as residue')
+  {
+    const { store, doc } = storeWith('Nova is a tool.')
+    store.saveDraft({ documentId: doc.id, index: 0, target: 'Nova is a tool.' })
+    const report = store.getQaReport({ documentId: doc.id })
+    assert.equal(report.counts.UNTRANSLATED_RESIDUE, 1)
+    assert.equal(report.issues[0].code, 'UNTRANSLATED_RESIDUE')
+
+    store.saveDraft({ documentId: doc.id, index: 0, target: 'Nova 是一个工具。' })
+    assert.equal(store.getQaReport({ documentId: doc.id }).counts.UNTRANSLATED_RESIDUE, 0)
+  }
+
+  section('a pure number needs no translation and is not residue')
+  {
+    const { store, doc } = storeWith('2024')
+    store.saveDraft({ documentId: doc.id, index: 0, target: '2024' })
+    assert.equal(store.getQaReport({ documentId: doc.id }).counts.UNTRANSLATED_RESIDUE, 0)
+  }
+
+  section('the same source with two different translations is inconsistent')
+  {
+    const { store, doc } = storeWith('Save the file.\n\nSave the file.')
+    store.saveDraft({ documentId: doc.id, index: 0, target: '保存文件。' })
+    // Confirming locks the first wording: an unconfirmed copy would simply be
+    // overwritten by propagation, which is the feature working as intended.
+    store.confirmSegment({ documentId: doc.id, index: 0 })
+    store.saveDraft({ documentId: doc.id, index: 1, target: '保存该文件。' })
+    const report = store.getQaReport({ documentId: doc.id })
+    assert.equal(report.counts.INCONSISTENT_TARGET, 2)
+    assert.ok(report.issues.every((issue) => issue.code === 'INCONSISTENT_TARGET'))
+
+    store.saveDraft({ documentId: doc.id, index: 1, target: '保存文件。' })
+    assert.equal(store.getQaReport({ documentId: doc.id }).counts.INCONSISTENT_TARGET, 0)
+  }
+
+  section('the consistency report groups variants for the agent')
+  {
+    const { store, doc } = storeWith('Open it.\n\nOpen it.')
+    store.saveDraft({ documentId: doc.id, index: 0, target: '打开。' })
+    store.confirmSegment({ documentId: doc.id, index: 0 })
+    store.saveDraft({ documentId: doc.id, index: 1, target: '打开它。' })
+    const report = store.consistencyReport({ documentId: doc.id })
+    assert.equal(report.total, 1)
+    assert.equal(report.conflicts[0].variants.length, 2)
+    assert.deepEqual(report.conflicts[0].indices, [0, 1])
   }
 
   console.log('\nALL QA TESTS PASSED')

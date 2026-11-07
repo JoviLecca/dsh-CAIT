@@ -16,7 +16,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm version" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
-  <img alt="Tests: 24 suites" src="https://img.shields.io/badge/tests-24%20suites-brightgreen.svg" />
+  <img alt="Tests: 29 suites" src="https://img.shields.io/badge/tests-29%20suites-brightgreen.svg" />
   <img alt="No API key required" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
 </p>
 
@@ -90,11 +90,16 @@ manual reload.
 - Language codes are canonicalized (`EN` → `en`, `ZH_cn` → `zh-CN`).
 - Entries can be edited or deleted in any library, mounted or not; mount state
   only decides what the workbench searches and writes.
+- **Terminology mining**: *Mine terms from the document* in the glossary toolbar
+  lists candidates with occurrence counts, sample wording from memory, and a
+  marker when the term is already known. Counting finds the candidates and ranks
+  them (Latin n-grams, repeated CJK substrings filtered by boundary entropy);
+  a model only judges a shortlist, which is the part models are good at.
 
 ### Library workspace
 
-`Documents` / `Libraries` in the topbar switches between the translator and the
-library manager. The library view needs no open document.
+`Documents` / `Libraries` / `Align` in the topbar switches between the translator
+and the library manager. The library view needs no open document.
 
 - One table for translation memory, one for glossaries, with paging
   (20/50/100/200, remembered), language filters, and a search that can be scoped
@@ -105,6 +110,21 @@ library manager. The library view needs no open document.
   **JSON**. Import and clear stay available in the same toolbar.
 - The right panel's library button opens this workspace with the panel's search
   text already applied, so a lookup in the panel continues in the full list.
+
+### Alignment
+
+`Documents` / `Libraries` / `Align` — the third view builds a translation
+memory from two finished files: the source document and its translation, as
+separate files in any supported format and any pair of languages.
+
+- Cross-language scoring: shared anchors (numbers, `{0}` placeholders, URLs,
+  capitalised names), length normalised per language, and paragraph structure.
+  Word overlap is deliberately not used, because it cannot compare two languages.
+- Blocked dynamic programming pairs 1:1, 1:0, 0:1, 2:1 and 1:2; rows are graded
+  high / to review / doubtful and start selected only when they are high.
+- Each row can be merged with the next, split on line breaks, or removed before
+  writing; the target library is chosen in the toolbar, and identical entries are
+  skipped rather than duplicated.
 
 ### Workbench
 
@@ -125,8 +145,13 @@ library manager. The library view needs no open document.
 - Draft saving, confirm-and-next, previous/next navigation, and progress. The
   selected segment and the draft are persisted (debounced) so a restart resumes
   where you left off.
+- **Repeated segments are mirrored**: confirming a sentence fills every other
+  unconfirmed copy with the same source (`origin: auto`), editing a draft keeps
+  them in sync, and *Fill repeated segments* does the whole document at once.
+  Confirmed segments are never touched.
 - Advisory QA markers in the rail and an export-time summary: missing
-  placeholders/tags, mismatched numbers, unused glossary terms, empty targets.
+  placeholders/tags, mismatched numbers, unused glossary terms, empty targets,
+  an untouched copy of the source, and one source with several translations.
   Nothing is blocked and nothing is stored.
 - Document tabs; closing a tab does not delete the document.
 - **Open existing document** reopens a closed document.
@@ -238,7 +263,7 @@ In DSH Desktop (or any profile with the `plugin_manager` tool):
 plugin_manager install_bundle target: dsh-cait
 ```
 
-Pin a release with `dsh-cait@1.1.2`, or ask for the newest one with
+Pin a release with `dsh-cait@1.1.3`, or ask for the newest one with
 `dsh-cait@latest`. The manager resolves the registry package, applies the bundle
 patch, and activates the plugin — no hand-written profile rows.
 
@@ -337,10 +362,17 @@ confirmed becomes `translated` with `origin: manual`.
 | `cat_pre_translate` | Fill one block from TM + MT, skipping confirmed/translated segments; returns `next` |
 | `cat_get_segments` | Bounded segment window with status, origin, and suggestions |
 | `cat_confirm_segments` | Confirm a list of indices, a window, or everything awaiting review |
+| `cat_propose_translation` | Leave a suggestion plus a reason without touching the confirmed target |
+| `cat_align` | Align two texts and report high / to-review / doubtful pairs |
+| `cat_consistency_report` | Group repeated sources that carry different translations |
+| `cat_term_candidates` | Mining shortlist: frequency, sample sentences, existing memory wording |
+| `cat_add_terms` | Add accepted terminology to a library in one batch |
 
 An agent can therefore draft a whole document without clicking in the UI:
 `cat_pre_translate` with `from: next` until `next` is `null`, then
-`cat_get_segments` to review, then `cat_confirm_segments` to accept.
+`cat_get_segments` to review, then `cat_confirm_segments` to accept. For
+terminology it reads `cat_term_candidates`, judges the shortlist, and writes the
+result with `cat_add_terms`.
 
 The workbench and tools share one `CatStore`, so an agent can translate the same
 document the user has open.
@@ -351,7 +383,7 @@ document the user has open.
 flowchart LR
   UI["DSH Web UI<br/>(sidebar + workbench)"] --> Client["client.js<br/>generated Web bundle"]
   Client --> API["/cait/api/rpc<br/>same-origin JSON"]
-  Tools["10 agent tools"] --> Store["CatStore"]
+  Tools["15 agent tools"] --> Store["CatStore"]
   API --> Store
   Store --> Snapshot[("store.json<br/>+ sources/")]
 ```
@@ -451,7 +483,7 @@ node _dev/test-e2e-1.1.mjs
 
 The import/export fixtures are `_dev/sample.docx`, `_dev/sample-table.docx`, and
 `_dev/sample-format.docx`; regenerate them with the matching
-`python _dev/make-*.py` scripts. All 24 suites should pass.
+`python _dev/make-*.py` scripts. All 29 suites should pass.
 
 ### Releasing
 
@@ -531,8 +563,10 @@ provenance-publishing workflow, `v1.0.5` adds EPUB, import preprocessing,
 and the PDF policy, `v1.1.0` adds agent-driven pre-translation, the
 three-state segment model, stacked review, and advisory QA, `v1.1.1` adds
 the library workspace with TMX/TBX/CSV/JSON export, segment paging, and the
-panel-to-library jump, and `v1.1.2` adds context-aware memory with 101% (ICE)
-matches. The project
+panel-to-library jump, `v1.1.2` adds context-aware memory with 101% (ICE)
+matches, and `v1.1.3` adds two-file alignment, automatic propagation of
+repeated segments, terminology mining, and the proposal primitive agents use.
+The project
 was developed as `0.1.0` and renumbered for the GitHub release.
 
 > **License:** Apache License 2.0 — see [LICENSE](LICENSE). Redistributions must

@@ -561,6 +561,42 @@ window.__ModuleLoader__.load({
 .cait-libnote{margin:6px 0 0;font-size:10px;line-height:1.5;color:var(--dsw-alias-label-secondary)}
 .cait-libform-actions{display:flex;align-items:center;gap:6px;margin-top:11px}
 .cait-libform-actions .cait-btn{flex:1}
+.cait-batchbtn-plain{border-style:dashed}
+.cait-alignpage{display:flex;flex-direction:column;gap:10px;flex:1;min-height:0;padding:12px 14px 14px;overflow:auto}
+.cait-alignhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.cait-alignhead h2{margin:0 0 3px;font-size:13.5px;font-weight:600;color:var(--dsw-alias-label-primary)}
+.cait-alignactions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.cait-alignactions .cait-libinput{width:118px;min-height:26px;height:26px}
+.cait-alignfiles{display:flex;gap:8px;flex-wrap:wrap}
+.cait-alignfile{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px dashed var(--dsw-alias-border-l1);border-radius:8px;background:var(--dsw-alias-bg-layer-1);min-width:0;flex:1 1 300px}
+.cait-alignlabel{font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--dsw-alias-label-secondary);flex:0 0 auto}
+.cait-alignname{font-size:11.5px;color:var(--dsw-alias-label-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.cait-alignname.empty{color:var(--dsw-alias-label-secondary)}
+.cait-alignmeta{font-size:10px;color:var(--dsw-alias-label-secondary);font-variant-numeric:tabular-nums;flex:0 0 auto}
+.cait-alignstats{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--dsw-alias-label-secondary);font-variant-numeric:tabular-nums}
+.cait-alignstats .cait-btn{margin-left:auto}
+.cait-alignwarn{color:var(--dsw-alias-state-warning-primary)}
+.cait-aligntable-wrap{flex:1;min-height:0;overflow:auto;border:1px solid var(--dsw-alias-border-l1);border-radius:8px;background:var(--dsw-alias-bg-base)}
+.cait-aligntable td{vertical-align:top;font-size:11.5px;line-height:1.55}
+.cait-aligntable tr.included{background:color-mix(in srgb,var(--dsw-alias-brand-primary) 4%,transparent)}
+.cait-aligntable td:first-child{width:28px}
+.cait-aligntable td:nth-child(4){width:74px}
+.cait-aligntable td:nth-child(5){width:86px;white-space:nowrap}
+.cait-confidence{display:inline-block;padding:1px 6px;border-radius:999px;font-size:10px;font-variant-numeric:tabular-nums;border:1px solid var(--dsw-alias-border-l1);color:var(--dsw-alias-label-secondary)}
+.cait-confidence.high{border-color:color-mix(in srgb,var(--dsw-alias-state-success-primary) 45%,transparent);color:var(--dsw-alias-state-success-primary)}
+.cait-confidence.low{border-color:color-mix(in srgb,var(--dsw-alias-state-warning-primary) 45%,transparent);color:var(--dsw-alias-state-warning-primary)}
+.cait-alignmissing{color:var(--dsw-alias-label-secondary)}
+.cait-alignrow-actions{display:flex;gap:2px;justify-content:flex-end}
+.cait-termpanel{border:1px solid var(--dsw-alias-border-l1);border-radius:9px;background:var(--dsw-alias-bg-layer-1);padding:9px 10px;max-height:46vh;display:flex;flex-direction:column;gap:7px}
+.cait-termpanel-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cait-termpanel-head strong{font-size:12px;color:var(--dsw-alias-label-primary)}
+.cait-termpanel-actions{margin-left:auto;display:flex;gap:6px}
+.cait-termlist{overflow:auto;display:flex;flex-direction:column;gap:3px}
+.cait-termrow{display:flex;align-items:center;gap:7px;padding:3px 4px;border-radius:6px;font-size:11.5px}
+.cait-termrow.picked{background:color-mix(in srgb,var(--dsw-alias-brand-primary) 6%,transparent)}
+.cait-termname{font-family:var(--cait-mono,ui-monospace,monospace);color:var(--dsw-alias-label-primary);min-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cait-termcount{font-size:10px;color:var(--dsw-alias-label-secondary);font-variant-numeric:tabular-nums;flex:0 0 auto}
+.cait-termtarget{flex:1;min-width:120px;min-height:24px;height:24px}
 @media(max-width:1180px){.cait-main{grid-template-columns:minmax(0,1fr) 308px}.cait-body{grid-template-columns:218px minmax(0,1fr)}.cait-editor-col{padding:18px 20px 34px}.cait-actions .cait-btn-label{display:none}.cait-actions .cait-btn{padding:0 8px}.cait-libpage-body{grid-template-columns:196px minmax(0,1fr) 264px}}
 @media(max-width:940px){.cait-topbar{flex-wrap:wrap}.cait-body{grid-template-columns:190px minmax(0,1fr)}.cait-main{grid-template-columns:minmax(0,1fr)}.cait-cat{border-left:0;border-top:1px solid var(--dsw-alias-border-l1);max-height:43%;min-height:210px}.cait-features{grid-template-columns:1fr}.cait-docbar{display:flex;order:3;flex:1 1 100%;padding:7px 0 0;border-left:0;border-top:1px solid var(--dsw-alias-border-l1)}}
 @media(max-width:700px){.cait-body{grid-template-columns:minmax(0,1fr)}.cait-rail{display:none}.cait-editor-col{padding:14px}.cait-topbar{padding:9px 10px}.cait-export-grid{grid-template-columns:1fr}}
@@ -699,6 +735,9 @@ window.__ModuleLoader__.load({
         save: ['M3 2h8l2 2v10H3z', 'M5 2v4h6V2', 'M5 14v-4h6v4'],
         pencil: ['M11 2.5l2.5 2.5-8 8L2 14l1-3.5 8-8Z', 'M9.5 4l2.5 2.5'],
         languages: ['M2 4h7', 'M5.5 4v2c0 2-1.5 4-3.5 5', 'M4 8c0 1.5 2 3 4.5 3.5', 'M9 13l3-7 3 7', 'M10 11h4'],
+        check: ['M3 8.5l3.2 3.2L13 4.3'],
+        align: ['M2 5h8', 'M2 11h5', 'M12 3v10', 'M10 11l2 2 2-2'],
+        folder: ['M2 4h4l1.5 2H14v6.5H2z'],
       }
       const shape = paths[name] || paths.file
       return h(
@@ -970,7 +1009,12 @@ window.__ModuleLoader__.load({
       const progress = doc?.progress || { percent: 0, confirmed: 0, total: 0 }
       const openIds = new Set((data.openDocuments || []).map((item) => item.id))
       const closedDocuments = (data.documents || []).filter((item) => !openIds.has(item.id))
-      const documentsView = view !== 'libraries'
+      const documentsView = view === 'documents'
+      const viewTabs = [
+        { id: 'documents', label: t('nav.documents') },
+        { id: 'libraries', label: t('nav.libraries') },
+        { id: 'align', label: t('nav.align') },
+      ]
       return h(
         'header',
         { className: 'cait-topbar' },
@@ -983,23 +1027,17 @@ window.__ModuleLoader__.load({
         h(
           'div',
           { className: 'cait-viewtabs' },
-          h(
-            'button',
-            {
-              type: 'button',
-              className: `cait-viewtab${documentsView ? ' active' : ''}`,
-              onClick: () => onView('documents'),
-            },
-            t('nav.documents'),
-          ),
-          h(
-            'button',
-            {
-              type: 'button',
-              className: `cait-viewtab${documentsView ? '' : ' active'}`,
-              onClick: () => onView('libraries'),
-            },
-            t('nav.libraries'),
+          viewTabs.map((tab) =>
+            h(
+              'button',
+              {
+                key: tab.id,
+                type: 'button',
+                className: `cait-viewtab${view === tab.id ? ' active' : ''}`,
+                onClick: () => onView(tab.id),
+              },
+              tab.label,
+            ),
           ),
         ),
         documentsView
@@ -1101,7 +1139,7 @@ window.__ModuleLoader__.load({
 
     const SEGMENT_FILTERS = ['all', 'pending', 'translated', 'confirmed']
 
-    function SegmentRail({ t, doc, selected, query, setQuery, filter, setFilter, onSelect, onConfirmAll, busy, qa }) {
+    function SegmentRail({ t, doc, selected, query, setQuery, filter, setFilter, onSelect, onConfirmAll, onPropagate, busy, qa }) {
       const activeRef = useRef(null)
       const storage = typeof localStorage !== 'undefined' ? localStorage : null
       const [pageSize, setPageSize] = useState(() => readPageSize(storage))
@@ -1127,6 +1165,23 @@ window.__ModuleLoader__.load({
         pending: doc.progress.pending,
         translated: doc.progress.translated,
         confirmed: doc.progress.confirmed,
+      }
+
+      // How many empty segments could be filled from a sibling with the same
+      // source. Shown on the rail so propagation is a visible, one-click choice
+      // rather than something happening behind the user's back.
+      const duplicateGroups = new Map()
+      for (const segment of doc.segments) {
+        const key = String(segment.source || '').replace(/\s+/g, ' ').trim().toLowerCase()
+        if (!key) continue
+        const list = duplicateGroups.get(key) || []
+        list.push(segment)
+        duplicateGroups.set(key, list)
+      }
+      let duplicated = 0
+      for (const list of duplicateGroups.values()) {
+        if (list.length < 2 || !list.some((segment) => segment.target)) continue
+        duplicated += list.filter((segment) => !segment.target).length
       }
       const needle = query.trim().toLowerCase()
       const filtered = doc.segments
@@ -1233,6 +1288,19 @@ window.__ModuleLoader__.load({
                 },
                 h(Icon, { name: 'check', size: 11 }),
                 `${t('rail.confirmAll')} · ${doc.progress.translated}`,
+              )
+            : null,
+          duplicated > 0
+            ? h(
+                'button',
+                {
+                  className: 'cait-batchbtn cait-batchbtn-plain',
+                  onClick: onPropagate,
+                  disabled: Boolean(busy),
+                  title: t('rail.propagateMessage'),
+                },
+                h(Icon, { name: 'copy', size: 11 }),
+                `${t('rail.propagate')} · ${duplicated}`,
               )
             : null,
           h(
@@ -2105,6 +2173,287 @@ window.__ModuleLoader__.load({
      * need an open document — the rail and the right panel stay document-scoped
      * and this page is the only place that manages whole libraries.
      */
+    function AlignPage({ t, data, busy, notify, report, onApplyState, onConfirm }) {
+      const [sourceFile, setSourceFile] = useState(null)
+      const [targetFile, setTargetFile] = useState(null)
+      const [sourceLang, setSourceLang] = useState('')
+      const [targetLang, setTargetLang] = useState('')
+      const [result, setResult] = useState(null)
+      const [rows, setRows] = useState([])
+      const [working, setWorking] = useState(false)
+      const [tmId, setTmId] = useState('')
+      const sourceRef = useRef(null)
+      const targetRef = useRef(null)
+      const libraries = data?.tmLibraries || []
+
+      useEffect(() => {
+        if (!tmId && libraries.length) setTmId(libraries[0].id)
+      }, [libraries.length])
+
+      const readBase64 = (file) =>
+        new Promise((resolve, reject) => {
+          const reader = new FileReader()
+          reader.onerror = () => reject(new Error(t('align.readError')))
+          reader.onload = () => {
+            const value = String(reader.result || '')
+            const comma = value.indexOf(',')
+            resolve(comma >= 0 ? value.slice(comma + 1) : '')
+          }
+          reader.readAsDataURL(file)
+        })
+
+      const pick = async (which, file) => {
+        if (!file) return
+        setWorking(true)
+        try {
+          const uploaded = await rpc('readUploadText', {
+            name: file.name,
+            base64: await readBase64(file),
+          })
+          const picked = { name: uploaded.name, text: uploaded.text, chars: uploaded.chars }
+          if (which === 'source') setSourceFile(picked)
+          else setTargetFile(picked)
+        } catch (error) {
+          report(error)
+        } finally {
+          setWorking(false)
+        }
+      }
+
+      const run = async () => {
+        if (!sourceFile || !targetFile) {
+          notify(t('align.needFiles'), true)
+          return
+        }
+        setWorking(true)
+        try {
+          const aligned = await rpc('alignUploads', {
+            sourceFile: { name: sourceFile.name, text: sourceFile.text },
+            targetFile: { name: targetFile.name, text: targetFile.text },
+            sourceLang,
+            targetLang,
+          })
+          setResult(aligned)
+          setRows(aligned.rows.map((row) => ({ ...row, include: row.confidence === 'high' })))
+        } catch (error) {
+          report(error)
+        } finally {
+          setWorking(false)
+        }
+      }
+
+      const updateRow = (at, patch) =>
+        setRows((current) => current.map((row, position) => (position === at ? { ...row, ...patch } : row)))
+
+      const removeRow = (at) => setRows((current) => current.filter((_row, position) => position !== at))
+
+      const mergeRow = (at) =>
+        setRows((current) => {
+          const head = current[at]
+          const next = current[at + 1]
+          if (!head || !next) return current
+          const merged = {
+            ...head,
+            target: [head.target, next.target].filter(Boolean).join(' '),
+            include: head.include,
+            merged: true,
+          }
+          return [...current.slice(0, at), merged, ...current.slice(at + 2)]
+        })
+
+      const splitRow = (at) =>
+        setRows((current) => {
+          const row = current[at]
+          if (!row || !row.target) return current
+          const parts = String(row.target).split(/\n+/).filter(Boolean)
+          if (parts.length < 2) return current
+          const replacement = parts.map((part) => ({ ...row, target: part }))
+          return [...current.slice(0, at), ...replacement, ...current.slice(at + 1)]
+        })
+
+      const write = async () => {
+        const pairs = rows
+          .filter((row) => row.include && row.source && row.target)
+          .map((row) => ({ source: row.source, target: row.target, sourceLang, targetLang }))
+        if (!pairs.length) {
+          notify(t('align.nothing'), true)
+          return
+        }
+        onConfirm({
+          title: t('align.write'),
+          message: t('align.writeMessage', { count: pairs.length }),
+          action: async () => {
+            setWorking(true)
+            try {
+              const written = await rpc('writeAlignment', { pairs, tmId: tmId || undefined })
+              notify(t('align.written', { written: written.written, skipped: written.skipped }))
+            } catch (error) {
+              report(error)
+            } finally {
+              setWorking(false)
+            }
+          },
+        })
+      }
+
+      const included = rows.filter((row) => row.include && row.source && row.target).length
+      const fileCard = (which, file, ref) =>
+        h(
+          'div',
+          { className: 'cait-alignfile' },
+          h('span', { className: 'cait-alignlabel' }, t(which === 'source' ? 'align.sourceFile' : 'align.targetFile')),
+          h('span', { className: `cait-alignname${file ? '' : ' empty'}` }, file ? file.name : t('align.pick')),
+          h('span', { className: 'cait-alignmeta' }, file ? t('align.chars', { count: file.chars }) : ''),
+          h('input', {
+            ref,
+            type: 'file',
+            accept: '.txt,.md,.docx,.epub,.html,.htm,.xlsx,.pptx,.csv,.srt,.vtt,.po,.json,.rtf,.xliff',
+            style: { display: 'none' },
+            onChange: (event) => {
+              const chosen = event.target.files && event.target.files[0]
+              pick(which, chosen)
+              event.target.value = ''
+            },
+          }),
+          h(
+            'button',
+            { type: 'button', className: 'cait-btn', onClick: () => ref.current && ref.current.click(), disabled: working },
+            h(Icon, { name: 'folder', size: 13 }),
+            h('span', { className: 'cait-btn-label' }, t('align.choose')),
+          ),
+        )
+
+      return h(
+        'div',
+        { className: 'cait-alignpage' },
+        h(
+          'div',
+          { className: 'cait-alignhead' },
+          h('div', null, h('h2', null, t('align.title')), h('p', { className: 'cait-mt-hint' }, t('align.hint'))),
+          h(
+            'div',
+            { className: 'cait-alignactions' },
+            h('input', {
+              className: 'cait-libinput',
+              placeholder: t('align.sourceLang'),
+              value: sourceLang,
+              onChange: (event) => setSourceLang(event.target.value),
+            }),
+            h('input', {
+              className: 'cait-libinput',
+              placeholder: t('align.targetLang'),
+              value: targetLang,
+              onChange: (event) => setTargetLang(event.target.value),
+            }),
+            h(
+              'select',
+              {
+                className: 'cait-select cait-liblang',
+                value: tmId,
+                onChange: (event) => setTmId(event.target.value),
+              },
+              libraries.map((library) => h('option', { key: library.id, value: library.id }, library.name)),
+            ),
+            h(
+              'button',
+              { type: 'button', className: 'cait-btn cait-btn-primary', onClick: run, disabled: working || !sourceFile || !targetFile },
+              h(Icon, { name: 'align', size: 13 }),
+              h('span', { className: 'cait-btn-label' }, working ? t('align.running') : t('align.run')),
+            ),
+          ),
+        ),
+        h('div', { className: 'cait-alignfiles' }, fileCard('source', sourceFile, sourceRef), fileCard('target', targetFile, targetRef)),
+        result
+          ? h(
+              'div',
+              { className: 'cait-alignstats' },
+              h('span', null, t('align.stats', {
+                high: result.high,
+                medium: result.medium,
+                low: result.low,
+              })),
+              h('span', null, `${t('align.unpairedSource')}: ${result.unpairedSource}`),
+              h('span', null, `${t('align.unpairedTarget')}: ${result.unpairedTarget}`),
+              result.blocked ? h('span', { className: 'cait-alignwarn' }, t('align.blocked')) : null,
+              h(
+                'button',
+                { type: 'button', className: 'cait-btn', onClick: write, disabled: working || !included },
+                h(Icon, { name: 'check', size: 13 }),
+                h('span', { className: 'cait-btn-label' }, t('align.writeCount', { count: included })),
+              ),
+            )
+          : null,
+        rows.length
+          ? h(
+              'div',
+              { className: 'cait-libtable-wrap cait-aligntable-wrap' },
+              h(
+                'table',
+                { className: 'cait-libtable cait-aligntable' },
+                h(
+                  'thead',
+                  null,
+                  h(
+                    'tr',
+                    null,
+                    h('th', null, ''),
+                    h('th', null, t('align.sourceFile')),
+                    h('th', null, t('align.targetFile')),
+                    h('th', null, t('align.confidence')),
+                    h('th', null, ''),
+                  ),
+                ),
+                h(
+                  'tbody',
+                  null,
+                  rows.map((row, at) =>
+                    h(
+                      'tr',
+                      { key: `${row.sourceIndex}-${row.targetIndex}-${at}`, className: row.include ? 'included' : '' },
+                      h(
+                        'td',
+                        null,
+                        h('input', {
+                          type: 'checkbox',
+                          checked: Boolean(row.include),
+                          onChange: (event) => updateRow(at, { include: event.target.checked }),
+                        }),
+                      ),
+                      h('td', null, row.source),
+                      h('td', null, row.target || h('span', { className: 'cait-alignmissing' }, '—')),
+                      h(
+                        'td',
+                        null,
+                        h('span', { className: `cait-confidence ${row.confidence}` }, `${Math.round(row.score * 100)}%`),
+                      ),
+                      h(
+                        'td',
+                        { className: 'cait-alignrow-actions' },
+                        h(
+                          'button',
+                          { type: 'button', className: 'cait-minibtn', title: t('align.merge'), onClick: () => mergeRow(at) },
+                          h(Icon, { name: 'chevronDown', size: 12 }),
+                        ),
+                        h(
+                          'button',
+                          { type: 'button', className: 'cait-minibtn', title: t('align.split'), onClick: () => splitRow(at) },
+                          h(Icon, { name: 'chevronRight', size: 12 }),
+                        ),
+                        h(
+                          'button',
+                          { type: 'button', className: 'cait-minibtn cait-deletebtn', title: t('align.remove'), onClick: () => removeRow(at) },
+                          h(Icon, { name: 'trash', size: 12 }),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            )
+          : null,
+      )
+    }
+
     function LibraryPage({
       t,
       data,
@@ -2137,6 +2486,7 @@ window.__ModuleLoader__.load({
       const [newLibraryName, setNewLibraryName] = useState('')
       const [adding, setAdding] = useState(false)
       const [exportFormat, setExportFormat] = useState('tbx')
+      const [terms, setTerms] = useState(null)
       const fileRef = useRef(null)
       const importMode = useRef('')
 
@@ -2216,6 +2566,61 @@ window.__ModuleLoader__.load({
         )
 
       const selectKind = (next) => setKind(next)
+
+      const mineTerms = async () => {
+        const active = data?.activeDocument
+        if (!active) {
+          notify(t('term.noDoc'), true)
+          return
+        }
+        setWorking('terms')
+        try {
+          const mined = await rpc('termCandidates', { documentId: active.id, limit: 60 })
+          setTerms(mined.candidates.map((candidate) => ({
+            ...candidate,
+            picked: false,
+            target: candidate.evidence[0] || '',
+          })))
+        } catch (error) {
+          report(error)
+        } finally {
+          setWorking('')
+        }
+      }
+
+      const toggleTerm = (index) =>
+        setTerms((current) =>
+          current.map((item, position) => (position === index ? { ...item, picked: !item.picked } : item)),
+        )
+
+      const setTermTarget = (index, value) =>
+        setTerms((current) =>
+          current.map((item, position) => (position === index ? { ...item, target: value, picked: true } : item)),
+        )
+
+      const addMinedTerms = async () => {
+        const picked = (terms || []).filter((item) => item.picked && item.target.trim())
+        if (!picked.length) return
+        setWorking('terms')
+        try {
+          const result = await rpc('addGlossaryEntries', {
+            glossaryId: targetLibraryId || undefined,
+            entries: picked.map((item) => ({
+              source: item.term,
+              target: item.target.trim(),
+              sourceLang: settings.sourceLang,
+            })),
+          })
+          if (result?.state) onApplyState(result.state)
+          notify(t('term.added').replace('{added}', String(result.added)))
+          setTerms(null)
+          await loadRows()
+        } catch (error) {
+          report(error)
+        } finally {
+          setWorking('')
+        }
+      }
 
       const toggleScope = (id) => {
         setPage(1)
@@ -2602,6 +3007,20 @@ window.__ModuleLoader__.load({
                     ['tbx', 'csv', 'json'].map((format) => h('option', { key: format, value: format }, format.toUpperCase())),
                   )
                 : null,
+              kind === 'glossary'
+                ? h(
+                    'button',
+                    {
+                      type: 'button',
+                      className: 'cait-btn',
+                      onClick: mineTerms,
+                      disabled: Boolean(busy) || working === 'terms' || !data?.activeDocument,
+                      title: t('term.extract'),
+                    },
+                    h(Icon, { name: 'sparkles', size: 13 }),
+                    h('span', { className: 'cait-btn-label' }, t('term.extract')),
+                  )
+                : null,
               h(
                 'button',
                 { type: 'button', className: 'cait-btn', onClick: startAdding, disabled: Boolean(busy) },
@@ -2861,6 +3280,53 @@ window.__ModuleLoader__.load({
               : h('div', { className: 'cait-empty-note' }, t('library.detailEmpty')),
           ),
         ),
+        terms
+          ? h(
+              'div',
+              { className: 'cait-termpanel' },
+              h(
+                'div',
+                { className: 'cait-termpanel-head' },
+                h('strong', null, t('term.title')),
+                h('span', { className: 'cait-mt-hint' }, t('term.hint')),
+                h('span', { className: 'cait-termpanel-actions' },
+                  h(
+                    'button',
+                    { type: 'button', className: 'cait-btn cait-btn-primary', onClick: addMinedTerms, disabled: working === 'terms' },
+                    h(Icon, { name: 'check', size: 13 }),
+                    t('term.add'),
+                  ),
+                  h('button', { type: 'button', className: 'cait-btn', onClick: () => setTerms(null) }, t('panel.cancel')),
+                ),
+              ),
+              terms.length
+                ? h(
+                    'div',
+                    { className: 'cait-termlist' },
+                    terms.map((candidate, at) =>
+                      h(
+                        'div',
+                        { key: `${candidate.term}-${at}`, className: `cait-termrow${candidate.picked ? ' picked' : ''}` },
+                        h('input', {
+                          type: 'checkbox',
+                          checked: Boolean(candidate.picked),
+                          onChange: () => toggleTerm(at),
+                        }),
+                        h('span', { className: 'cait-termname' }, candidate.term),
+                        h('span', { className: 'cait-termcount' }, `×${candidate.count}`),
+                        candidate.inLibrary ? h('span', { className: 'cait-originchip' }, t('term.inLibrary')) : null,
+                        h('input', {
+                          className: 'cait-libinput cait-termtarget',
+                          placeholder: t('library.colTarget'),
+                          value: candidate.target,
+                          onChange: (event) => setTermTarget(at, event.target.value),
+                        }),
+                      ),
+                    ),
+                  )
+                : h('div', { className: 'cait-empty-note' }, t('term.empty')),
+            )
+          : null,
       )
     }
 
@@ -3795,6 +4261,22 @@ window.__ModuleLoader__.load({
         })
       }
 
+      const propagateRepeats = () => {
+        const active = data?.activeDocument
+        if (!active) return
+        setModal({
+          type: 'confirm',
+          title: t('rail.propagate'),
+          message: t('rail.propagateMessage'),
+          confirmLabel: t('rail.propagate'),
+          action: async () => {
+            const result = await rpc('propagateDocument', { documentId: active.id })
+            await refreshState()
+            notify(t('toast.propagated').replace('{count}', String(result.filled)))
+          },
+        })
+      }
+
       const addTerm = async (form) => {        setBusy('term')
         try {
           const result = await rpc('addGlossary', {
@@ -4184,11 +4666,22 @@ window.__ModuleLoader__.load({
               onDeleteLibrary: deleteLibrary,
             })
           : null,
+        view === 'align'
+          ? h(AlignPage, {
+              t,
+              data,
+              busy,
+              notify,
+              report,
+              onApplyState: (state) => setData(state),
+              onConfirm: openConfirm,
+            })
+          : null,
         view === 'documents'
           ? h(
           'div',
           { className: `cait-body${doc ? '' : ' cait-no-doc'}` },
-          doc ? h(SegmentRail, { t, doc, selected: index, query: railQuery, setQuery: setRailQuery, filter: railFilter, setFilter: setRailFilter, onSelect: chooseSegment, onConfirmAll: confirmAllTranslated, busy, qa }) : null,
+          doc ? h(SegmentRail, { t, doc, selected: index, query: railQuery, setQuery: setRailQuery, filter: railFilter, setFilter: setRailFilter, onSelect: chooseSegment, onConfirmAll: confirmAllTranslated, onPropagate: propagateRepeats, busy, qa }) : null,
           h(
             'div',
             { className: `cait-main${doc ? '' : ' cait-main-empty'}` },
@@ -4617,6 +5110,45 @@ window.__ModuleLoader__.load({
       'panel.searchInLibrary': '在库中搜索',
       'panel.viewAll': '在库页面查看全部',
       'panel.glossaryMatchesOnly': '这里只显示当前句段命中的术语。',
+      'nav.align': '对齐',
+      'align.title': '对齐两个文件',
+      'align.hint': '分别放入源文件和译文文件，CAIT 会按段落逐句配对。两个文件可以是完全不同的语言。',
+      'align.sourceFile': '源文件',
+      'align.targetFile': '译文文件',
+      'align.pick': '未选择文件',
+      'align.choose': '选择',
+      'align.chars': '{count} 字符',
+      'align.run': '开始对齐',
+      'align.running': '对齐中…',
+      'align.needFiles': '请先选择源文件和译文文件。',
+      'align.readError': '读取文件失败。',
+      'align.sourceLang': '源语言（可选）',
+      'align.targetLang': '目标语言（可选）',
+      'align.stats': '高置信 {high} · 待确认 {medium} · 可疑 {low}',
+      'align.unpairedSource': '未配对原文',
+      'align.unpairedTarget': '未配对译文',
+      'align.blocked': '文件较大，已按段落分块对齐，结果可能不如整体对齐稳定。',
+      'align.confidence': '置信度',
+      'align.merge': '与下一行合并',
+      'align.split': '按换行拆开',
+      'align.remove': '删除这一行',
+      'align.write': '写入记忆库',
+      'align.writeCount': '写入选中的 {count} 条',
+      'align.writeMessage': '将写入 {count} 条，完全相同的条目会被跳过。',
+      'align.written': '已写入 {written} 条，跳过 {skipped} 条。',
+      'align.nothing': '没有可写入的行。',
+      'origin.auto': '自动传播',
+      'rail.propagate': '铺满重复句段',
+      'rail.propagateMessage': '把已有译文填到本文档中其它相同原文的句段（已确认的不会动）。',
+      'toast.propagated': '已铺满 {count} 个句段。',
+      'term.title': '术语候选',
+      'term.hint': '按出现次数与长度排序，点选后填入译文即可入库。',
+      'term.extract': '从文档提取术语',
+      'term.empty': '没有找到重复出现的候选术语。',
+      'term.add': '加入术语库',
+      'term.added': '已加入 {added} 条术语。',
+      'term.noDoc': '先打开一个文档再提取术语。',
+      'term.inLibrary': '已有',
     }
 
     const EN = {
@@ -4945,6 +5477,45 @@ window.__ModuleLoader__.load({
       'panel.searchInLibrary': 'Search the library',
       'panel.viewAll': 'View all in libraries',
       'panel.glossaryMatchesOnly': 'Only terms that match this segment are listed here.',
+      'nav.align': 'Align',
+      'align.title': 'Align two files',
+      'align.hint': 'Drop the source file and the translated file. CAIT pairs them paragraph by paragraph — they can be in completely different languages.',
+      'align.sourceFile': 'Source file',
+      'align.targetFile': 'Translated file',
+      'align.pick': 'No file chosen',
+      'align.choose': 'Choose',
+      'align.chars': '{count} chars',
+      'align.run': 'Align',
+      'align.running': 'Aligning…',
+      'align.needFiles': 'Choose both files first.',
+      'align.readError': 'Could not read that file.',
+      'align.sourceLang': 'Source language (optional)',
+      'align.targetLang': 'Target language (optional)',
+      'align.stats': 'high {high} · to review {medium} · doubtful {low}',
+      'align.unpairedSource': 'Unpaired source',
+      'align.unpairedTarget': 'Unpaired target',
+      'align.blocked': 'Large files are aligned in paragraph blocks; results may be less stable than a whole-file pass.',
+      'align.confidence': 'Confidence',
+      'align.merge': 'Merge with the next row',
+      'align.split': 'Split on line breaks',
+      'align.remove': 'Remove this row',
+      'align.write': 'Write to memory',
+      'align.writeCount': 'Write {count} selected',
+      'align.writeMessage': 'This writes {count} pair(s); identical entries are skipped.',
+      'align.written': 'Wrote {written}, skipped {skipped}.',
+      'align.nothing': 'Nothing selected to write.',
+      'origin.auto': 'Propagated',
+      'rail.propagate': 'Fill repeated segments',
+      'rail.propagateMessage': 'Copy the existing translation to other segments with the same source. Confirmed segments are left alone.',
+      'toast.propagated': 'Filled {count} segment(s).',
+      'term.title': 'Terminology candidates',
+      'term.hint': 'Ranked by occurrences and length. Pick the real terms, type a translation, and add them.',
+      'term.extract': 'Mine terms from the document',
+      'term.empty': 'No repeated candidate found.',
+      'term.add': 'Add to glossary',
+      'term.added': 'Added {added} term(s).',
+      'term.noDoc': 'Open a document before mining terms.',
+      'term.inLibrary': 'in library',
     }
 
     const JA = {
@@ -5273,6 +5844,45 @@ window.__ModuleLoader__.load({
       'panel.searchInLibrary': 'ライブラリを検索',
       'panel.viewAll': 'ライブラリで全件表示',
       'panel.glossaryMatchesOnly': 'ここには現在のセグメントに一致する用語だけを表示します。',
+      'nav.align': '整列',
+      'align.title': '2つのファイルを整列',
+      'align.hint': '原文ファイルと訳文ファイルをそれぞれ選んでください。段落ごとに 1 対 1 で対応づけます。言語が違っても構いません。',
+      'align.sourceFile': '原文ファイル',
+      'align.targetFile': '訳文ファイル',
+      'align.pick': 'ファイル未選択',
+      'align.choose': '選択',
+      'align.chars': '{count} 文字',
+      'align.run': '整列する',
+      'align.running': '整列中…',
+      'align.needFiles': '先に 2 つのファイルを選んでください。',
+      'align.readError': 'ファイルを読み込めませんでした。',
+      'align.sourceLang': '原文言語（任意）',
+      'align.targetLang': '訳文言語（任意）',
+      'align.stats': '高 {high} · 要確認 {medium} · 要注意 {low}',
+      'align.unpairedSource': '未対応の原文',
+      'align.unpairedTarget': '未対応の訳文',
+      'align.blocked': '大きいファイルは段落ブロックごとに整列します。全体整列より不安定になることがあります。',
+      'align.confidence': '信頼度',
+      'align.merge': '次の行と結合',
+      'align.split': '改行で分割',
+      'align.remove': 'この行を削除',
+      'align.write': 'メモリに保存',
+      'align.writeCount': '選択した {count} 件を保存',
+      'align.writeMessage': '{count} 件を保存します。同一の項目はスキップされます。',
+      'align.written': '{written} 件を保存、{skipped} 件をスキップしました。',
+      'align.nothing': '保存する行がありません。',
+      'origin.auto': '自動反映',
+      'rail.propagate': '重複セグメントを埋める',
+      'rail.propagateMessage': '同じ原文の他のセグメントに既存の訳文をコピーします。確定済みは変更しません。',
+      'toast.propagated': '{count} 件のセグメントを埋めました。',
+      'term.title': '用語候補',
+      'term.hint': '出現回数と長さで並んでいます。実際の用語だけを選び、訳語を入れて登録してください。',
+      'term.extract': '文書から用語を抽出',
+      'term.empty': '繰り返し現れる候補はありませんでした。',
+      'term.add': '用語集に追加',
+      'term.added': '{added} 件の用語を追加しました。',
+      'term.noDoc': '先に文書を開いてください。',
+      'term.inLibrary': '登録済み',
     }
 
     // UI languages offered by the in-app switch. 'auto' follows the DSH locale

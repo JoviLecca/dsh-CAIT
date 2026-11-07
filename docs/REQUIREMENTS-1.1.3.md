@@ -1,7 +1,7 @@
 # CAIT 1.1.3 需求：对齐、传播与 agent 协作
 
-> 状态：**草案，未开发**
-> 基线：`v1.1.1`（`b7aa4e1`）
+> 状态：**已实现（2026-11-07）**——见文末「十一、实现记录」
+> 基线：`v1.1.2`（`18a4117`）
 > 前置：`docs/REQUIREMENTS-1.1.2.md`（上下文 TM）**必须先完成**——对齐器写库、自动传播、一致性检查都要碰 TM 条目结构，反过来做会返工
 > 目标版本：`1.1.3`
 > 优先级来源：用户 2026-11-07 定序 **C（记忆）→ A（速度）→ B（质量）→ D（交接）**，原话「主要还是记忆和速度，我并不担心质量，如今的AI在翻译方面比许多人类翻译要强很多，最后才是交接。」
@@ -214,3 +214,14 @@ proposeTranslation({ documentId, index, target, reason? })
 | `origin = 'auto'` 扩散到导出与样式 | 逐处检查：`SEGMENT_ORIGINS`、导出列、三份 locales、状态点、`test-three-state` |
 | agent 写的建议质量参差，淹没人工结果 | 建议与译文严格分离（`suggestion` 字段），审校区可一键忽略；不自动采纳 |
 | 对齐写入的条目污染已有记忆 | 写入前显示目标库与跳过条数；默认写入用户选定的库，不动其它库 |
+
+## 十一、实现记录（2026-11-07）
+
+- 新增文件：`lib/aligner.js`（打分 + DP + `alignUploads`/`writeAlignment`）、`lib/propagate.js`（同源分组、确认后填充、编辑同步、整篇铺满）、`lib/term-extract.js`（纯算法候选与排序）、`lib/terms.js`（`termCandidates`/`addGlossaryEntries`）。
+- 文档读取：`lib/import-export.js` 的 `readUploadBody` / `readUploadText` 只取文本、不建文档；docx 走 `parseDocxDetailed`，epub/xlsx/pptx 用已有解析器，md 去标记，其余按纯文本。
+- 工具从 10 个增到 15 个：`cat_propose_translation`、`cat_align`、`cat_consistency_report`、`cat_term_candidates`、`cat_add_terms`。新增工具必须用 `ctx.tools.register`，`ctx.tool` 不存在（第一次写成 `ctx.tool` 直接让 `test-plugin` 报错）。
+- 界面：顶栏第三 tab「对齐」（`AlignPage`），左文件卡用 `FileReader.readAsDataURL` + `readUploadText`，行表支持勾选/合并/拆分/删除；句段栏新增「铺满重复句段」；库页面术语页签新增「从文档提取术语」与候选面板。
+- 与设计的差异：① 没有单独的 `cat_align` 文件上传参数，工具只接文本（MCP 工具传不了二进制，界面才走 `readUploadText`）；② 候选面板的译文默认填记忆库证据的第一条，而不是留空；③ `alignUploads` 直接返回完整行表，没有单独的分页（500 行以内够用）；④ 术语提取的候选上限 60（设计里写 60–80），界面一次全显示。
+- 未做：MT 代理模式、`blocked` 之外的块级预对齐界面、风格改写（仍只写在 README 的路线图里）。
+- 测试：新增 `test-align`（9 节）、`test-propagate`（4 节）、`test-propose`（4 节）、`test-terms`（9 节），`test-qa` 扩到 11 节，`test-plugin` 改为 15 个工具；合计 29 个套件全绿。
+
