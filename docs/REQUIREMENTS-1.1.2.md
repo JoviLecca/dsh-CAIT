@@ -1,13 +1,13 @@
-# CAIT 1.2 需求：上下文感知的翻译记忆
+# CAIT 1.1.2 需求：上下文感知的翻译记忆
 
 > 状态：**草案，未开发**
-> 基线：`v1.1.0`（`bb5c403`）
-> 目标版本：`1.2.0`
-> 关联：`docs/REQUIREMENTS-1.1.1.md`（库管理，先做）
+> 基线：`v1.1.1`（`b7aa4e1`）
+> 目标版本：`1.1.2`
+> 关联：`docs/REQUIREMENTS-1.1.1.md`（库管理，已实现）
 
 ## 一、为什么做
 
-1.1.0 之后 CAIT 的记忆库在「写入时机」和「管理面」上已经接近主流 CAT 工具，但有一个结构差距：
+1.1.1 之后 CAIT 的记忆库在「写入时机」和「管理面」上已经接近主流 CAT 工具，但有一个结构差距：
 
 **同一句原文只能存一条译文。**
 
@@ -88,7 +88,7 @@ function contextOf(doc, index) {
 - `adoptSuggestion` 采纳后不额外写 TM（保持现状，确认时才写）。
 - `preTranslate` 的 `tmExactIndex` 改为按 `(key, contextHash)` 建索引：先找 ICE，再找 `contextHash === null` 的通用条目；命中 ICE 的段 `origin` 仍是 `'tm'`，但返回结构里多一个 `ice: true` 供工具文案使用。
 - `updateTM`（手工改译文）保留原 `context`，不清空；`deleteTM` 不变。
-- 新增 `clearTmContext({ id })`？**不做**，1.2 不提供单独清上下文；要清就删了重加。
+- 新增 `clearTmContext({ id })`？**不做**，1.1.2 不提供单独清上下文；要清就删了重加。
 
 ### 3.5 迁移 v3 → v4
 
@@ -98,14 +98,14 @@ function contextOf(doc, index) {
 - 版本号写回 4；
 - v1/v2/v3 全部可读（沿用现有 `payload.version !== 1 && !== 2 && !== 3 && !== STORE_VERSION` 的写法，改成白名单集合更清楚）。
 
-迁移是**纯增量**：旧条目全部 `contextHash = null`，行为与 1.1.0 完全一致，直到用户重新确认句段。不需要回填历史文档的上下文（回填需要重新打开每篇文档并把整库重写一遍，风险大于收益）。
+迁移是**纯增量**：旧条目全部 `contextHash = null`，行为与 1.1.1 完全一致，直到用户重新确认句段。不需要回填历史文档的上下文（回填需要重新打开每篇文档并把整库重写一遍，风险大于收益）。
 
 ### 3.6 TMX 往返
 
 - 导出：`<tu>` 内写 `<prop type="x-context">prev\u0001next</prop>`（标准允许 `x-` 前缀自定义 prop，其他工具会原样保留或忽略）。`contextHash` 不导出，导入时重算。
 - 导入：`parseTmx` 解析 `<tu>` 下的 `<prop type="x-context">`，拆回 `prev/next`；无 prop 的 TU 得到 `null`。
 - **导入去重必须改**：`importTmx` 目前逐条 `upsertTM` 会把同 key 的多条上下文条目合并成一条（最后一条赢）。改为按 `(key, contextHash)` upsert，与 3.1 的唯一性一致。
-- 兼容性验证：导出的 TMX 用 1.1.0 的 `parseTmx` 读，`units` 数量不变、文本不变（prop 被忽略），所以老版本读新文件不会报错。
+- 兼容性验证：导出的 TMX 用 1.1.1 的 `parseTmx` 读，`units` 数量不变、文本不变（prop 被忽略），所以老版本读新文件不会报错。
 
 ### 3.7 体积
 
@@ -142,11 +142,11 @@ function contextOf(doc, index) {
 5. 每 key 超过 8 条上下文 → 淘汰最旧一条并返回 warning。
 6. v3 存档迁移：旧条目 `contextHash === null`，`version` 写回 4，行为不变。
 7. TMX 导出含 `x-context`，重新导入后条目数不变、101% 仍成立。
-8. 用 1.1.0 的 `parseTmx` 读新导出文件（直接 import 老解析逻辑断言 units 数）→ 不报错。
+8. 用 1.1.1 的 `parseTmx` 读新导出文件（直接 import 老解析逻辑断言 units 数）→ 不报错。
 9. `preTranslate` 在 `tm` 模式下优先填 ICE 段，返回 `ice: true`。
 10. 手工 `updateTM` 改译文后 `context` 保留。
 
-回归：22 个既有套件全绿，尤其 `test-three-state`、`test-pretranslate`、`test-formats`、`test-e2e-1.1`。
+回归：24 个既有套件全绿，尤其 `test-three-state`、`test-pretranslate`、`test-formats`、`test-e2e-1.1`。
 
 ## 七、不做
 
@@ -188,5 +188,5 @@ function contextOf(doc, index) {
 
 - 判断中文文件内容一律用 `read` / `grep` 工具，不要用 `Get-Content` 的屏幕输出下结论。
 - 改写中文文件只用 `edit` / `write`，不要用 `Set-Content`（会写成 ANSI 并损坏文件）。
-- 因此 1.2 不需要改这个字符串；若想留一道防线，可以在 1.2 的测试里断言
+- 因此 1.1.2 不需要改这个字符串；若想留一道防线，可以在 1.1.2 的测试里断言
   `lib/tmx.js` 的这条 message 含「内联占位符」等关键片段即可，不必再做编码转换。
