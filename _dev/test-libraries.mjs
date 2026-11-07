@@ -3,6 +3,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CatStore } from '../lib/store.js'
+import { STORE_VERSION } from '../lib/store-utils.js'
 
 const silent = { warn() {}, error() {} }
 const dataDir = mkdtempSync(join(tmpdir(), 'cait-libraries-'))
@@ -93,7 +94,7 @@ try {
   )
 
   const snapshot = JSON.parse(readFileSync(file, 'utf8'))
-  assert.equal(snapshot.version, 2)
+  assert.equal(snapshot.version, STORE_VERSION)
   assert.equal(snapshot.tmLibraries.length, 2)
   assert.equal(snapshot.glossaryLibraries.length, 2)
   assert.deepEqual(snapshot.mounts.tmIds, ['tm_default'])

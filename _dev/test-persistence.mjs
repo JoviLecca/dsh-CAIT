@@ -3,6 +3,7 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'n
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CatStore } from '../lib/store.js'
+import { STORE_VERSION } from '../lib/store-utils.js'
 
 const silent = { warn() {}, error() {} }
 const roots = []
@@ -37,11 +38,14 @@ try {
   assert.equal(confirmed.progress.confirmed, 1)
 
   const snapshot = JSON.parse(readFileSync(file, 'utf8'))
-  assert.equal(snapshot.version, 2)
+  assert.equal(snapshot.version, STORE_VERSION)
+  assert.equal(STORE_VERSION, 3, 'the three-state model needs a new store version')
   assert.equal(snapshot.activeDocId, documentId)
   assert.deepEqual(snapshot.openDocIds, [documentId])
   assert.equal(snapshot.documents.length, 1)
   assert.equal(snapshot.documents[0].segments[0].target, '你好，世界。草稿')
+  assert.equal(snapshot.documents[0].segments[0].status, 'confirmed')
+  assert.equal(snapshot.documents[0].segments[0].origin, 'manual')
   assert.ok(snapshot.tm.some((entry) => entry.tmId === 'tm_default'))
   assert.ok(snapshot.glossary.some((entry) => entry.glossaryId === 'glossary_default'))
   assert.equal(JSON.stringify(snapshot).includes('apiKey'), false, 'API key must never be stored')
@@ -208,6 +212,28 @@ try {
   assert.equal(blocked.tm.length, 0)
   assert.ok(blocked.persistence.error)
   assert.ok(blocked.bootstrap().storage.error)
+
+  // 7. Cursor and draft edits are debounced but still survive a restart.
+  const draftDir = tempDir()
+  const draftFile = join(draftDir, 'store.json')
+  const drafting = new CatStore({ dataDir: draftDir, logger: silent })
+  const draftId = drafting.createDocument({
+    name: 'Draft resume',
+    text: 'First sentence. Second sentence. Third sentence.',
+    sourceLang: 'en',
+    targetLang: 'zh-CN',
+  }).document.id
+  drafting.selectSegment({ documentId: draftId, index: 2 })
+  drafting.saveDraft({ documentId: draftId, index: 2, target: '第三句草稿。' })
+  const beforeFlush = JSON.parse(readFileSync(draftFile, 'utf8'))
+  assert.equal(beforeFlush.documents[0].cursor, 0, 'cursor writes are debounced, not immediate')
+  drafting.flushPersist()
+  assert.equal(JSON.parse(readFileSync(draftFile, 'utf8')).documents[0].cursor, 2)
+
+  const resumed = new CatStore({ dataDir: draftDir, logger: silent })
+  assert.equal(resumed.docs.get(draftId).cursor, 2, 'the cursor survives a restart')
+  assert.equal(resumed.docs.get(draftId).segments[2].target, '第三句草稿。', 'the draft survives a restart')
+  assert.equal(resumed.docs.get(draftId).segments[2].status, 'translated')
 
   console.log('test-persistence: all assertions passed')
 } finally {

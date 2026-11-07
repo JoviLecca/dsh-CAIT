@@ -42,4 +42,7 @@ export function apply(ctx, config = {}) {
 
   ctx.effect(() => registerCatTools(ctx, store))
   ctx.effect(() => registerCatApi(ctx, store))
+  // Cursor and draft edits are debounced; flush them when the plugin unloads so
+  // a restart lands on the same segment with the same draft.
+  ctx.effect(() => () => store.flushPersist())
 }

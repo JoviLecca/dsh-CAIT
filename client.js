@@ -7,6 +7,9 @@ window.__ModuleLoader__.load({
 
     const API = '/cait/api/rpc'
     const SYNC_POLL_MS = 2000
+    // One pre-translation block is 8 segments: roughly 12 s with a warm route,
+    // short enough that one cancellation click never waits long.
+    const PRETRANSLATE_BLOCK_SIZE = 8
 
     // Only the last mounted library must stay checked. An unmounted library is
     // always selectable, even when that is currently the only mounted one.
@@ -50,14 +53,16 @@ window.__ModuleLoader__.load({
     // --cait-u (a unitless multiplier) tracks the size of the panel.
     const CAIT_UNIT_VAR = '--cait-u'
     // The designed density is calibrated for roughly 1100×680 CSS pixels of
-    // DSH panel area. Fullscreen/maximized windows on 1440p and 4K displays
-    // were still capped at 1.4× with the old 1320×800 base, which left the
-    // 13px body type visibly smaller than the surrounding DSH UI. Keep the
-    // height term so short windows do not overflow, but let large panels grow
-    // to 1.8× before the cap applies.
+    // DSH panel area. Growing linearly from there made a maximized window reach
+    // 1.8×, which is visibly larger than the surrounding DSH chrome and eats the
+    // horizontal budget the three-column review view needs. Growth is therefore
+    // damped and capped well below the old ceiling.
     const CAIT_UI_BASE = { width: 1100, height: 680 }
     const CAIT_UI_MIN_UNIT = 1
-    const CAIT_UI_MAX_UNIT = 1.8
+    const CAIT_UI_MAX_UNIT = 1.45
+    // 0.6 keeps small and mid panels close to the old density while flattening
+    // the large end: 1920×1080 lands at 1.353, 2560 and 4K stop at 1.45.
+    const CAIT_UI_DAMPING = 0.6
 
     // Grow with the panel but never shrink below the designed size; the height
     // term keeps short/wide windows from becoming oversized and scroll-heavy.
@@ -66,7 +71,8 @@ window.__ModuleLoader__.load({
       const h = Number(height)
       if (!(w > 0) || !(h > 0)) return CAIT_UI_MIN_UNIT
       const fit = Math.min(w / CAIT_UI_BASE.width, h / CAIT_UI_BASE.height)
-      const unit = Math.min(CAIT_UI_MAX_UNIT, Math.max(CAIT_UI_MIN_UNIT, fit))
+      const grown = 1 + (fit - 1) * CAIT_UI_DAMPING
+      const unit = Math.min(CAIT_UI_MAX_UNIT, Math.max(CAIT_UI_MIN_UNIT, grown))
       return Math.round(unit * 1000) / 1000
     }
 
@@ -109,10 +115,28 @@ window.__ModuleLoader__.load({
       return output
     }
 
+    // --- theme --------------------------------------------------------------
+    // DSH marks the dark theme on <body>; the tokens handle every authored
+    // colour, but native widgets (select popups, checkboxes, scrollbars, caret)
+    // follow `color-scheme`, which tokens cannot reach. Mirror the host's theme
+    // onto our own root attribute and let CSS set the scheme from it.
+    const CAIT_THEME_ATTR = 'data-cait-theme'
+
+    function detectThemeKind(doc) {
+      const root = doc?.documentElement
+      const body = doc?.body
+      if (body?.hasAttribute?.('data-ds-dark-theme')) return 'dark'
+      const explicit = root?.getAttribute?.('data-theme') || body?.getAttribute?.('data-theme')
+      if (explicit === 'dark') return 'dark'
+      return 'light'
+    }
+
     const CSS = `
-.cait-root{--cait-u:1;position:relative;display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden;background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);font-family:inherit;font-size:13px;line-height:1.5}
+.cait-root{--cait-u:1;position:relative;display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden;background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);font-family:inherit;font-size:13px;line-height:1.5;color-scheme:light}
+.cait-root[data-cait-theme="dark"]{color-scheme:dark}
 .cait-root *{box-sizing:border-box}
 .cait-root input,.cait-root textarea,.cait-root select{font:inherit;color:inherit}
+.cait-root select option{background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary)}
 .cait-root button{font:inherit;cursor:pointer}
 .cait-root button:disabled{cursor:not-allowed;opacity:.48}
 .cait-root ::selection{background:color-mix(in srgb,var(--dsw-alias-brand-primary) 28%,transparent)}
@@ -151,10 +175,11 @@ window.__ModuleLoader__.load({
 .cait-doc-name{max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:550}
 .cait-doc-progress{font-size:11px;color:var(--dsw-alias-label-secondary);font-variant-numeric:tabular-nums}
 .cait-actions{margin-left:auto;display:flex;align-items:center;gap:6px;flex:0 0 auto}
+.cait-pre-status{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 3px 0 8px;border:1px solid var(--dsw-alias-border-l1);border-radius:7px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-secondary);font-size:11.5px;font-variant-numeric:tabular-nums;white-space:nowrap}
 .cait-btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:31px;padding:0 11px;border:1px solid var(--dsw-alias-border-l1);border-radius:7px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);font-size:12px;font-weight:500;white-space:nowrap;transition:background .12s,border-color .12s,transform .06s}
 .cait-btn:hover:not(:disabled){background:color-mix(in srgb,var(--dsw-alias-label-primary) 5%,var(--dsw-alias-bg-layer-1));border-color:var(--dsw-alias-border-l2)}
 .cait-btn:active:not(:disabled){transform:translateY(.5px)}
-.cait-btn-primary{background:var(--dsw-alias-brand-primary);border-color:var(--dsw-alias-brand-primary);color:var(--dsw-alias-bg-base)}
+.cait-btn-primary{background:var(--dsw-alias-brand-primary);border-color:var(--dsw-alias-brand-primary);color:var(--dsw-alias-label-primary-inverted)}
 .cait-btn-primary:hover:not(:disabled){background:color-mix(in srgb,var(--dsw-alias-brand-primary) 88%,var(--dsw-alias-label-primary));border-color:var(--dsw-alias-brand-primary)}
 .cait-btn-danger{color:var(--dsw-alias-state-error-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-error-primary) 32%,var(--dsw-alias-border-l1))}
 .cait-btn-danger:hover:not(:disabled){background:color-mix(in srgb,var(--dsw-alias-state-error-primary) 9%,var(--dsw-alias-bg-layer-1))}
@@ -189,12 +214,35 @@ window.__ModuleLoader__.load({
 .cait-seg-index{font-size:9.5px;font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-secondary);letter-spacing:.03em}
 .cait-dot{width:6px;height:6px;border-radius:50%;background:var(--dsw-alias-state-idle-primary);flex:0 0 auto}
 .cait-dot.confirmed{background:var(--dsw-alias-state-success-primary)}
+.cait-dot.translated{background:var(--dsw-alias-button-primary-fill)}
+.cait-seg-warn{width:5px;height:5px;border-radius:50%;background:var(--dsw-alias-state-warn-primary);flex:0 0 auto}
+.cait-qa-banner{display:flex;align-items:flex-start;gap:6px;margin-bottom:10px;padding:7px 9px;border:1px solid color-mix(in srgb,var(--dsw-alias-state-warn-primary) 45%,transparent);border-radius:8px;background:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 10%,transparent);color:var(--dsw-alias-label-primary);font-size:11px;line-height:1.5}
 .cait-seg-text{display:-webkit-box;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:11.5px;line-height:1.42;color:var(--dsw-alias-label-primary)}
 .cait-segitem.active .cait-seg-text{font-weight:550}
 .cait-seg-target{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10.5px;color:var(--dsw-alias-label-secondary)}
+.cait-rail-filters{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+.cait-filterchip{display:inline-flex;align-items:center;gap:4px;height:20px;padding:0 7px;border:1px solid var(--dsw-alias-border-l1);border-radius:999px;background:transparent;color:var(--dsw-alias-label-secondary);font-size:10px;cursor:pointer}
+.cait-filterchip:hover{background:var(--dsw-alias-bg-layer-1)}
+.cait-filterchip.active{border-color:var(--dsw-alias-button-primary-fill);color:var(--dsw-alias-label-primary);background:color-mix(in srgb,var(--dsw-alias-button-primary-fill) 10%,transparent)}
+.cait-filtercount{font-variant-numeric:tabular-nums;opacity:.85}
+.cait-batchbtn{display:inline-flex;align-items:center;gap:4px;height:20px;margin-top:6px;padding:0 8px;border:1px solid var(--dsw-alias-border-l1);border-radius:999px;background:transparent;color:var(--dsw-alias-label-secondary);font-size:10px;cursor:pointer}
+.cait-batchbtn:hover:not(:disabled){border-color:var(--dsw-alias-button-primary-fill);color:var(--dsw-alias-label-primary)}
+.cait-suggest-card{display:flex;flex-direction:column;gap:5px;margin-top:10px;padding:9px 11px;border:1px dashed color-mix(in srgb,var(--dsw-alias-button-primary-fill) 45%,transparent);border-radius:8px;background:color-mix(in srgb,var(--dsw-alias-button-primary-fill) 6%,transparent)}
+.cait-suggest-text{font-size:11.5px;line-height:1.55;color:var(--dsw-alias-label-primary);white-space:pre-wrap}
+.cait-suggest-empty{padding:10px 0;color:var(--dsw-alias-label-secondary);font-size:11.5px;font-style:italic}
+.cait-rev-hint{margin-top:auto;padding-top:6px;color:var(--dsw-alias-label-secondary);font-size:10px;line-height:1.45}
+.cait-originchip{display:inline-flex;align-items:center;height:17px;padding:0 6px;border-radius:999px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-secondary);font-size:9.5px;font-weight:600;letter-spacing:.02em}
 .cait-main{display:grid;grid-template-columns:minmax(0,1fr) 344px;min-width:0;min-height:0;overflow:hidden}
 .cait-main.cait-main-empty{grid-template-columns:minmax(0,1fr)}
-.cait-editor-col{min-width:0;min-height:0;overflow-y:auto;padding:22px 26px 44px}
+.cait-editor-col{min-width:0;min-height:0;overflow-y:auto;padding:22px 26px 44px;container-type:inline-size}
+.cait-review{display:grid;gap:10px;grid-template-columns:minmax(0,1fr);grid-template-areas:"src" "sugg" "target";align-items:start}
+.cait-revcol{min-width:0;padding:13px 14px;border:1px solid var(--dsw-alias-border-l1);border-radius:11px;background:var(--dsw-alias-bg-layer-1)}
+.cait-rev-src{grid-area:src}
+.cait-rev-sugg{grid-area:sugg;display:flex;flex-direction:column;gap:6px;border-style:dashed;border-color:color-mix(in srgb,var(--dsw-alias-button-primary-fill) 38%,transparent)}
+.cait-rev-target{grid-area:target;display:flex;flex-direction:column;gap:6px}
+.cait-rev-target .cait-textarea{min-height:150px;padding:9px 10px;border-radius:8px;background:var(--dsw-alias-bg-base)}
+@container (min-width:700px){.cait-review{grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);grid-template-areas:"src sugg" "src target";grid-template-rows:auto 1fr}}
+@container (min-width:1010px){.cait-review{grid-template-columns:minmax(0,1fr) minmax(0,0.85fr) minmax(0,1.1fr);grid-template-areas:"src sugg target";grid-template-rows:1fr}}
 .cait-doc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}
 .cait-doc-title{max-width:680px;margin:0;font-size:17px;font-weight:650;line-height:1.35;letter-spacing:-.01em}
 .cait-doc-meta{display:flex;align-items:center;gap:6px;margin-top:4px;font-size:10.5px;color:var(--dsw-alias-label-secondary)}
@@ -208,10 +256,12 @@ window.__ModuleLoader__.load({
 .cait-badge{display:inline-flex;align-items:center;height:21px;padding:0 8px;border-radius:999px;font-size:10px;font-weight:600;border:1px solid transparent}
 .cait-badge.pending{color:var(--dsw-alias-state-warn-primary);background:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 11%,transparent);border-color:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 25%,transparent)}
 .cait-badge.confirmed{color:var(--dsw-alias-state-success-primary);background:color-mix(in srgb,var(--dsw-alias-state-success-primary) 11%,transparent);border-color:color-mix(in srgb,var(--dsw-alias-state-success-primary) 25%,transparent)}
+.cait-badge.translated{color:var(--dsw-alias-button-primary-fill);background:color-mix(in srgb,var(--dsw-alias-button-primary-fill) 11%,transparent);border-color:color-mix(in srgb,var(--dsw-alias-button-primary-fill) 25%,transparent)}
 .cait-source-card{padding:16px 18px;border:1px solid var(--dsw-alias-border-l1);border-radius:11px;background:var(--dsw-alias-bg-layer-1)}
 .cait-labelrow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
 .cait-label{font-size:10px;font-weight:650;letter-spacing:.09em;text-transform:uppercase;color:var(--dsw-alias-label-secondary)}
 .cait-source-text{font-size:17px;line-height:1.65;letter-spacing:.005em;overflow-wrap:anywhere}
+.cait-rev-src .cait-source-text{font-size:15px;line-height:1.6}
 .cait-source-text mark{padding:0 2px;border-radius:3px;background:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 22%,transparent);color:inherit;box-shadow:inset 0 -1px 0 color-mix(in srgb,var(--dsw-alias-state-warn-primary) 65%,transparent)}
 .cait-hitrow{display:flex;flex-wrap:wrap;align-items:center;gap:5px;margin-top:12px}
 .cait-chip{display:inline-flex;align-items:center;gap:4px;max-width:100%;padding:3px 7px;border:1px solid color-mix(in srgb,var(--dsw-alias-state-warn-primary) 26%,var(--dsw-alias-border-l1));border-radius:999px;background:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 8%,transparent);font-size:10.5px;color:var(--dsw-alias-label-primary)}
@@ -242,6 +292,8 @@ window.__ModuleLoader__.load({
 .cait-libmeta{display:flex;flex-direction:column;gap:1px;min-width:0}
 .cait-libmeta strong{font-size:11.5px;font-weight:650;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .cait-libmeta small{font-size:9.5px;color:var(--dsw-alias-label-secondary)}
+.cait-libactions{display:flex;align-items:center;gap:4px;margin-left:auto;flex:0 0 auto}
+.cait-librename{height:24px;font-size:11.5px;min-width:0;flex:1}
 .cait-libdefault{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;color:var(--dsw-alias-label-secondary);white-space:nowrap;cursor:pointer}
 .cait-libdefault input{width:11px;height:11px;accent-color:var(--dsw-alias-brand-primary)}
 .cait-libdefault:has(input:checked){color:var(--dsw-alias-brand-primary);font-weight:650}
@@ -262,6 +314,8 @@ window.__ModuleLoader__.load({
 .cait-card{margin-bottom:8px;padding:10px;border:1px solid var(--dsw-alias-border-l1);border-radius:9px;background:var(--dsw-alias-bg-layer-1);transition:border-color .12s,background .12s}
 .cait-card:hover{border-color:var(--dsw-alias-border-l2)}
 .cait-card-head{display:flex;align-items:center;gap:5px;margin-bottom:7px}
+.cait-tmedit{display:flex;flex-direction:column;gap:6px;margin-top:3px}
+.cait-tmedit-input{min-height:64px;font-size:11.5px}
 .cait-score{display:inline-flex;align-items:center;height:18px;padding:0 6px;border-radius:5px;background:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 13%,transparent);color:var(--dsw-alias-state-warn-primary);font-size:9.5px;font-weight:750;font-variant-numeric:tabular-nums}
 .cait-score.exact{background:color-mix(in srgb,var(--dsw-alias-state-success-primary) 13%,transparent);color:var(--dsw-alias-state-success-primary)}
 .cait-score.near_exact{background:color-mix(in srgb,var(--dsw-alias-brand-primary) 13%,transparent);color:var(--dsw-alias-brand-primary)}
@@ -496,6 +550,7 @@ window.__ModuleLoader__.load({
         globe: ['M8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12Z', 'M2.5 8h11', 'M8 2c2 2 2 10 0 12', 'M8 2c-2 2-2 10 0 12'],
         alert: ['M8 2L14 13H2L8 2Z', 'M8 6v3.5', 'M8 11.5v.2'],
         save: ['M3 2h8l2 2v10H3z', 'M5 2v4h6V2', 'M5 14v-4h6v4'],
+        pencil: ['M11 2.5l2.5 2.5-8 8L2 14l1-3.5 8-8Z', 'M9.5 4l2.5 2.5'],
         languages: ['M2 4h7', 'M5.5 4v2c0 2-1.5 4-3.5 5', 'M4 8c0 1.5 2 3 4.5 3.5', 'M9 13l3-7 3 7', 'M10 11h4'],
       }
       const shape = paths[name] || paths.file
@@ -759,6 +814,9 @@ window.__ModuleLoader__.load({
       onCloseDoc,
       onNewTab,
       onCleanClosed,
+      pre,
+      onPreTranslate,
+      onCancelPreTranslate,
     }) {
       const progress = doc?.progress || { percent: 0, confirmed: 0, total: 0 }
       const openIds = new Set((data.openDocuments || []).map((item) => item.id))
@@ -806,6 +864,35 @@ window.__ModuleLoader__.load({
         h(
           'div',
           { className: 'cait-actions' },
+          pre && pre.running
+            ? h(
+                'span',
+                { className: 'cait-pre-status', title: t('pretranslate.running') },
+                h(Spinner),
+                h('span', null, `${t('pretranslate.running')} ${pre.done}/${pre.total}`),
+                h(
+                  'button',
+                  {
+                    type: 'button',
+                    className: 'cait-iconbtn',
+                    title: t('pretranslate.cancel'),
+                    'aria-label': t('pretranslate.cancel'),
+                    onClick: onCancelPreTranslate,
+                  },
+                  h(Icon, { name: 'close', size: 13 }),
+                ),
+              )
+            : h(
+                'button',
+                {
+                  className: 'cait-btn',
+                  onClick: onPreTranslate,
+                  disabled: Boolean(busy) || !doc || !(doc.progress?.total > 0),
+                  title: t('pretranslate.title'),
+                },
+                h(Icon, { name: 'sparkles', size: 14 }),
+                h('span', { className: 'cait-btn-label' }, t('pretranslate.start')),
+              ),
           h(
             'button',
             { className: 'cait-btn', onClick: onNew, disabled: Boolean(busy), title: t('nav.new') },
@@ -829,18 +916,40 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function SegmentRail({ t, doc, selected, query, setQuery, onSelect }) {
+    const SEGMENT_FILTERS = ['all', 'pending', 'translated', 'confirmed']
+
+    function SegmentRail({ t, doc, selected, query, setQuery, filter, setFilter, onSelect, onConfirmAll, busy, qa }) {
       const activeRef = useRef(null)
       useEffect(() => {
         if (activeRef.current) activeRef.current.scrollIntoView({ block: 'nearest' })
-      }, [selected])
+      }, [selected, filter])
 
+      // Advisory QA marks: the check never blocks editing or exporting, it only
+      // flags the segment in the rail so review can start where it matters.
+      const warns = new Map()
+      for (const issue of qa?.issues || []) {
+        const list = warns.get(issue.index) || []
+        list.push(issue.code)
+        warns.set(issue.index, list)
+      }
+
+      const counts = {
+        all: doc.progress.total,
+        pending: doc.progress.pending,
+        translated: doc.progress.translated,
+        confirmed: doc.progress.confirmed,
+      }
       const needle = query.trim().toLowerCase()
       const items = doc.segments
         .map((segment, index) => ({ segment, index }))
+        .filter(({ segment }) => filter === 'all' || segment.status === filter)
         .filter(({ segment }) => {
           if (!needle) return true
-          return segment.source.toLowerCase().includes(needle) || (segment.target || '').toLowerCase().includes(needle)
+          return (
+            segment.source.toLowerCase().includes(needle) ||
+            (segment.target || '').toLowerCase().includes(needle) ||
+            (segment.suggestion || '').toLowerCase().includes(needle)
+          )
         })
 
       return h(
@@ -851,6 +960,36 @@ window.__ModuleLoader__.load({
           { className: 'cait-rail-head' },
           h('div', { className: 'cait-rail-title' }, h('span', null, t('rail.title')), h('span', { className: 'cait-count' }, doc.progress.total)),
           h('div', { className: 'cait-mini-progress' }, h('i', { style: { width: `${doc.progress.percent}%` } })),
+          h(
+            'div',
+            { className: 'cait-rail-filters' },
+            SEGMENT_FILTERS.map((key) =>
+              h(
+                'button',
+                {
+                  key,
+                  className: `cait-filterchip${filter === key ? ' active' : ''}`,
+                  onClick: () => setFilter(key),
+                  title: t(`rail.filter.${key}`),
+                },
+                h('span', null, t(`rail.filter.${key}`)),
+                h('span', { className: `cait-filtercount ${key}` }, counts[key]),
+              ),
+            ),
+          ),
+          doc.progress.translated > 0
+            ? h(
+                'button',
+                {
+                  className: 'cait-batchbtn',
+                  onClick: onConfirmAll,
+                  disabled: Boolean(busy),
+                  title: t('rail.confirmAllHint'),
+                },
+                h(Icon, { name: 'check', size: 11 }),
+                `${t('rail.confirmAll')} · ${doc.progress.translated}`,
+              )
+            : null,
         ),
         h(
           'div',
@@ -880,6 +1019,13 @@ window.__ModuleLoader__.load({
                       { className: 'cait-seg-line' },
                       h('span', { className: 'cait-seg-index' }, String(index + 1).padStart(2, '0')),
                       h('span', { className: `cait-dot ${segment.status}` }),
+                      warns.has(index)
+                        ? h('span', {
+                            className: 'cait-seg-warn',
+                            title: (warns.get(index) || []).map((code) => t(`qa.code.${code}`)).join(' · '),
+                            'aria-label': t('qa.warn'),
+                          })
+                        : null,
                     ),
                     h('span', { className: 'cait-seg-text' }, segment.source),
                     segment.target ? h('span', { className: 'cait-seg-target' }, segment.target) : null,
@@ -891,13 +1037,25 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function EditorPane({ t, doc, index, segment, detail, draft, setDraft, dirty, busy, onConfirm, onNext, onPrev, onSave, onApplyTerm, textareaRef }) {
+    function EditorPane({ t, doc, index, segment, detail, draft, setDraft, dirty, busy, onConfirm, onNext, onPrev, onSave, onAdopt, onApplyTerm, textareaRef }) {
       const hits = detail?.index === index ? detail.glossaryHits : []
       const charCount = Array.from(draft || '').length
       const progress = doc.progress
+      const remaining = progress.total - progress.confirmed
+      const statusLabel =
+        segment.status === 'confirmed'
+          ? t('status.confirmed')
+          : segment.status === 'translated'
+            ? t('status.translated')
+            : t('status.pending')
 
-      const onKeyDown = (event) => {
-        const mod = event.metaKey || event.ctrlKey
+      // The middle column keeps the machine/agent baseline that produced the
+      // current text, so editing in the right column has something to compare
+      // against. It is stored in `suggestion`, which adoption already preserves.
+      const baselineText = segment.suggestion || ''
+      const baselineOrigin = segment.origin || 'agent'
+
+      const onKeyDown = (event) => {        const mod = event.metaKey || event.ctrlKey
         if (mod && event.key === 'Enter') {
           event.preventDefault()
           onConfirm()
@@ -944,61 +1102,94 @@ window.__ModuleLoader__.load({
           'div',
           { className: 'cait-seg-head' },
           h('span', { className: 'cait-seg-label' }, `${t('editor.segment')} ${index + 1} / ${doc.segments.length}`),
-          h('span', { className: `cait-badge ${segment.status}` }, segment.status === 'confirmed' ? t('status.confirmed') : t('status.pending')),
+          h('span', { className: `cait-badge ${segment.status}` }, statusLabel),
         ),
         h(
           'div',
-          { className: 'cait-source-card' },
+          { className: 'cait-review' },
           h(
-            'div',
-            { className: 'cait-labelrow' },
-            h('span', { className: 'cait-label' }, t('editor.source')),
-            h('span', { className: 'cait-langchip' }, doc.sourceLang),
+            'section',
+            { className: 'cait-revcol cait-rev-src' },
+            h(
+              'div',
+              { className: 'cait-labelrow' },
+              h('span', { className: 'cait-label' }, t('editor.source')),
+              h('span', { className: 'cait-langchip' }, doc.sourceLang),
+            ),
+            h('div', { className: 'cait-source-text' }, highlightSource(segment.source, hits)),
+            hits.length
+              ? h(
+                  'div',
+                  { className: 'cait-hitrow' },
+                  hits.map((hit) =>
+                    h(
+                      'button',
+                      {
+                        key: hit.id,
+                        className: 'cait-chip cait-chip-action',
+                        onClick: () => onApplyTerm(hit),
+                        title: hit.note || `${hit.term} → ${hit.target}`,
+                      },
+                      h(Icon, { name: 'book', size: 11 }),
+                      `${hit.term} → ${hit.target}`,
+                    ),
+                  ),
+                )
+              : null,
           ),
-          h('div', { className: 'cait-source-text' }, highlightSource(segment.source, hits)),
-          hits.length
-            ? h(
-                'div',
-                { className: 'cait-hitrow' },
-                hits.map((hit) =>
-                  h(
+          h(
+            'section',
+            { className: 'cait-revcol cait-rev-sugg' },
+            h(
+              'div',
+              { className: 'cait-labelrow' },
+              h('span', { className: 'cait-label' }, t('editor.suggestion')),
+              baselineText
+                ? h('span', { className: `cait-originchip ${baselineOrigin}` }, t(`origin.${baselineOrigin}`))
+                : null,
+              segment.suggestion
+                ? h(
                     'button',
                     {
-                      key: hit.id,
                       className: 'cait-chip cait-chip-action',
-                      onClick: () => onApplyTerm(hit),
-                      title: hit.note || `${hit.term} → ${hit.target}`,
+                      onClick: onAdopt,
+                      disabled: Boolean(busy) || draft.trim() === segment.suggestion,
+                      title: t('editor.adoptHint'),
                     },
-                    h(Icon, { name: 'book', size: 11 }),
-                    `${hit.term} → ${hit.target}`,
-                  ),
-                ),
-              )
-            : null,
-        ),
-        h(
-          'div',
-          { className: 'cait-target-area' },
-          h(
-            'div',
-            { className: 'cait-labelrow' },
-            h('span', { className: 'cait-label' }, t('editor.target')),
-            h(
-              'span',
-              { className: 'cait-meta' },
-              `${charCount} ${t('editor.chars')}${dirty ? ` · ${t('editor.unsaved')}` : ''}`,
+                    h(Icon, { name: 'download', size: 11 }),
+                    t('editor.adopt'),
+                  )
+                : null,
             ),
+            baselineText
+              ? h('div', { className: 'cait-suggest-text' }, baselineText)
+              : h('div', { className: 'cait-suggest-empty' }, t('editor.noSuggestion')),
+            h('div', { className: 'cait-rev-hint' }, segment.suggestion ? t('editor.adoptHint') : t('editor.baselineHint')),
           ),
-          h('textarea', {
-            ref: textareaRef,
-            className: 'cait-textarea',
-            value: draft,
-            onChange: (event) => setDraft(event.target.value),
-            onKeyDown,
-            placeholder: t('editor.targetPlaceholder'),
-            spellCheck: false,
-            rows: 8,
-          }),
+          h(
+            'section',
+            { className: 'cait-revcol cait-rev-target' },
+            h(
+              'div',
+              { className: 'cait-labelrow' },
+              h('span', { className: 'cait-label' }, t('editor.target')),
+              h(
+                'span',
+                { className: 'cait-meta' },
+                `${charCount} ${t('editor.chars')}${dirty ? ` · ${t('editor.unsaved')}` : ''}`,
+              ),
+            ),
+            h('textarea', {
+              ref: textareaRef,
+              className: 'cait-textarea',
+              value: draft,
+              onChange: (event) => setDraft(event.target.value),
+              onKeyDown,
+              placeholder: t('editor.targetPlaceholder'),
+              spellCheck: false,
+              rows: 8,
+            }),
+          ),
         ),
         h(
           'div',
@@ -1031,16 +1222,30 @@ window.__ModuleLoader__.load({
         h(
           'div',
           { className: 'cait-editor-foot' },
-          progress.pending === 0
+          remaining === 0
             ? h('span', { className: 'cait-donechip' }, h(Icon, { name: 'check', size: 11 }), t('editor.done'))
-            : h('span', null, `${progress.pending} ${t('status.pending')}`),
+            : h('span', null, `${remaining} ${t('editor.remaining')}`),
           segment.confirmedAt ? h('span', null, `${t('editor.confirmedAt')} ${new Date(segment.confirmedAt).toLocaleString()}`) : null,
         ),
       )
     }
 
-    function TmMatchCard({ t, match, onApply }) {
+    function TmMatchCard({ t, match, onApply, onEdit, onDelete, busy }) {
       const matchType = match.matchType || (match.exact ? 'exact' : 'low_fuzzy')
+      const [editing, setEditing] = useState(false)
+      const [value, setValue] = useState(match.target)
+
+      useEffect(() => {
+        setEditing(false)
+        setValue(match.target)
+      }, [match.id, match.target])
+
+      const save = async () => {
+        if (!value.trim()) return
+        const ok = await onEdit({ id: match.id, target: value })
+        if (ok) setEditing(false)
+      }
+
       return h(
         'article',
         { className: 'cait-card' },
@@ -1049,10 +1254,49 @@ window.__ModuleLoader__.load({
           { className: 'cait-card-head' },
           h('span', { className: `cait-score ${matchType}` }, `${match.percent}%`),
           h('span', { className: 'cait-score-label' }, t(`match.${matchType}`)),
-          h('button', { className: 'cait-minibtn', onClick: () => onApply(match) }, t('panel.apply')),
+          h(
+            'div',
+            { className: 'cait-term-actions' },
+            h('button', { className: 'cait-minibtn', onClick: () => onApply(match) }, t('panel.apply')),
+            h(
+              'button',
+              { className: 'cait-minibtn', onClick: () => setEditing((current) => !current), disabled: Boolean(busy), title: t('panel.edit') },
+              h(Icon, { name: 'pencil', size: 11 }),
+            ),
+            h(
+              'button',
+              { className: 'cait-deletebtn', onClick: () => onDelete(match), disabled: Boolean(busy), title: t('panel.delete') },
+              h(Icon, { name: 'trash', size: 11 }),
+            ),
+          ),
         ),
         h('p', { className: 'cait-card-source' }, match.source),
-        h('p', { className: 'cait-card-target' }, match.target),
+        editing
+          ? h(
+              'div',
+              { className: 'cait-tmedit' },
+              h('textarea', {
+                className: 'cait-textarea cait-tmedit-input',
+                value,
+                rows: 3,
+                autoFocus: true,
+                onChange: (event) => setValue(event.target.value),
+                onKeyDown: (event) => {
+                  if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+                    event.preventDefault()
+                    save()
+                  }
+                  if (event.key === 'Escape') setEditing(false)
+                },
+              }),
+              h(
+                'div',
+                { className: 'cait-formrow' },
+                h('button', { className: 'cait-btn cait-btn-primary', onClick: save, disabled: Boolean(busy) || !value.trim() }, t('panel.saveEntry')),
+                h('button', { className: 'cait-btn cait-btn-ghost', onClick: () => setEditing(false) }, t('panel.cancel')),
+              ),
+            )
+          : h('p', { className: 'cait-card-target' }, match.target),
       )
     }
 
@@ -1069,6 +1313,8 @@ window.__ModuleLoader__.load({
       tmResults,
       tmError,
       onApplyTm,
+      onEditTm,
+      onDeleteTm,
       onImportTmx,
       onClearTm,
       onAddTerm,
@@ -1202,7 +1448,17 @@ window.__ModuleLoader__.load({
                 ),
                 tmError ? h('div', { className: 'cait-mt-error' }, tmError) : null,
                 tmMatches.length
-                  ? tmMatches.map((match) => h(TmMatchCard, { key: match.id, t, match, onApply: onApplyTm }))
+                  ? tmMatches.map((match) =>
+                      h(TmMatchCard, {
+                        key: match.id,
+                        t,
+                        match,
+                        busy,
+                        onApply: onApplyTm,
+                        onEdit: onEditTm,
+                        onDelete: onDeleteTm,
+                      }),
+                    )
                   : h('p', { className: 'cait-empty-note' }, tmResults ? t('panel.noMatches') : t('panel.noCurrentMatches')),
                 h('p', { className: 'cait-mt-hint' }, t('panel.tmHint')),
                 h(
@@ -1564,7 +1820,8 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function ExportModal({ t, busy, onClose, onExport }) {
+    function ExportModal({ t, busy, onClose, onExport, qa }) {
+      const issues = qa?.issueCount || 0
       const items = [
         ['bilingual-md', t('modal.export.bilingualMd'), t('modal.export.bilingual'), 'file'],
         ['bilingual-csv', t('modal.export.bilingualCsv'), t('modal.export.bilingual'), 'file'],
@@ -1590,6 +1847,23 @@ window.__ModuleLoader__.load({
         Modal,
         { title: t('modal.export.title'), onClose, wide: true },
         h('p', { className: 'cait-confirm-text' }, t('modal.export.desc')),
+        issues
+          ? h(
+              'div',
+              { className: 'cait-qa-banner' },
+              h(Icon, { name: 'alert', size: 12 }),
+              h(
+                'span',
+                null,
+                `${t('qa.exportBanner').replace('{count}', String(issues))} `,
+                t('qa.counts')
+                  .replace('{placeholder}', String(qa.counts.PLACEHOLDER_MISSING))
+                  .replace('{number}', String(qa.counts.NUMBER_MISMATCH))
+                  .replace('{term}', String(qa.counts.TERM_NOT_USED))
+                  .replace('{empty}', String(qa.counts.EMPTY_TARGET)),
+              ),
+            )
+          : null,
         h(
           'div',
           { className: 'cait-export-grid' },
@@ -1792,7 +2066,13 @@ window.__ModuleLoader__.load({
                 },
                 h('option', { value: 'mock' }, t('mt.mock')),
                 routes.map((item) =>
-                  h('option', { key: item.id, value: item.id }, `${item.name} (${item.id})`),
+                  h(
+                    'option',
+                    { key: item.id, value: item.id, disabled: item.hasModels === false },
+                    item.hasModels === false
+                      ? `${item.name} (${item.id}) · ${t('modal.settings.noModels')}`
+                      : `${item.name} (${item.id})`,
+                  ),
                 ),
                 routeMissing
                   ? h('option', { value: form.mt.provider }, t('modal.settings.routeMissing'))
@@ -1857,7 +2137,7 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function LibrariesModal({ t, data, busy, onClose, onSetMounts, onCreate }) {
+    function LibrariesModal({ t, data, busy, onClose, onSetMounts, onCreate, onRename, onDeleteLibrary }) {
       const libraries = data.libraries || { tm: [], glossary: [] }
       const mounts = data.mounts || {
         tmIds: [],
@@ -1867,6 +2147,19 @@ window.__ModuleLoader__.load({
       }
       const [tmName, setTmName] = useState('')
       const [glossaryName, setGlossaryName] = useState('')
+      const [editing, setEditing] = useState(null)
+      const [editName, setEditName] = useState('')
+
+      const startRename = (kind, id, name) => {
+        setEditing({ kind, id })
+        setEditName(name)
+      }
+
+      const submitRename = async () => {
+        if (!editing || !editName.trim()) return
+        const ok = await onRename({ kind: editing.kind, id: editing.id, name: editName.trim() })
+        if (ok) setEditing(null)
+      }
 
       const toggle = (kind, id, checked) => {
         const current = kind === 'tm' ? mounts.tmIds : mounts.glossaryIds
@@ -1914,7 +2207,22 @@ window.__ModuleLoader__.load({
                     h(
                       'span',
                       { className: 'cait-libmeta' },
-                      h('strong', null, library.name),
+                      editing && editing.kind === kind && editing.id === id
+                        ? h('input', {
+                            className: 'cait-input cait-librename',
+                            value: editName,
+                            autoFocus: true,
+                            disabled: Boolean(busy),
+                            onChange: (event) => setEditName(event.target.value),
+                            onKeyDown: (event) => {
+                              if (event.key === 'Enter') {
+                                event.preventDefault()
+                                submitRename()
+                              }
+                              if (event.key === 'Escape') setEditing(null)
+                            },
+                          })
+                        : h('strong', null, library.name),
                       h(
                         'small',
                         null,
@@ -1922,6 +2230,45 @@ window.__ModuleLoader__.load({
                           library.mounted ? '' : ` · ${t('libraries.notMounted')}`
                         }`,
                       ),
+                    ),
+                  ),
+                  h(
+                    'div',
+                    { className: 'cait-libactions' },
+                    editing && editing.kind === kind && editing.id === id
+                      ? h(
+                          'span',
+                          { className: 'cait-formrow' },
+                          h(
+                            'button',
+                            {
+                              className: 'cait-minibtn',
+                              onClick: submitRename,
+                              disabled: Boolean(busy) || !editName.trim(),
+                            },
+                            t('libraries.save'),
+                          ),
+                          h('button', { className: 'cait-minibtn', onClick: () => setEditing(null) }, t('panel.cancel')),
+                        )
+                      : h(
+                          'button',
+                          {
+                            className: 'cait-deletebtn',
+                            onClick: () => startRename(kind, id, library.name),
+                            disabled: Boolean(busy),
+                            title: t('libraries.rename'),
+                          },
+                          h(Icon, { name: 'pencil', size: 11 }),
+                        ),
+                    h(
+                      'button',
+                      {
+                        className: 'cait-deletebtn',
+                        onClick: () => onDeleteLibrary({ kind, id, name: library.name }),
+                        disabled: Boolean(busy) || list.length <= 1,
+                        title: t('libraries.delete'),
+                      },
+                      h(Icon, { name: 'trash', size: 11 }),
                     ),
                   ),
                   h(
@@ -2042,8 +2389,12 @@ window.__ModuleLoader__.load({
       const [dirty, setDirty] = useState(false)
       const [tab, setTab] = useState('tm')
       const [railQuery, setRailQuery] = useState('')
+      const [railFilter, setRailFilter] = useState('all')
+      const [pre, setPre] = useState({ running: false, done: 0, total: 0, filled: 0, failed: 0 })
+      const [qa, setQa] = useState(null)
       const [tmQuery, setTmQuery] = useState('')
       const [tmResults, setTmResults] = useState(null)
+      const [tmRefresh, setTmRefresh] = useState(0)
       const [tmError, setTmError] = useState('')
       const [mt, setMt] = useState(null)
       const [mtError, setMtError] = useState('')
@@ -2158,6 +2509,61 @@ window.__ModuleLoader__.load({
         }
       }
 
+      const preCancelRef = useRef(false)
+
+      // The client drives pre-translation block by block instead of asking the
+      // host for a background job: a block is one RPC, cancellation is simply
+      // "stop looping", and every finished block is already persisted.
+      const runPreTranslate = async () => {
+        const active = data?.activeDocument
+        if (!active || pre.running) return
+        preCancelRef.current = false
+        const initial = active.progress || { confirmed: 0, translated: 0, total: 0 }
+        setPre({
+          running: true,
+          done: initial.confirmed + initial.translated,
+          total: initial.total,
+          filled: 0,
+          failed: 0,
+        })
+        let from = 0
+        let filled = 0
+        let failed = 0
+        try {
+          while (from !== null) {
+            if (preCancelRef.current) break
+            const result = await rpc('preTranslate', {
+              documentId: active.id,
+              from,
+              count: PRETRANSLATE_BLOCK_SIZE,
+            })
+            filled += result.filled
+            failed += result.failed.length
+            from = result.next
+            const progress = result.progress
+            setPre((current) => ({
+              ...current,
+              done: progress.confirmed + progress.translated,
+              total: progress.total,
+              filled,
+              failed,
+            }))
+            await refreshState()
+          }
+          if (preCancelRef.current) notify(t('toast.preCancelled'))
+          else if (failed) notify(t('toast.preFailed').replace('{count}', String(failed)))
+          else notify(t('toast.preDone').replace('{count}', String(filled)))
+        } catch (error) {
+          report(error)
+        } finally {
+          setPre((current) => ({ ...current, running: false }))
+        }
+      }
+
+      const cancelPreTranslate = () => {
+        preCancelRef.current = true
+      }
+
       useEffect(() => {
         let alive = true
         setLoading(true)
@@ -2213,6 +2619,26 @@ window.__ModuleLoader__.load({
           clearInterval(timer)
         }
       }, [data?.revision])
+
+      useEffect(() => {
+        const id = data?.activeDocument?.id
+        if (!id) {
+          setQa(null)
+          return
+        }
+        let alive = true
+        rpc('getQaReport', { documentId: id })
+          .then((report) => {
+            if (alive) setQa(report)
+          })
+          .catch(() => {
+            // QA is advisory: a failure must never disturb the workbench.
+            if (alive) setQa(null)
+          })
+        return () => {
+          alive = false
+        }
+      }, [data?.activeDocument?.id, data?.revision])
 
       useEffect(() => {
         let alive = true
@@ -2271,7 +2697,7 @@ window.__ModuleLoader__.load({
           cancelled = true
           clearTimeout(timer)
         }
-      }, [tmQuery, doc?.id, doc?.sourceLang, doc?.targetLang, settings.fuzzyThreshold, settings.tmLimit])
+      }, [tmQuery, tmRefresh, doc?.id, doc?.sourceLang, doc?.targetLang, settings.fuzzyThreshold, settings.tmLimit])
 
       const saveDraft = async (silent = true) => {
         if (!doc || !dirty) return true
@@ -2323,6 +2749,24 @@ window.__ModuleLoader__.load({
         } catch (error) {
           report(error)
           if (error?.code === 'PERSISTENCE_FAILED') await refreshStorage()
+        } finally {
+          setBusy('')
+        }
+      }
+
+      const adoptSuggestion = async () => {
+        if (!doc || busy || !segment?.suggestion) return
+        if (dirty) {
+          const saved = await saveDraft(true)
+          if (!saved) return
+        }
+        setBusy('adopt')
+        try {
+          const result = await rpc('adoptSuggestion', { documentId: doc.id, index: selected })
+          adoptState(result.state)
+          notify(t('toast.suggestionAdopted'))
+        } catch (error) {
+          report(error)
         } finally {
           setBusy('')
         }
@@ -2448,8 +2892,56 @@ window.__ModuleLoader__.load({
         setTimeout(() => textareaRef.current?.focus(), 0)
       }
 
-      const addTerm = async (form) => {
-        setBusy('term')
+      const editTm = async ({ id, target }) => {
+        setBusy('tm-edit')
+        try {
+          const result = await rpc('updateTM', { id, target })
+          setData(result.state)
+          setTmRefresh((value) => value + 1)
+          notify(t('toast.tmUpdated'))
+          return true
+        } catch (error) {
+          report(error)
+          return false
+        } finally {
+          setBusy('')
+        }
+      }
+
+      const deleteTm = (match) => {
+        setModal({
+          type: 'confirm',
+          title: t('modal.confirm.title'),
+          message: `${t('modal.confirm.deleteTm')} “${match.source} → ${match.target}”？`,
+          confirmLabel: t('panel.delete'),
+          action: async () => {
+            const result = await rpc('deleteTM', { id: match.id })
+            setData(result.state)
+            setTmRefresh((value) => value + 1)
+            notify(t('toast.tmDeleted'))
+          },
+        })
+      }
+
+      const confirmAllTranslated = () => {
+        const active = data?.activeDocument
+        const awaiting = active?.progress?.translated || 0
+        if (!active || !awaiting) return
+        setModal({
+          type: 'confirm',
+          title: t('rail.confirmAll'),
+          message: t('rail.confirmAllMessage').replace('{count}', String(awaiting)),
+          confirmLabel: t('rail.confirmAll'),
+          action: async () => {
+            const result = await rpc('confirmSegments', { documentId: active.id, status: 'translated' })
+            await refreshState()
+            setTmRefresh((value) => value + 1)
+            notify(t('toast.confirmedMany').replace('{count}', String(result.confirmed.length)))
+          },
+        })
+      }
+
+      const addTerm = async (form) => {        setBusy('term')
         try {
           const result = await rpc('addGlossary', {
             ...form,
@@ -2589,6 +3081,37 @@ window.__ModuleLoader__.load({
         }
       }
 
+      const renameLibrary = async ({ kind, id, name }) => {
+        setBusy('library')
+        try {
+          const result = await rpc('renameLibrary', { kind, id, name })
+          setData(result.state)
+          notify(t('libraries.renamed'))
+          return true
+        } catch (error) {
+          report(error)
+          return false
+        } finally {
+          setBusy('')
+        }
+      }
+
+      const deleteLibrary = ({ kind, id, name }) => {
+        const entries = kind === 'tm' ? t('libraries.deleteTmWarn') : t('libraries.deleteGlossaryWarn')
+        setModal({
+          type: 'confirm',
+          title: t('modal.confirm.title'),
+          message: `${t('libraries.delete')} “${name}”？${entries}`,
+          confirmLabel: t('libraries.delete'),
+          action: async () => {
+            const result = await rpc('deleteLibrary', { kind, id })
+            setData(result.state)
+            setTmResults(null)
+            notify(t('libraries.deleted'))
+          },
+        })
+      }
+
       const exportAs = async (format) => {
         if (!doc) return
         setBusy('export')
@@ -2704,13 +3227,40 @@ window.__ModuleLoader__.load({
           element.style.setProperty(CAIT_UNIT_VAR, String(unit))
         }
         measure()
+
+        // Mirror the host theme so native widgets follow `color-scheme`. DSH
+        // toggles the marker on <body>, so observe that instead of guessing
+        // from colours.
+        const syncTheme = () => {
+          const kind = detectThemeKind(document)
+          if (element.getAttribute(CAIT_THEME_ATTR) !== kind) element.setAttribute(CAIT_THEME_ATTR, kind)
+        }
+        syncTheme()
+        let themeObserver = null
+        if (typeof MutationObserver !== 'undefined' && document.body) {
+          themeObserver = new MutationObserver(syncTheme)
+          themeObserver.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['data-ds-dark-theme', 'data-theme', 'class'],
+          })
+        }
+        const stopTheme = () => {
+          if (themeObserver) themeObserver.disconnect()
+        }
+
         if (typeof ResizeObserver === 'undefined') {
           window.addEventListener('resize', measure)
-          return () => window.removeEventListener('resize', measure)
+          return () => {
+            window.removeEventListener('resize', measure)
+            stopTheme()
+          }
         }
         const observer = new ResizeObserver(measure)
         observer.observe(element)
-        return () => observer.disconnect()
+        return () => {
+          observer.disconnect()
+          stopTheme()
+        }
       }, [])
 
       if (loading) {
@@ -2757,12 +3307,15 @@ window.__ModuleLoader__.load({
           onCloseDoc: closeDocumentTab,
           onNewTab: () => setModal({ type: 'new', defaultMode: 'file' }),
           onCleanClosed: () => setModal({ type: 'recent' }),
+          pre,
+          onPreTranslate: runPreTranslate,
+          onCancelPreTranslate: cancelPreTranslate,
         }),
         h(SaveBanner, { t, storage: data?.storage, stale, onRefresh: refreshState }),
         h(
           'div',
           { className: `cait-body${doc ? '' : ' cait-no-doc'}` },
-          doc ? h(SegmentRail, { t, doc, selected: index, query: railQuery, setQuery: setRailQuery, onSelect: chooseSegment }) : null,
+          doc ? h(SegmentRail, { t, doc, selected: index, query: railQuery, setQuery: setRailQuery, filter: railFilter, setFilter: setRailFilter, onSelect: chooseSegment, onConfirmAll: confirmAllTranslated, busy, qa }) : null,
           h(
             'div',
             { className: `cait-main${doc ? '' : ' cait-main-empty'}` },
@@ -2784,6 +3337,7 @@ window.__ModuleLoader__.load({
                   onNext: () => moveSegment(1),
                   onPrev: () => moveSegment(-1),
                   onSave: () => saveDraft(false),
+                  onAdopt: adoptSuggestion,
                   onApplyTerm: applyTerm,
                   textareaRef,
                 })
@@ -2802,6 +3356,8 @@ window.__ModuleLoader__.load({
                   tmResults,
                   tmError,
                   onApplyTm: applyTm,
+                  onEditTm: editTm,
+                  onDeleteTm: deleteTm,
                   onImportTmx: importTmxFile,
                   onClearTm: clearTm,
                   onAddTerm: addTerm,
@@ -2839,7 +3395,7 @@ window.__ModuleLoader__.load({
             })
           : null,
         modal?.type === 'export'
-          ? h(ExportModal, { t, busy, onClose: () => setModal(null), onExport: exportAs })
+          ? h(ExportModal, { t, busy, qa, onClose: () => setModal(null), onExport: exportAs })
           : null,
         modal?.type === 'settings'
           ? h(SettingsModal, { t, settings, mtRoutes, busy, onClose: () => setModal(null), onSave: saveSettings })
@@ -2852,6 +3408,8 @@ window.__ModuleLoader__.load({
               onClose: () => setModal(null),
               onSetMounts: setMounts,
               onCreate: createLibrary,
+              onRename: renameLibrary,
+              onDeleteLibrary: deleteLibrary,
             })
           : null,
         modal?.type === 'recent'
@@ -2920,6 +3478,40 @@ window.__ModuleLoader__.load({
       'editor.emptyTarget': '请先输入译文',
       'editor.done': '全部句段已确认',
       'editor.confirmedAt': '确认于',
+      'editor.suggestion': '机器建议',
+      'editor.adopt': '采纳',
+      'editor.adoptHint': '把建议填入译文，保留它的来源',
+      'editor.remaining': '句待确认',
+      'status.translated': '已翻译',
+      'origin.tm': 'TM',
+      'origin.mt': 'MT',
+      'origin.agent': 'Agent',
+      'origin.manual': '手动',
+      'rail.filter.all': '全部',
+      'rail.filter.pending': '待译',
+      'rail.filter.translated': '待审',
+      'rail.filter.confirmed': '已确认',
+      'rail.confirmAll': '全部确认',
+      'rail.confirmAllHint': '把当前所有「待审」句段一次性确认并写入翻译记忆',
+      'rail.confirmAllMessage': '将确认 {count} 个待审句段并写入翻译记忆，句段译文不会经过逐句复核。确定继续？',
+      'toast.confirmedMany': '已确认 {count} 段',
+      'qa.warn': '检查提醒',
+      'qa.exportBanner': '导出前检查发现 {count} 条提醒（不影响导出）：',
+      'qa.counts': '占位符 {placeholder} · 数字 {number} · 术语 {term} · 空译文 {empty}',
+      'qa.code.PLACEHOLDER_MISSING': '占位符缺失',
+      'qa.code.NUMBER_MISMATCH': '数字不一致',
+      'qa.code.TERM_NOT_USED': '术语未使用',
+      'qa.code.EMPTY_TARGET': '空译文',
+      'toast.suggestionAdopted': '已采纳建议',
+      'pretranslate.start': '预翻译',
+      'editor.noSuggestion': '暂无建议，可直接翻译或让 agent 补刀',
+      'editor.baselineHint': '中间栏是机器或 agent 的初次产出，右侧可以对照着改',
+      'pretranslate.title': '用翻译记忆与机器翻译给整篇铺底，之后逐句审校',
+      'pretranslate.running': '预翻译中',
+      'pretranslate.cancel': '停止预翻译',
+      'toast.preDone': '预翻译完成，填充 {count} 段',
+      'toast.preCancelled': '已停止预翻译',
+      'toast.preFailed': '预翻译结束，{count} 段失败',
       'empty.title': '开始一次 CAT 翻译',
       'empty.desc': '粘贴文本、拖入文件，或加载演示文档。CAIT 会把源文切成句段，并同时查询翻译记忆与术语库；确认译文后自动入库。',
       'empty.paste': '粘贴文本',
@@ -2968,6 +3560,13 @@ window.__ModuleLoader__.load({
       'libraries.create': '新建',
       'libraries.done': '完成',
       'libraries.created': '库已创建并自动挂载',
+      'libraries.rename': '重命名',
+      'libraries.save': '保存',
+      'libraries.renamed': '库已重命名',
+      'libraries.delete': '删除库',
+      'libraries.deleted': '库已删除',
+      'libraries.deleteTmWarn': '库里的记忆条目也会一起删除，无法撤销。',
+      'libraries.deleteGlossaryWarn': '库里的术语也会一起删除，无法撤销。',
       'libraries.mountSaved': '挂载设置已保存',
       'panel.tm': '记忆库',
       'panel.glossary': '术语库',
@@ -3000,6 +3599,8 @@ window.__ModuleLoader__.load({
       'panel.saveTerm': '保存术语',
       'panel.cancel': '取消',
       'panel.delete': '删除',
+      'panel.edit': '编辑',
+      'panel.saveEntry': '保存修改',
       'panel.noTerms': '术语库为空。添加术语后，命中会自动高亮。',
       'panel.importCsv': '导入 CSV/TSV',
       'panel.clearGlossary': '清空术语库',
@@ -3078,6 +3679,7 @@ window.__ModuleLoader__.load({
       'modal.confirm.clearGlossary':
         '清空当前挂载的术语？未挂载库不会受影响；如要清空全部库，请在 API 调用中显式传 all: true。此操作无法撤销。',
       'modal.confirm.deleteTerm': '删除术语',
+      'modal.confirm.deleteTm': '删除记忆库条目',
       'modal.confirm.ok': '确认',
       'modal.confirm.cancel': '取消',
       'toast.confirmed': '句段已确认并写入记忆库',
@@ -3090,6 +3692,8 @@ window.__ModuleLoader__.load({
       'toast.draftSaved': '草稿已保存',
       'toast.termSaved': '术语已保存',
       'toast.termDeleted': '术语已删除',
+      'toast.tmUpdated': '记忆库条目已更新',
+      'toast.tmDeleted': '记忆库条目已删除',
       'toast.tmImported': 'TMX 已导入',
       'toast.tmxMarkupLost': 'TMX 已导入；{count} 个内联占位符/格式标签已按纯文本处理，格式信息丢失。',
       'toast.glossaryImported': '术语已导入',
@@ -3151,6 +3755,40 @@ window.__ModuleLoader__.load({
       'editor.emptyTarget': 'Enter a translation first',
       'editor.done': 'All segments confirmed',
       'editor.confirmedAt': 'Confirmed',
+      'editor.suggestion': 'Machine suggestion',
+      'editor.adopt': 'Adopt',
+      'editor.adoptHint': 'Fill the target with this suggestion and keep its origin',
+      'editor.remaining': 'to review',
+      'status.translated': 'Translated',
+      'origin.tm': 'TM',
+      'origin.mt': 'MT',
+      'origin.agent': 'Agent',
+      'origin.manual': 'Manual',
+      'rail.filter.all': 'All',
+      'rail.filter.pending': 'To translate',
+      'rail.filter.translated': 'To review',
+      'rail.filter.confirmed': 'Confirmed',
+      'rail.confirmAll': 'Confirm all',
+      'rail.confirmAllHint': 'Confirm every "To review" segment at once and write them to translation memory',
+      'rail.confirmAllMessage': 'This confirms {count} segment(s) awaiting review and writes them to translation memory, without reviewing them one by one. Continue?',
+      'toast.confirmedMany': 'Confirmed {count} segment(s)',
+      'qa.warn': 'Review note',
+      'qa.exportBanner': 'Pre-export check found {count} note(s) — export is not blocked:',
+      'qa.counts': 'placeholders {placeholder} · numbers {number} · terms {term} · empty {empty}',
+      'qa.code.PLACEHOLDER_MISSING': 'placeholder missing',
+      'qa.code.NUMBER_MISMATCH': 'number mismatch',
+      'qa.code.TERM_NOT_USED': 'term unused',
+      'qa.code.EMPTY_TARGET': 'empty target',
+      'toast.suggestionAdopted': 'Suggestion adopted',
+      'pretranslate.start': 'Pre-translate',
+      'editor.noSuggestion': 'No suggestion yet — translate directly or let an agent draft it',
+      'editor.baselineHint': 'The middle column is what the machine or agent produced; edit against it on the right',
+      'pretranslate.title': 'Fill the whole document from TM and machine translation, then review segment by segment',
+      'pretranslate.running': 'Pre-translating',
+      'pretranslate.cancel': 'Stop pre-translation',
+      'toast.preDone': 'Pre-translation finished, {count} segment(s) filled',
+      'toast.preCancelled': 'Pre-translation stopped',
+      'toast.preFailed': 'Pre-translation finished, {count} segment(s) failed',
       'empty.title': 'Start a CAT translation',
       'empty.desc': 'Paste text, drop a file, or load the demo. CAIT splits the source into segments, queries translation memory and glossary hits, and stores each confirmed pair in TM.',
       'empty.paste': 'Paste text',
@@ -3199,6 +3837,13 @@ window.__ModuleLoader__.load({
       'libraries.create': 'Create',
       'libraries.done': 'Done',
       'libraries.created': 'Library created and mounted',
+      'libraries.rename': 'Rename',
+      'libraries.save': 'Save',
+      'libraries.renamed': 'Library renamed',
+      'libraries.delete': 'Delete library',
+      'libraries.deleted': 'Library deleted',
+      'libraries.deleteTmWarn': 'Its TM entries are deleted with it. This cannot be undone.',
+      'libraries.deleteGlossaryWarn': 'Its terms are deleted with it. This cannot be undone.',
       'libraries.mountSaved': 'Mount settings saved',
       'panel.tm': 'TM',
       'panel.glossary': 'Glossary',
@@ -3231,6 +3876,8 @@ window.__ModuleLoader__.load({
       'panel.saveTerm': 'Save term',
       'panel.cancel': 'Cancel',
       'panel.delete': 'Delete',
+      'panel.edit': 'Edit',
+      'panel.saveEntry': 'Save changes',
       'panel.noTerms': 'The glossary is empty. Hits will be highlighted automatically.',
       'panel.importCsv': 'Import CSV/TSV',
       'panel.clearGlossary': 'Clear glossary',
@@ -3309,6 +3956,7 @@ window.__ModuleLoader__.load({
       'modal.confirm.clearGlossary':
         'Clear the currently mounted glossary terms? Unmounted libraries are not affected; pass all: true to the API to clear every library. This cannot be undone.',
       'modal.confirm.deleteTerm': 'Delete term',
+      'modal.confirm.deleteTm': 'Delete TM entry',
       'modal.confirm.ok': 'Confirm',
       'modal.confirm.cancel': 'Cancel',
       'toast.confirmed': 'Segment confirmed and written to TM',
@@ -3321,6 +3969,8 @@ window.__ModuleLoader__.load({
       'toast.draftSaved': 'Draft saved',
       'toast.termSaved': 'Term saved',
       'toast.termDeleted': 'Term deleted',
+      'toast.tmUpdated': 'TM entry updated',
+      'toast.tmDeleted': 'TM entry deleted',
       'toast.tmImported': 'TMX imported',
       'toast.tmxMarkupLost': 'TMX imported; {count} inline placeholder/format tags were flattened to plain text.',
       'toast.glossaryImported': 'Glossary imported',
@@ -3382,6 +4032,40 @@ window.__ModuleLoader__.load({
       'editor.emptyTarget': '先に訳文を入力してください',
       'editor.done': 'すべてのセグメントを確認済み',
       'editor.confirmedAt': '確認日時',
+      'editor.suggestion': '機械翻訳の提案',
+      'editor.adopt': '採用',
+      'editor.adoptHint': '提案を訳文に反映し、出所を保ちます',
+      'editor.remaining': '件が未確認',
+      'status.translated': '翻訳済み',
+      'origin.tm': 'TM',
+      'origin.mt': 'MT',
+      'origin.agent': 'Agent',
+      'origin.manual': '手動',
+      'rail.filter.all': 'すべて',
+      'rail.filter.pending': '未翻訳',
+      'rail.filter.translated': '要確認',
+      'rail.filter.confirmed': '確認済み',
+      'rail.confirmAll': 'まとめて確認',
+      'rail.confirmAllHint': '「要確認」の文をまとめて確認し、翻訳メモリに書き込みます',
+      'rail.confirmAllMessage': '要確認の {count} 文をまとめて確認し、翻訳メモリに書き込みます。1 文ずつ見直すことはありません。続けますか？',
+      'toast.confirmedMany': '{count} 文を確認しました',
+      'qa.warn': 'チェック注意',
+      'qa.exportBanner': '書き出し前のチェックで {count} 件の注意が見つかりました（書き出しは可能です）：',
+      'qa.counts': 'プレースホルダー {placeholder} · 数字 {number} · 用語 {term} · 空訳 {empty}',
+      'qa.code.PLACEHOLDER_MISSING': 'プレースホルダー欠落',
+      'qa.code.NUMBER_MISMATCH': '数字の不一致',
+      'qa.code.TERM_NOT_USED': '用語が未使用',
+      'qa.code.EMPTY_TARGET': '訳文が空',
+      'toast.suggestionAdopted': '提案を採用しました',
+      'pretranslate.start': '事前翻訳',
+      'editor.noSuggestion': '提案はまだありません。直接翻訳するか、agent に下訳させてください',
+      'editor.baselineHint': '中央の列は機械翻訳／agent の初回出力です。右側で見比べながら直せます',
+      'pretranslate.title': 'TM と機械翻訳で文書全体を下訳し、あとから文ごとに確認します',
+      'pretranslate.running': '事前翻訳中',
+      'pretranslate.cancel': '事前翻訳を停止',
+      'toast.preDone': '事前翻訳が完了しました（{count} 文を反映）',
+      'toast.preCancelled': '事前翻訳を停止しました',
+      'toast.preFailed': '事前翻訳が終了しました（{count} 文が失敗）',
       'empty.title': 'CAT 翻訳を始める',
       'empty.desc': 'テキストを貼り付けるか、ファイルをドロップするか、デモ文書を読み込みます。CAIT は原文をセグメントに分割し、翻訳メモリと用語集を同時に検索します。確認した訳文は自動的に TM に保存されます。',
       'empty.paste': 'テキストを貼り付け',
@@ -3430,6 +4114,13 @@ window.__ModuleLoader__.load({
       'libraries.create': '作成',
       'libraries.done': '完了',
       'libraries.created': 'ライブラリを作成してマウントしました',
+      'libraries.rename': '名前を変更',
+      'libraries.save': '保存',
+      'libraries.renamed': 'ライブラリ名を変更しました',
+      'libraries.delete': 'ライブラリを削除',
+      'libraries.deleted': 'ライブラリを削除しました',
+      'libraries.deleteTmWarn': '中の TM エントリも一緒に削除され、元に戻せません。',
+      'libraries.deleteGlossaryWarn': '中の用語も一緒に削除され、元に戻せません。',
       'libraries.mountSaved': 'マウント設定を保存しました',
       'panel.tm': 'TM',
       'panel.glossary': '用語集',
@@ -3462,6 +4153,8 @@ window.__ModuleLoader__.load({
       'panel.saveTerm': '用語を保存',
       'panel.cancel': 'キャンセル',
       'panel.delete': '削除',
+      'panel.edit': '編集',
+      'panel.saveEntry': '変更を保存',
       'panel.noTerms': '用語集は空です。用語を追加するとヒットが自動で強調表示されます。',
       'panel.importCsv': 'CSV/TSV をインポート',
       'panel.clearGlossary': '用語集をクリア',
@@ -3540,6 +4233,7 @@ window.__ModuleLoader__.load({
       'modal.confirm.clearGlossary':
         '現在マウント中の用語をクリアしますか？未マウントのライブラリは影響を受けません。すべてのライブラリをクリアするには API に all: true を明示してください。この操作は元に戻せません。',
       'modal.confirm.deleteTerm': '用語を削除',
+      'modal.confirm.deleteTm': 'TM エントリを削除',
       'modal.confirm.ok': '確認',
       'modal.confirm.cancel': 'キャンセル',
       'toast.confirmed': 'セグメントを確認して TM に保存しました',
@@ -3552,6 +4246,8 @@ window.__ModuleLoader__.load({
       'toast.draftSaved': '下書きを保存しました',
       'toast.termSaved': '用語を保存しました',
       'toast.termDeleted': '用語を削除しました',
+      'toast.tmUpdated': 'TM エントリを更新しました',
+      'toast.tmDeleted': 'TM エントリを削除しました',
       'toast.tmImported': 'TMX をインポートしました',
       'toast.tmxMarkupLost': 'TMX をインポートしました。{count} 個のインライン プレースホルダー/書式タグはプレーンテキストとして処理され、書式情報は失われました。',
       'toast.glossaryImported': '用語をインポートしました',
@@ -3639,6 +4335,9 @@ window.__ModuleLoader__.load({
         scaleCssLengths,
         caitUiBase: CAIT_UI_BASE,
         caitUiMaxUnit: CAIT_UI_MAX_UNIT,
+        caitUiDamping: CAIT_UI_DAMPING,
+        caitThemeAttr: CAIT_THEME_ATTR,
+        detectThemeKind,
         cssScaled: CSS_SCALED,
         syncPollMs: SYNC_POLL_MS,
         makeTranslator,

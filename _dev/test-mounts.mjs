@@ -18,8 +18,8 @@ assert.ok(buttonReset, 'button reset should exist')
 assert.equal(buttonReset[1].includes('color:'), false, 'button reset must not override button color')
 assert.match(
   stylesSource,
-  /\.cait-btn-primary\{[^}]*color:var\(--dsw-alias-bg-base\)/,
-  'primary button needs an explicit contrasting label color',
+  /\.cait-btn-primary\{[^}]*color:var\(--dsw-alias-label-primary-inverted\)/,
+  'primary button needs the inverted label token so its text contrasts in both themes',
 )
 assert.ok(
   source.includes('.cait-root button{font:inherit;cursor:pointer}'),
@@ -112,16 +112,16 @@ assert.equal(resolveUiLang('ja', 'zh-CN'), 'ja', 'an explicit choice beats the D
 assert.equal(resolveUiLang('bogus', 'zh'), 'auto', 'an invalid preference degrades to auto')
 assert.equal(makeTranslator(resolveUiLang('auto', 'zh-CN'), null)('nav.new'), '新建')
 
-// Fullscreen windows need more than the old 1.4× cap; short windows must
-// still stay at the designed density instead of shrinking.
+// Growth is damped so a maximized window stops outgrowing the surrounding DSH
+// chrome, while short windows must still stay at the designed density.
 assert.equal(caitUiBase.width, 1100)
 assert.equal(caitUiBase.height, 680)
-assert.equal(caitUiMaxUnit, 1.8)
+assert.equal(caitUiMaxUnit, 1.45)
 assert.equal(computeCaitUnit({ width: 1100, height: 680 }), 1)
-assert.equal(computeCaitUnit({ width: 1600, height: 900 }), 1.324)
-assert.equal(computeCaitUnit({ width: 1280, height: 720 }), 1.059)
-assert.equal(computeCaitUnit({ width: 2560, height: 1440 }), 1.8)
-assert.equal(computeCaitUnit({ width: 3840, height: 2160 }), 1.8)
+assert.equal(computeCaitUnit({ width: 1600, height: 900 }), 1.194)
+assert.equal(computeCaitUnit({ width: 1280, height: 720 }), 1.035)
+assert.equal(computeCaitUnit({ width: 2560, height: 1440 }), 1.45)
+assert.equal(computeCaitUnit({ width: 3840, height: 2160 }), 1.45)
 assert.equal(computeCaitUnit({ width: 800, height: 600 }), 1, 'tiny windows must not shrink below 1×')
 
 const scaled = scaleCssLengths('.x{font-size:13px;border:1px solid red}@media (max-width:600px){.x{gap:10px}}', '--u')

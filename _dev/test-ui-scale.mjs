@@ -54,6 +54,7 @@ const {
   scaleCssLengths,
   caitUiBase,
   caitUiMaxUnit,
+  caitUiDamping,
   cssScaled,
 } = mod.__test || {}
 
@@ -61,11 +62,12 @@ assert.equal(typeof computeCaitUnit, 'function')
 assert.equal(typeof scaleCssLengths, 'function')
 assert.equal(caitUiBase.width, 1100)
 assert.equal(caitUiBase.height, 680)
-assert.equal(caitUiMaxUnit, 1.8)
+assert.equal(caitUiMaxUnit, 1.45)
+assert.equal(caitUiDamping, 0.6)
 assert.equal(typeof cssScaled, 'string')
 
 // --- computeCaitUnit -------------------------------------------------------
-assert.equal(computeCaitUnit({ width: 1320, height: 800 }), 1.176)
+assert.equal(computeCaitUnit({ width: 1320, height: 800 }), 1.106)
 assert.equal(computeCaitUnit({ width: 900, height: 600 }), 1, 'never shrinks below the design size')
 assert.equal(computeCaitUnit({ width: 0, height: 800 }), 1)
 assert.equal(computeCaitUnit({}), 1)
@@ -73,12 +75,24 @@ assert.equal(computeCaitUnit(), 1)
 assert.equal(computeCaitUnit({ width: Number.NaN, height: 800 }), 1)
 assert.equal(computeCaitUnit({ width: 4000, height: 2400 }), caitUiMaxUnit, 'cap')
 assert.equal(computeCaitUnit({ width: 1000, height: 2400 }), 1, 'width guard')
-assert.equal(computeCaitUnit({ width: 4000, height: 700 }), 1.029, 'short/wide windows follow height')
+assert.equal(computeCaitUnit({ width: 4000, height: 700 }), 1.018, 'short/wide windows follow height')
 
 const mid = computeCaitUnit({ width: 1700, height: 900 })
-assert.ok(mid > 1 && mid < caitUiMaxUnit, `mid unit should sit between 1 and ${caitUiMaxUnit}, got ${mid}`)
-assert.equal(mid, 1.324)
+assert.equal(mid, 1.194)
 assert.equal((mid * 1000) % 1, 0, 'unit is rounded to three decimals')
+
+// The fallback from 1.8x: a 1920x1080 panel must stay under the 1.38 ceiling
+// that lets the three-column review view fit its 1390px horizontal budget.
+const hd = computeCaitUnit({ width: 1920, height: 1080 })
+assert.equal(hd, 1.353)
+assert.ok(1920 / hd >= 1390, `1920 panel must leave room for three columns, got ${1920 / hd}`)
+assert.equal(computeCaitUnit({ width: 2560, height: 1440 }), caitUiMaxUnit)
+assert.equal(computeCaitUnit({ width: 3840, height: 2160 }), caitUiMaxUnit)
+
+// Growth is damped rather than linear, so large panels stop outgrowing the
+// surrounding DSH chrome.
+const linear = Math.min(2200 / 1100, 1500 / 680)
+assert.ok(computeCaitUnit({ width: 2200, height: 1500 }) < linear, 'damped growth stays below linear')
 
 const wideGrows = [1300, 1500, 1700, 1900].map((width) => computeCaitUnit({ width, height: 1000 }))
 assert.deepEqual(wideGrows, [...wideGrows].sort((a, b) => a - b), 'unit is monotonic in width')
@@ -174,7 +188,14 @@ const leftover = [...stripCalc(cssScaled).matchAll(/(-?(?:\d+\.?\d*|\.\d+))px/g)
   .map((match) => Number(match[1]))
   .filter((value) => Math.abs(value) > 1)
 const leftoverKinds = [...new Set(leftover)].sort((a, b) => a - b)
-assert.deepEqual(leftoverKinds, [700, 940, 1180], `unscaled lengths should only be breakpoints, got ${leftoverKinds}`)
+// 700/1010 belong to the three-column container queries: container widths are
+// measured in real pixels, while columns scale with --cait-u, so those
+// thresholds must stay unscaled on purpose.
+assert.deepEqual(
+  leftoverKinds,
+  [700, 940, 1010, 1180],
+  `unscaled lengths should only be breakpoints, got ${leftoverKinds}`,
+)
 
 // --- wiring checks ---------------------------------------------------------
 assert.ok(source.includes('const CSS_SCALED = scaleCssLengths(CSS, CAIT_UNIT_VAR)'))

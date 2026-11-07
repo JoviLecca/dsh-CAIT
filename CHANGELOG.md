@@ -4,6 +4,66 @@ All notable changes to CAIT are documented here. The project follows
 [Semantic Versioning](https://semver.org/) and the format is based on
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.1.0] - 2026-11-07
+
+Agent-assisted pre-translation and a three-column review workbench.
+
+### Added
+
+- **Pre-translation.** `cat_pre_translate` (and the `preTranslate` RPC) fills a
+  block of segments from exact translation-memory matches first, then machine
+  translation, in small concurrent batches. Confirmed segments and segments that
+  already carry a target are skipped, so repeated or interrupted runs never
+  overwrite human work. The workbench adds a topbar button that walks the
+  document block by block, shows `done/total`, and can be stopped between blocks.
+- **Three-column review.** The editor now lays out source, the machine/agent
+  baseline, and the editable target side by side once the pane is wide enough;
+  narrower panes fold back to two columns and then to the previous stack. The
+  baseline is stored on `suggestion`, so editing in the right column always has
+  the original to compare against.
+- **Suggestion adoption.** `adoptSuggestion` copies a suggestion into the target
+  while keeping its origin and the suggestion itself for later comparison.
+- **Batch reading and confirmation for agents.** `cat_get_segments` lists a
+  bounded window with status, origin, and suggestions; `cat_confirm_segments`
+  confirms a list of indices or every segment awaiting review, reporting what it
+  skipped instead of guessing.
+- **Advisory QA.** A derived report flags missing placeholders/tags, mismatched
+  numbers, unused glossary terms, and segments marked as translated but empty.
+  Issues appear as a marker in the segment rail and as a banner in the export
+  dialog; they never block an export and nothing is written to disk.
+- **Translation memory and library maintenance.** Single TM entries can be
+  edited or deleted from the match cards, and TM/glossary libraries can be
+  renamed or deleted (the last library of a kind stays protected).
+- **Theme adaptation.** The workbench follows the host light/dark theme: the
+  root sets `color-scheme` (so native selects, checkboxes, and scrollbars match),
+  primary button labels use the inverted label token, and the segment rail search
+  now also matches suggestions.
+
+### Changed
+
+- Segments move through three states — `pending`, `translated`, `confirmed` —
+  with `origin` (`tm`/`mt`/`agent`/`manual`) recording who produced the text.
+  Progress now separates "awaiting review" from "pending" instead of counting
+  both as unfinished.
+- The store format is version 3. Versions 1 and 2 still load and migrate in
+  place; a version-2 draft with text but no confirmation becomes `translated`
+  with `origin: manual`.
+- UI scaling is damped above the design size (`1 + (fit - 1) × 0.6`, capped at
+  1.45×) so a maximized window no longer grows the interface far beyond the host
+  UI, and three columns keep enough horizontal room.
+- MT route discovery no longer filters providers by what the loader configuration
+  happens to mention: every registered provider is listed, configured ones first,
+  and providers without models stay visible but disabled.
+
+### Fixed
+
+- Adding a custom model provider no longer hides the built-in DeepSeek route from
+  the model-route list.
+- The selected segment and an unsaved draft are now persisted (debounced, plus a
+  flush on unload) instead of only travelling along with unrelated writes.
+- The primary button label no longer uses a surface token, which produced
+  unreadable text in the dark theme.
+
 ## [1.0.5] - 2026-11-06
 
 EPUB support, an import preprocessing stage, and format hardening.

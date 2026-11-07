@@ -32,6 +32,7 @@
         globe: ['M8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12Z', 'M2.5 8h11', 'M8 2c2 2 2 10 0 12', 'M8 2c-2 2-2 10 0 12'],
         alert: ['M8 2L14 13H2L8 2Z', 'M8 6v3.5', 'M8 11.5v.2'],
         save: ['M3 2h8l2 2v10H3z', 'M5 2v4h6V2', 'M5 14v-4h6v4'],
+        pencil: ['M11 2.5l2.5 2.5-8 8L2 14l1-3.5 8-8Z', 'M9.5 4l2.5 2.5'],
         languages: ['M2 4h7', 'M5.5 4v2c0 2-1.5 4-3.5 5', 'M4 8c0 1.5 2 3 4.5 3.5', 'M9 13l3-7 3 7', 'M10 11h4'],
       }
       const shape = paths[name] || paths.file
@@ -295,6 +296,9 @@
       onCloseDoc,
       onNewTab,
       onCleanClosed,
+      pre,
+      onPreTranslate,
+      onCancelPreTranslate,
     }) {
       const progress = doc?.progress || { percent: 0, confirmed: 0, total: 0 }
       const openIds = new Set((data.openDocuments || []).map((item) => item.id))
@@ -342,6 +346,35 @@
         h(
           'div',
           { className: 'cait-actions' },
+          pre && pre.running
+            ? h(
+                'span',
+                { className: 'cait-pre-status', title: t('pretranslate.running') },
+                h(Spinner),
+                h('span', null, `${t('pretranslate.running')} ${pre.done}/${pre.total}`),
+                h(
+                  'button',
+                  {
+                    type: 'button',
+                    className: 'cait-iconbtn',
+                    title: t('pretranslate.cancel'),
+                    'aria-label': t('pretranslate.cancel'),
+                    onClick: onCancelPreTranslate,
+                  },
+                  h(Icon, { name: 'close', size: 13 }),
+                ),
+              )
+            : h(
+                'button',
+                {
+                  className: 'cait-btn',
+                  onClick: onPreTranslate,
+                  disabled: Boolean(busy) || !doc || !(doc.progress?.total > 0),
+                  title: t('pretranslate.title'),
+                },
+                h(Icon, { name: 'sparkles', size: 14 }),
+                h('span', { className: 'cait-btn-label' }, t('pretranslate.start')),
+              ),
           h(
             'button',
             { className: 'cait-btn', onClick: onNew, disabled: Boolean(busy), title: t('nav.new') },
@@ -365,18 +398,40 @@
       )
     }
 
-    function SegmentRail({ t, doc, selected, query, setQuery, onSelect }) {
+    const SEGMENT_FILTERS = ['all', 'pending', 'translated', 'confirmed']
+
+    function SegmentRail({ t, doc, selected, query, setQuery, filter, setFilter, onSelect, onConfirmAll, busy, qa }) {
       const activeRef = useRef(null)
       useEffect(() => {
         if (activeRef.current) activeRef.current.scrollIntoView({ block: 'nearest' })
-      }, [selected])
+      }, [selected, filter])
 
+      // Advisory QA marks: the check never blocks editing or exporting, it only
+      // flags the segment in the rail so review can start where it matters.
+      const warns = new Map()
+      for (const issue of qa?.issues || []) {
+        const list = warns.get(issue.index) || []
+        list.push(issue.code)
+        warns.set(issue.index, list)
+      }
+
+      const counts = {
+        all: doc.progress.total,
+        pending: doc.progress.pending,
+        translated: doc.progress.translated,
+        confirmed: doc.progress.confirmed,
+      }
       const needle = query.trim().toLowerCase()
       const items = doc.segments
         .map((segment, index) => ({ segment, index }))
+        .filter(({ segment }) => filter === 'all' || segment.status === filter)
         .filter(({ segment }) => {
           if (!needle) return true
-          return segment.source.toLowerCase().includes(needle) || (segment.target || '').toLowerCase().includes(needle)
+          return (
+            segment.source.toLowerCase().includes(needle) ||
+            (segment.target || '').toLowerCase().includes(needle) ||
+            (segment.suggestion || '').toLowerCase().includes(needle)
+          )
         })
 
       return h(
@@ -387,6 +442,36 @@
           { className: 'cait-rail-head' },
           h('div', { className: 'cait-rail-title' }, h('span', null, t('rail.title')), h('span', { className: 'cait-count' }, doc.progress.total)),
           h('div', { className: 'cait-mini-progress' }, h('i', { style: { width: `${doc.progress.percent}%` } })),
+          h(
+            'div',
+            { className: 'cait-rail-filters' },
+            SEGMENT_FILTERS.map((key) =>
+              h(
+                'button',
+                {
+                  key,
+                  className: `cait-filterchip${filter === key ? ' active' : ''}`,
+                  onClick: () => setFilter(key),
+                  title: t(`rail.filter.${key}`),
+                },
+                h('span', null, t(`rail.filter.${key}`)),
+                h('span', { className: `cait-filtercount ${key}` }, counts[key]),
+              ),
+            ),
+          ),
+          doc.progress.translated > 0
+            ? h(
+                'button',
+                {
+                  className: 'cait-batchbtn',
+                  onClick: onConfirmAll,
+                  disabled: Boolean(busy),
+                  title: t('rail.confirmAllHint'),
+                },
+                h(Icon, { name: 'check', size: 11 }),
+                `${t('rail.confirmAll')} · ${doc.progress.translated}`,
+              )
+            : null,
         ),
         h(
           'div',
@@ -416,6 +501,13 @@
                       { className: 'cait-seg-line' },
                       h('span', { className: 'cait-seg-index' }, String(index + 1).padStart(2, '0')),
                       h('span', { className: `cait-dot ${segment.status}` }),
+                      warns.has(index)
+                        ? h('span', {
+                            className: 'cait-seg-warn',
+                            title: (warns.get(index) || []).map((code) => t(`qa.code.${code}`)).join(' · '),
+                            'aria-label': t('qa.warn'),
+                          })
+                        : null,
                     ),
                     h('span', { className: 'cait-seg-text' }, segment.source),
                     segment.target ? h('span', { className: 'cait-seg-target' }, segment.target) : null,
@@ -427,13 +519,25 @@
       )
     }
 
-    function EditorPane({ t, doc, index, segment, detail, draft, setDraft, dirty, busy, onConfirm, onNext, onPrev, onSave, onApplyTerm, textareaRef }) {
+    function EditorPane({ t, doc, index, segment, detail, draft, setDraft, dirty, busy, onConfirm, onNext, onPrev, onSave, onAdopt, onApplyTerm, textareaRef }) {
       const hits = detail?.index === index ? detail.glossaryHits : []
       const charCount = Array.from(draft || '').length
       const progress = doc.progress
+      const remaining = progress.total - progress.confirmed
+      const statusLabel =
+        segment.status === 'confirmed'
+          ? t('status.confirmed')
+          : segment.status === 'translated'
+            ? t('status.translated')
+            : t('status.pending')
 
-      const onKeyDown = (event) => {
-        const mod = event.metaKey || event.ctrlKey
+      // The middle column keeps the machine/agent baseline that produced the
+      // current text, so editing in the right column has something to compare
+      // against. It is stored in `suggestion`, which adoption already preserves.
+      const baselineText = segment.suggestion || ''
+      const baselineOrigin = segment.origin || 'agent'
+
+      const onKeyDown = (event) => {        const mod = event.metaKey || event.ctrlKey
         if (mod && event.key === 'Enter') {
           event.preventDefault()
           onConfirm()
@@ -480,61 +584,94 @@
           'div',
           { className: 'cait-seg-head' },
           h('span', { className: 'cait-seg-label' }, `${t('editor.segment')} ${index + 1} / ${doc.segments.length}`),
-          h('span', { className: `cait-badge ${segment.status}` }, segment.status === 'confirmed' ? t('status.confirmed') : t('status.pending')),
+          h('span', { className: `cait-badge ${segment.status}` }, statusLabel),
         ),
         h(
           'div',
-          { className: 'cait-source-card' },
+          { className: 'cait-review' },
           h(
-            'div',
-            { className: 'cait-labelrow' },
-            h('span', { className: 'cait-label' }, t('editor.source')),
-            h('span', { className: 'cait-langchip' }, doc.sourceLang),
+            'section',
+            { className: 'cait-revcol cait-rev-src' },
+            h(
+              'div',
+              { className: 'cait-labelrow' },
+              h('span', { className: 'cait-label' }, t('editor.source')),
+              h('span', { className: 'cait-langchip' }, doc.sourceLang),
+            ),
+            h('div', { className: 'cait-source-text' }, highlightSource(segment.source, hits)),
+            hits.length
+              ? h(
+                  'div',
+                  { className: 'cait-hitrow' },
+                  hits.map((hit) =>
+                    h(
+                      'button',
+                      {
+                        key: hit.id,
+                        className: 'cait-chip cait-chip-action',
+                        onClick: () => onApplyTerm(hit),
+                        title: hit.note || `${hit.term} → ${hit.target}`,
+                      },
+                      h(Icon, { name: 'book', size: 11 }),
+                      `${hit.term} → ${hit.target}`,
+                    ),
+                  ),
+                )
+              : null,
           ),
-          h('div', { className: 'cait-source-text' }, highlightSource(segment.source, hits)),
-          hits.length
-            ? h(
-                'div',
-                { className: 'cait-hitrow' },
-                hits.map((hit) =>
-                  h(
+          h(
+            'section',
+            { className: 'cait-revcol cait-rev-sugg' },
+            h(
+              'div',
+              { className: 'cait-labelrow' },
+              h('span', { className: 'cait-label' }, t('editor.suggestion')),
+              baselineText
+                ? h('span', { className: `cait-originchip ${baselineOrigin}` }, t(`origin.${baselineOrigin}`))
+                : null,
+              segment.suggestion
+                ? h(
                     'button',
                     {
-                      key: hit.id,
                       className: 'cait-chip cait-chip-action',
-                      onClick: () => onApplyTerm(hit),
-                      title: hit.note || `${hit.term} → ${hit.target}`,
+                      onClick: onAdopt,
+                      disabled: Boolean(busy) || draft.trim() === segment.suggestion,
+                      title: t('editor.adoptHint'),
                     },
-                    h(Icon, { name: 'book', size: 11 }),
-                    `${hit.term} → ${hit.target}`,
-                  ),
-                ),
-              )
-            : null,
-        ),
-        h(
-          'div',
-          { className: 'cait-target-area' },
-          h(
-            'div',
-            { className: 'cait-labelrow' },
-            h('span', { className: 'cait-label' }, t('editor.target')),
-            h(
-              'span',
-              { className: 'cait-meta' },
-              `${charCount} ${t('editor.chars')}${dirty ? ` · ${t('editor.unsaved')}` : ''}`,
+                    h(Icon, { name: 'download', size: 11 }),
+                    t('editor.adopt'),
+                  )
+                : null,
             ),
+            baselineText
+              ? h('div', { className: 'cait-suggest-text' }, baselineText)
+              : h('div', { className: 'cait-suggest-empty' }, t('editor.noSuggestion')),
+            h('div', { className: 'cait-rev-hint' }, segment.suggestion ? t('editor.adoptHint') : t('editor.baselineHint')),
           ),
-          h('textarea', {
-            ref: textareaRef,
-            className: 'cait-textarea',
-            value: draft,
-            onChange: (event) => setDraft(event.target.value),
-            onKeyDown,
-            placeholder: t('editor.targetPlaceholder'),
-            spellCheck: false,
-            rows: 8,
-          }),
+          h(
+            'section',
+            { className: 'cait-revcol cait-rev-target' },
+            h(
+              'div',
+              { className: 'cait-labelrow' },
+              h('span', { className: 'cait-label' }, t('editor.target')),
+              h(
+                'span',
+                { className: 'cait-meta' },
+                `${charCount} ${t('editor.chars')}${dirty ? ` · ${t('editor.unsaved')}` : ''}`,
+              ),
+            ),
+            h('textarea', {
+              ref: textareaRef,
+              className: 'cait-textarea',
+              value: draft,
+              onChange: (event) => setDraft(event.target.value),
+              onKeyDown,
+              placeholder: t('editor.targetPlaceholder'),
+              spellCheck: false,
+              rows: 8,
+            }),
+          ),
         ),
         h(
           'div',
@@ -567,16 +704,30 @@
         h(
           'div',
           { className: 'cait-editor-foot' },
-          progress.pending === 0
+          remaining === 0
             ? h('span', { className: 'cait-donechip' }, h(Icon, { name: 'check', size: 11 }), t('editor.done'))
-            : h('span', null, `${progress.pending} ${t('status.pending')}`),
+            : h('span', null, `${remaining} ${t('editor.remaining')}`),
           segment.confirmedAt ? h('span', null, `${t('editor.confirmedAt')} ${new Date(segment.confirmedAt).toLocaleString()}`) : null,
         ),
       )
     }
 
-    function TmMatchCard({ t, match, onApply }) {
+    function TmMatchCard({ t, match, onApply, onEdit, onDelete, busy }) {
       const matchType = match.matchType || (match.exact ? 'exact' : 'low_fuzzy')
+      const [editing, setEditing] = useState(false)
+      const [value, setValue] = useState(match.target)
+
+      useEffect(() => {
+        setEditing(false)
+        setValue(match.target)
+      }, [match.id, match.target])
+
+      const save = async () => {
+        if (!value.trim()) return
+        const ok = await onEdit({ id: match.id, target: value })
+        if (ok) setEditing(false)
+      }
+
       return h(
         'article',
         { className: 'cait-card' },
@@ -585,10 +736,49 @@
           { className: 'cait-card-head' },
           h('span', { className: `cait-score ${matchType}` }, `${match.percent}%`),
           h('span', { className: 'cait-score-label' }, t(`match.${matchType}`)),
-          h('button', { className: 'cait-minibtn', onClick: () => onApply(match) }, t('panel.apply')),
+          h(
+            'div',
+            { className: 'cait-term-actions' },
+            h('button', { className: 'cait-minibtn', onClick: () => onApply(match) }, t('panel.apply')),
+            h(
+              'button',
+              { className: 'cait-minibtn', onClick: () => setEditing((current) => !current), disabled: Boolean(busy), title: t('panel.edit') },
+              h(Icon, { name: 'pencil', size: 11 }),
+            ),
+            h(
+              'button',
+              { className: 'cait-deletebtn', onClick: () => onDelete(match), disabled: Boolean(busy), title: t('panel.delete') },
+              h(Icon, { name: 'trash', size: 11 }),
+            ),
+          ),
         ),
         h('p', { className: 'cait-card-source' }, match.source),
-        h('p', { className: 'cait-card-target' }, match.target),
+        editing
+          ? h(
+              'div',
+              { className: 'cait-tmedit' },
+              h('textarea', {
+                className: 'cait-textarea cait-tmedit-input',
+                value,
+                rows: 3,
+                autoFocus: true,
+                onChange: (event) => setValue(event.target.value),
+                onKeyDown: (event) => {
+                  if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+                    event.preventDefault()
+                    save()
+                  }
+                  if (event.key === 'Escape') setEditing(false)
+                },
+              }),
+              h(
+                'div',
+                { className: 'cait-formrow' },
+                h('button', { className: 'cait-btn cait-btn-primary', onClick: save, disabled: Boolean(busy) || !value.trim() }, t('panel.saveEntry')),
+                h('button', { className: 'cait-btn cait-btn-ghost', onClick: () => setEditing(false) }, t('panel.cancel')),
+              ),
+            )
+          : h('p', { className: 'cait-card-target' }, match.target),
       )
     }
 
@@ -605,6 +795,8 @@
       tmResults,
       tmError,
       onApplyTm,
+      onEditTm,
+      onDeleteTm,
       onImportTmx,
       onClearTm,
       onAddTerm,
@@ -738,7 +930,17 @@
                 ),
                 tmError ? h('div', { className: 'cait-mt-error' }, tmError) : null,
                 tmMatches.length
-                  ? tmMatches.map((match) => h(TmMatchCard, { key: match.id, t, match, onApply: onApplyTm }))
+                  ? tmMatches.map((match) =>
+                      h(TmMatchCard, {
+                        key: match.id,
+                        t,
+                        match,
+                        busy,
+                        onApply: onApplyTm,
+                        onEdit: onEditTm,
+                        onDelete: onDeleteTm,
+                      }),
+                    )
                   : h('p', { className: 'cait-empty-note' }, tmResults ? t('panel.noMatches') : t('panel.noCurrentMatches')),
                 h('p', { className: 'cait-mt-hint' }, t('panel.tmHint')),
                 h(
@@ -1100,7 +1302,8 @@
       )
     }
 
-    function ExportModal({ t, busy, onClose, onExport }) {
+    function ExportModal({ t, busy, onClose, onExport, qa }) {
+      const issues = qa?.issueCount || 0
       const items = [
         ['bilingual-md', t('modal.export.bilingualMd'), t('modal.export.bilingual'), 'file'],
         ['bilingual-csv', t('modal.export.bilingualCsv'), t('modal.export.bilingual'), 'file'],
@@ -1126,6 +1329,23 @@
         Modal,
         { title: t('modal.export.title'), onClose, wide: true },
         h('p', { className: 'cait-confirm-text' }, t('modal.export.desc')),
+        issues
+          ? h(
+              'div',
+              { className: 'cait-qa-banner' },
+              h(Icon, { name: 'alert', size: 12 }),
+              h(
+                'span',
+                null,
+                `${t('qa.exportBanner').replace('{count}', String(issues))} `,
+                t('qa.counts')
+                  .replace('{placeholder}', String(qa.counts.PLACEHOLDER_MISSING))
+                  .replace('{number}', String(qa.counts.NUMBER_MISMATCH))
+                  .replace('{term}', String(qa.counts.TERM_NOT_USED))
+                  .replace('{empty}', String(qa.counts.EMPTY_TARGET)),
+              ),
+            )
+          : null,
         h(
           'div',
           { className: 'cait-export-grid' },
@@ -1328,7 +1548,13 @@
                 },
                 h('option', { value: 'mock' }, t('mt.mock')),
                 routes.map((item) =>
-                  h('option', { key: item.id, value: item.id }, `${item.name} (${item.id})`),
+                  h(
+                    'option',
+                    { key: item.id, value: item.id, disabled: item.hasModels === false },
+                    item.hasModels === false
+                      ? `${item.name} (${item.id}) · ${t('modal.settings.noModels')}`
+                      : `${item.name} (${item.id})`,
+                  ),
                 ),
                 routeMissing
                   ? h('option', { value: form.mt.provider }, t('modal.settings.routeMissing'))
@@ -1393,7 +1619,7 @@
       )
     }
 
-    function LibrariesModal({ t, data, busy, onClose, onSetMounts, onCreate }) {
+    function LibrariesModal({ t, data, busy, onClose, onSetMounts, onCreate, onRename, onDeleteLibrary }) {
       const libraries = data.libraries || { tm: [], glossary: [] }
       const mounts = data.mounts || {
         tmIds: [],
@@ -1403,6 +1629,19 @@
       }
       const [tmName, setTmName] = useState('')
       const [glossaryName, setGlossaryName] = useState('')
+      const [editing, setEditing] = useState(null)
+      const [editName, setEditName] = useState('')
+
+      const startRename = (kind, id, name) => {
+        setEditing({ kind, id })
+        setEditName(name)
+      }
+
+      const submitRename = async () => {
+        if (!editing || !editName.trim()) return
+        const ok = await onRename({ kind: editing.kind, id: editing.id, name: editName.trim() })
+        if (ok) setEditing(null)
+      }
 
       const toggle = (kind, id, checked) => {
         const current = kind === 'tm' ? mounts.tmIds : mounts.glossaryIds
@@ -1450,7 +1689,22 @@
                     h(
                       'span',
                       { className: 'cait-libmeta' },
-                      h('strong', null, library.name),
+                      editing && editing.kind === kind && editing.id === id
+                        ? h('input', {
+                            className: 'cait-input cait-librename',
+                            value: editName,
+                            autoFocus: true,
+                            disabled: Boolean(busy),
+                            onChange: (event) => setEditName(event.target.value),
+                            onKeyDown: (event) => {
+                              if (event.key === 'Enter') {
+                                event.preventDefault()
+                                submitRename()
+                              }
+                              if (event.key === 'Escape') setEditing(null)
+                            },
+                          })
+                        : h('strong', null, library.name),
                       h(
                         'small',
                         null,
@@ -1458,6 +1712,45 @@
                           library.mounted ? '' : ` · ${t('libraries.notMounted')}`
                         }`,
                       ),
+                    ),
+                  ),
+                  h(
+                    'div',
+                    { className: 'cait-libactions' },
+                    editing && editing.kind === kind && editing.id === id
+                      ? h(
+                          'span',
+                          { className: 'cait-formrow' },
+                          h(
+                            'button',
+                            {
+                              className: 'cait-minibtn',
+                              onClick: submitRename,
+                              disabled: Boolean(busy) || !editName.trim(),
+                            },
+                            t('libraries.save'),
+                          ),
+                          h('button', { className: 'cait-minibtn', onClick: () => setEditing(null) }, t('panel.cancel')),
+                        )
+                      : h(
+                          'button',
+                          {
+                            className: 'cait-deletebtn',
+                            onClick: () => startRename(kind, id, library.name),
+                            disabled: Boolean(busy),
+                            title: t('libraries.rename'),
+                          },
+                          h(Icon, { name: 'pencil', size: 11 }),
+                        ),
+                    h(
+                      'button',
+                      {
+                        className: 'cait-deletebtn',
+                        onClick: () => onDeleteLibrary({ kind, id, name: library.name }),
+                        disabled: Boolean(busy) || list.length <= 1,
+                        title: t('libraries.delete'),
+                      },
+                      h(Icon, { name: 'trash', size: 11 }),
                     ),
                   ),
                   h(
@@ -1578,8 +1871,12 @@
       const [dirty, setDirty] = useState(false)
       const [tab, setTab] = useState('tm')
       const [railQuery, setRailQuery] = useState('')
+      const [railFilter, setRailFilter] = useState('all')
+      const [pre, setPre] = useState({ running: false, done: 0, total: 0, filled: 0, failed: 0 })
+      const [qa, setQa] = useState(null)
       const [tmQuery, setTmQuery] = useState('')
       const [tmResults, setTmResults] = useState(null)
+      const [tmRefresh, setTmRefresh] = useState(0)
       const [tmError, setTmError] = useState('')
       const [mt, setMt] = useState(null)
       const [mtError, setMtError] = useState('')
@@ -1694,6 +1991,61 @@
         }
       }
 
+      const preCancelRef = useRef(false)
+
+      // The client drives pre-translation block by block instead of asking the
+      // host for a background job: a block is one RPC, cancellation is simply
+      // "stop looping", and every finished block is already persisted.
+      const runPreTranslate = async () => {
+        const active = data?.activeDocument
+        if (!active || pre.running) return
+        preCancelRef.current = false
+        const initial = active.progress || { confirmed: 0, translated: 0, total: 0 }
+        setPre({
+          running: true,
+          done: initial.confirmed + initial.translated,
+          total: initial.total,
+          filled: 0,
+          failed: 0,
+        })
+        let from = 0
+        let filled = 0
+        let failed = 0
+        try {
+          while (from !== null) {
+            if (preCancelRef.current) break
+            const result = await rpc('preTranslate', {
+              documentId: active.id,
+              from,
+              count: PRETRANSLATE_BLOCK_SIZE,
+            })
+            filled += result.filled
+            failed += result.failed.length
+            from = result.next
+            const progress = result.progress
+            setPre((current) => ({
+              ...current,
+              done: progress.confirmed + progress.translated,
+              total: progress.total,
+              filled,
+              failed,
+            }))
+            await refreshState()
+          }
+          if (preCancelRef.current) notify(t('toast.preCancelled'))
+          else if (failed) notify(t('toast.preFailed').replace('{count}', String(failed)))
+          else notify(t('toast.preDone').replace('{count}', String(filled)))
+        } catch (error) {
+          report(error)
+        } finally {
+          setPre((current) => ({ ...current, running: false }))
+        }
+      }
+
+      const cancelPreTranslate = () => {
+        preCancelRef.current = true
+      }
+
       useEffect(() => {
         let alive = true
         setLoading(true)
@@ -1749,6 +2101,26 @@
           clearInterval(timer)
         }
       }, [data?.revision])
+
+      useEffect(() => {
+        const id = data?.activeDocument?.id
+        if (!id) {
+          setQa(null)
+          return
+        }
+        let alive = true
+        rpc('getQaReport', { documentId: id })
+          .then((report) => {
+            if (alive) setQa(report)
+          })
+          .catch(() => {
+            // QA is advisory: a failure must never disturb the workbench.
+            if (alive) setQa(null)
+          })
+        return () => {
+          alive = false
+        }
+      }, [data?.activeDocument?.id, data?.revision])
 
       useEffect(() => {
         let alive = true
@@ -1807,7 +2179,7 @@
           cancelled = true
           clearTimeout(timer)
         }
-      }, [tmQuery, doc?.id, doc?.sourceLang, doc?.targetLang, settings.fuzzyThreshold, settings.tmLimit])
+      }, [tmQuery, tmRefresh, doc?.id, doc?.sourceLang, doc?.targetLang, settings.fuzzyThreshold, settings.tmLimit])
 
       const saveDraft = async (silent = true) => {
         if (!doc || !dirty) return true
@@ -1859,6 +2231,24 @@
         } catch (error) {
           report(error)
           if (error?.code === 'PERSISTENCE_FAILED') await refreshStorage()
+        } finally {
+          setBusy('')
+        }
+      }
+
+      const adoptSuggestion = async () => {
+        if (!doc || busy || !segment?.suggestion) return
+        if (dirty) {
+          const saved = await saveDraft(true)
+          if (!saved) return
+        }
+        setBusy('adopt')
+        try {
+          const result = await rpc('adoptSuggestion', { documentId: doc.id, index: selected })
+          adoptState(result.state)
+          notify(t('toast.suggestionAdopted'))
+        } catch (error) {
+          report(error)
         } finally {
           setBusy('')
         }
@@ -1984,8 +2374,56 @@
         setTimeout(() => textareaRef.current?.focus(), 0)
       }
 
-      const addTerm = async (form) => {
-        setBusy('term')
+      const editTm = async ({ id, target }) => {
+        setBusy('tm-edit')
+        try {
+          const result = await rpc('updateTM', { id, target })
+          setData(result.state)
+          setTmRefresh((value) => value + 1)
+          notify(t('toast.tmUpdated'))
+          return true
+        } catch (error) {
+          report(error)
+          return false
+        } finally {
+          setBusy('')
+        }
+      }
+
+      const deleteTm = (match) => {
+        setModal({
+          type: 'confirm',
+          title: t('modal.confirm.title'),
+          message: `${t('modal.confirm.deleteTm')} “${match.source} → ${match.target}”？`,
+          confirmLabel: t('panel.delete'),
+          action: async () => {
+            const result = await rpc('deleteTM', { id: match.id })
+            setData(result.state)
+            setTmRefresh((value) => value + 1)
+            notify(t('toast.tmDeleted'))
+          },
+        })
+      }
+
+      const confirmAllTranslated = () => {
+        const active = data?.activeDocument
+        const awaiting = active?.progress?.translated || 0
+        if (!active || !awaiting) return
+        setModal({
+          type: 'confirm',
+          title: t('rail.confirmAll'),
+          message: t('rail.confirmAllMessage').replace('{count}', String(awaiting)),
+          confirmLabel: t('rail.confirmAll'),
+          action: async () => {
+            const result = await rpc('confirmSegments', { documentId: active.id, status: 'translated' })
+            await refreshState()
+            setTmRefresh((value) => value + 1)
+            notify(t('toast.confirmedMany').replace('{count}', String(result.confirmed.length)))
+          },
+        })
+      }
+
+      const addTerm = async (form) => {        setBusy('term')
         try {
           const result = await rpc('addGlossary', {
             ...form,
@@ -2125,6 +2563,37 @@
         }
       }
 
+      const renameLibrary = async ({ kind, id, name }) => {
+        setBusy('library')
+        try {
+          const result = await rpc('renameLibrary', { kind, id, name })
+          setData(result.state)
+          notify(t('libraries.renamed'))
+          return true
+        } catch (error) {
+          report(error)
+          return false
+        } finally {
+          setBusy('')
+        }
+      }
+
+      const deleteLibrary = ({ kind, id, name }) => {
+        const entries = kind === 'tm' ? t('libraries.deleteTmWarn') : t('libraries.deleteGlossaryWarn')
+        setModal({
+          type: 'confirm',
+          title: t('modal.confirm.title'),
+          message: `${t('libraries.delete')} “${name}”？${entries}`,
+          confirmLabel: t('libraries.delete'),
+          action: async () => {
+            const result = await rpc('deleteLibrary', { kind, id })
+            setData(result.state)
+            setTmResults(null)
+            notify(t('libraries.deleted'))
+          },
+        })
+      }
+
       const exportAs = async (format) => {
         if (!doc) return
         setBusy('export')
@@ -2240,13 +2709,40 @@
           element.style.setProperty(CAIT_UNIT_VAR, String(unit))
         }
         measure()
+
+        // Mirror the host theme so native widgets follow `color-scheme`. DSH
+        // toggles the marker on <body>, so observe that instead of guessing
+        // from colours.
+        const syncTheme = () => {
+          const kind = detectThemeKind(document)
+          if (element.getAttribute(CAIT_THEME_ATTR) !== kind) element.setAttribute(CAIT_THEME_ATTR, kind)
+        }
+        syncTheme()
+        let themeObserver = null
+        if (typeof MutationObserver !== 'undefined' && document.body) {
+          themeObserver = new MutationObserver(syncTheme)
+          themeObserver.observe(document.body, {
+            attributes: true,
+            attributeFilter: ['data-ds-dark-theme', 'data-theme', 'class'],
+          })
+        }
+        const stopTheme = () => {
+          if (themeObserver) themeObserver.disconnect()
+        }
+
         if (typeof ResizeObserver === 'undefined') {
           window.addEventListener('resize', measure)
-          return () => window.removeEventListener('resize', measure)
+          return () => {
+            window.removeEventListener('resize', measure)
+            stopTheme()
+          }
         }
         const observer = new ResizeObserver(measure)
         observer.observe(element)
-        return () => observer.disconnect()
+        return () => {
+          observer.disconnect()
+          stopTheme()
+        }
       }, [])
 
       if (loading) {
@@ -2293,12 +2789,15 @@
           onCloseDoc: closeDocumentTab,
           onNewTab: () => setModal({ type: 'new', defaultMode: 'file' }),
           onCleanClosed: () => setModal({ type: 'recent' }),
+          pre,
+          onPreTranslate: runPreTranslate,
+          onCancelPreTranslate: cancelPreTranslate,
         }),
         h(SaveBanner, { t, storage: data?.storage, stale, onRefresh: refreshState }),
         h(
           'div',
           { className: `cait-body${doc ? '' : ' cait-no-doc'}` },
-          doc ? h(SegmentRail, { t, doc, selected: index, query: railQuery, setQuery: setRailQuery, onSelect: chooseSegment }) : null,
+          doc ? h(SegmentRail, { t, doc, selected: index, query: railQuery, setQuery: setRailQuery, filter: railFilter, setFilter: setRailFilter, onSelect: chooseSegment, onConfirmAll: confirmAllTranslated, busy, qa }) : null,
           h(
             'div',
             { className: `cait-main${doc ? '' : ' cait-main-empty'}` },
@@ -2320,6 +2819,7 @@
                   onNext: () => moveSegment(1),
                   onPrev: () => moveSegment(-1),
                   onSave: () => saveDraft(false),
+                  onAdopt: adoptSuggestion,
                   onApplyTerm: applyTerm,
                   textareaRef,
                 })
@@ -2338,6 +2838,8 @@
                   tmResults,
                   tmError,
                   onApplyTm: applyTm,
+                  onEditTm: editTm,
+                  onDeleteTm: deleteTm,
                   onImportTmx: importTmxFile,
                   onClearTm: clearTm,
                   onAddTerm: addTerm,
@@ -2375,7 +2877,7 @@
             })
           : null,
         modal?.type === 'export'
-          ? h(ExportModal, { t, busy, onClose: () => setModal(null), onExport: exportAs })
+          ? h(ExportModal, { t, busy, qa, onClose: () => setModal(null), onExport: exportAs })
           : null,
         modal?.type === 'settings'
           ? h(SettingsModal, { t, settings, mtRoutes, busy, onClose: () => setModal(null), onSave: saveSettings })
@@ -2388,6 +2890,8 @@
               onClose: () => setModal(null),
               onSetMounts: setMounts,
               onCreate: createLibrary,
+              onRename: renameLibrary,
+              onDeleteLibrary: deleteLibrary,
             })
           : null,
         modal?.type === 'recent'

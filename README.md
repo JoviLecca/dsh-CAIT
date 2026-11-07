@@ -87,7 +87,22 @@ manual reload.
 ### Workbench
 
 - Paragraph/sentence segmentation with a per-segment target editor.
-- Draft saving, confirm-and-next, previous/next navigation, and progress.
+- Segment states: **pending** → **translated** → **confirmed**, with the origin of
+  each translation (`tm`, `mt`, `agent`, `manual`) kept alongside the text. The
+  rail filters by state and search covers source, target, and suggestions.
+- **Pre-translate** fills the whole document from exact TM matches and machine
+  translation in small blocks, shows `done/total`, and can be stopped between
+  blocks. Confirmed and already-translated segments are never overwritten.
+- **Three-column review**: source, the machine/agent baseline, and the editable
+  target sit side by side on wide panes; narrower panes fold back to two columns
+  and then to the stacked layout. **Confirm all** accepts every segment awaiting
+  review after one confirmation dialog.
+- Draft saving, confirm-and-next, previous/next navigation, and progress. The
+  selected segment and the draft are persisted (debounced) so a restart resumes
+  where you left off.
+- Advisory QA markers in the rail and an export-time summary: missing
+  placeholders/tags, mismatched numbers, unused glossary terms, empty targets.
+  Nothing is blocked and nothing is stored.
 - Document tabs; closing a tab does not delete the document.
 - **Open existing document** reopens a closed document.
 - Interface language switch in **Settings → Interface**: *Follow DSH language*
@@ -100,9 +115,12 @@ manual reload.
 - Re-importing identical content in the same format reuses the existing document
   instead of creating a duplicate. The fingerprint covers languages, source,
   format, and exchange metadata.
-- Responsive density: the workbench measures its DSH panel and applies a
-  `--cait-u` multiplier of 1×–1.8×. A 1600×900 panel renders at ~1.32× and a
-  2560×1440 panel at 1.8×; short windows stay at 1× rather than shrinking.
+- Responsive density: the workbench measures its DSH panel and applies a damped
+  `--cait-u` multiplier of 1×–1.45×. A 1600×900 panel renders at ~1.17× and a
+  maximized 4K panel stops at 1.45×, which keeps large windows close to the host
+  UI and leaves room for the three review columns.
+- The workbench follows the host light/dark theme, including native controls
+  (`color-scheme`), so selects, checkboxes, and scrollbars match the panel.
 
 ### Preprocessing
 
@@ -195,7 +213,7 @@ In DSH Desktop (or any profile with the `plugin_manager` tool):
 plugin_manager install_bundle target: dsh-cait
 ```
 
-Pin a release with `dsh-cait@1.0.5`, or ask for the newest one with
+Pin a release with `dsh-cait@1.1.0`, or ask for the newest one with
 `dsh-cait@latest`. The manager resolves the registry package, applies the bundle
 patch, and activates the plugin — no hand-written profile rows.
 
@@ -276,8 +294,9 @@ confirmation. Other structural edits remain best-effort and surface
 
 If the snapshot is corrupt or has an unknown version, CAIT logs a warning, moves
 it to `store.json.corrupt-<timestamp>`, and starts empty instead of failing
-activation. Version-1 snapshots are migrated to version 2 with default TM and
-glossary libraries.
+activation. Version-1 and version-2 snapshots are migrated to version 3 with
+default TM and glossary libraries; a version-2 draft that had text but was never
+confirmed becomes `translated` with `origin: manual`.
 
 ## Agent tools
 
@@ -290,6 +309,13 @@ glossary libraries.
 | `cat_list_documents` | List documents and progress |
 | `cat_switch_document` | Select the active document |
 | `cat_suggest_mt` | MT via the selected DSH route, or the explicit offline fallback |
+| `cat_pre_translate` | Fill one block from TM + MT, skipping confirmed/translated segments; returns `next` |
+| `cat_get_segments` | Bounded segment window with status, origin, and suggestions |
+| `cat_confirm_segments` | Confirm a list of indices, a window, or everything awaiting review |
+
+An agent can therefore draft a whole document without clicking in the UI:
+`cat_pre_translate` with `from: next` until `next` is `null`, then
+`cat_get_segments` to review, then `cat_confirm_segments` to accept.
 
 The workbench and tools share one `CatStore`, so an agent can translate the same
 document the user has open.
@@ -444,13 +470,12 @@ GitHub with a release.
 - HTML/RTF export does not round-trip original styling; JSON translates string
   values only.
 - TM matching is lexical, not semantic; no stemming, synonyms, or embeddings.
-- Library rename/delete and per-tab mount state are not implemented yet.
 - The workbench UI ships in Chinese, English, and Japanese, switchable in
   Settings; this README ships in English, Simplified Chinese, and Japanese, and
   the English version is the source of truth.
 
-Planned next: image/vision input through a multimodal DSH route, richer library
-management, style-preserving XLSX output, and XLIFF `<alt-trans>` / notes support.
+Planned next: image/vision input through a multimodal DSH route,
+style-preserving XLSX output, and XLIFF `<alt-trans>` / notes support.
 
 ## Changelog and versioning
 
@@ -458,9 +483,10 @@ See [CHANGELOG.md](CHANGELOG.md). `v1.0.0` was the first public release;
 `v1.0.1` adds the Japanese UI and the in-app interface language switch,
 `v1.0.2` makes *Follow DSH language* honour the DSH locale, `v1.0.3`
 publishes the package to npm, `v1.0.4` moves later releases to the
-provenance-publishing workflow, and `v1.0.5` adds EPUB, import preprocessing,
-and the PDF policy. The project was developed as `0.1.0` and
-renumbered for the GitHub release.
+provenance-publishing workflow, `v1.0.5` adds EPUB, import preprocessing,
+and the PDF policy, and `v1.1.0` adds agent-driven pre-translation, the
+three-state segment model, three-column review, and advisory QA. The project
+was developed as `0.1.0` and renumbered for the GitHub release.
 
 > **License:** Apache License 2.0 — see [LICENSE](LICENSE). Redistributions must
 > retain the attribution in [NOTICE](NOTICE).

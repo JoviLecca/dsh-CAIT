@@ -1,5 +1,8 @@
     const API = '/cait/api/rpc'
     const SYNC_POLL_MS = 2000
+    // One pre-translation block is 8 segments: roughly 12 s with a warm route,
+    // short enough that one cancellation click never waits long.
+    const PRETRANSLATE_BLOCK_SIZE = 8
 
     // Only the last mounted library must stay checked. An unmounted library is
     // always selectable, even when that is currently the only mounted one.
@@ -43,14 +46,16 @@
     // --cait-u (a unitless multiplier) tracks the size of the panel.
     const CAIT_UNIT_VAR = '--cait-u'
     // The designed density is calibrated for roughly 1100×680 CSS pixels of
-    // DSH panel area. Fullscreen/maximized windows on 1440p and 4K displays
-    // were still capped at 1.4× with the old 1320×800 base, which left the
-    // 13px body type visibly smaller than the surrounding DSH UI. Keep the
-    // height term so short windows do not overflow, but let large panels grow
-    // to 1.8× before the cap applies.
+    // DSH panel area. Growing linearly from there made a maximized window reach
+    // 1.8×, which is visibly larger than the surrounding DSH chrome and eats the
+    // horizontal budget the three-column review view needs. Growth is therefore
+    // damped and capped well below the old ceiling.
     const CAIT_UI_BASE = { width: 1100, height: 680 }
     const CAIT_UI_MIN_UNIT = 1
-    const CAIT_UI_MAX_UNIT = 1.8
+    const CAIT_UI_MAX_UNIT = 1.45
+    // 0.6 keeps small and mid panels close to the old density while flattening
+    // the large end: 1920×1080 lands at 1.353, 2560 and 4K stop at 1.45.
+    const CAIT_UI_DAMPING = 0.6
 
     // Grow with the panel but never shrink below the designed size; the height
     // term keeps short/wide windows from becoming oversized and scroll-heavy.
@@ -59,7 +64,8 @@
       const h = Number(height)
       if (!(w > 0) || !(h > 0)) return CAIT_UI_MIN_UNIT
       const fit = Math.min(w / CAIT_UI_BASE.width, h / CAIT_UI_BASE.height)
-      const unit = Math.min(CAIT_UI_MAX_UNIT, Math.max(CAIT_UI_MIN_UNIT, fit))
+      const grown = 1 + (fit - 1) * CAIT_UI_DAMPING
+      const unit = Math.min(CAIT_UI_MAX_UNIT, Math.max(CAIT_UI_MIN_UNIT, grown))
       return Math.round(unit * 1000) / 1000
     }
 
@@ -100,4 +106,20 @@
         index = cursor + 1
       }
       return output
+    }
+
+    // --- theme --------------------------------------------------------------
+    // DSH marks the dark theme on <body>; the tokens handle every authored
+    // colour, but native widgets (select popups, checkboxes, scrollbars, caret)
+    // follow `color-scheme`, which tokens cannot reach. Mirror the host's theme
+    // onto our own root attribute and let CSS set the scheme from it.
+    const CAIT_THEME_ATTR = 'data-cait-theme'
+
+    function detectThemeKind(doc) {
+      const root = doc?.documentElement
+      const body = doc?.body
+      if (body?.hasAttribute?.('data-ds-dark-theme')) return 'dark'
+      const explicit = root?.getAttribute?.('data-theme') || body?.getAttribute?.('data-theme')
+      if (explicit === 'dark') return 'dark'
+      return 'light'
     }

@@ -50,7 +50,7 @@ const ctx = {
 }
 
 plugin.apply(ctx, { dataDir })
-assert.equal(tools.size, 7)
+assert.equal(tools.size, 10)
 assert.deepEqual([...tools.keys()], [
   'cat_get_segment',
   'cat_submit_translation',
@@ -59,6 +59,9 @@ assert.deepEqual([...tools.keys()], [
   'cat_list_documents',
   'cat_switch_document',
   'cat_suggest_mt',
+  'cat_pre_translate',
+  'cat_get_segments',
+  'cat_confirm_segments',
 ])
 assert.equal(route.path, '/cait/api')
 
@@ -204,6 +207,7 @@ try {
     'glossary',
     'segments',
     'tm',
+    'translated',
   ])
   const firstSummary = documents.documents.find((doc) => doc.id === firstId)
   assert.equal(firstSummary.progress.confirmed, 1)
@@ -326,6 +330,31 @@ try {
   assert.ok(revisionAfterSubmit > revisionBeforeSubmit, 'cat_submit_translation must bump the polled revision')
   assert.equal(targetedResult.ok, true)
   assert.equal(targetedResult.tm.tmId, extraTmId)
+
+  // The three batch tools share the workbench state; tm-only mode keeps them
+  // free of any LLM route so this suite stays offline.
+  const preTool = tools.get('cat_pre_translate')
+  const listSegments = tools.get('cat_get_segments')
+  const confirmSegments = tools.get('cat_confirm_segments')
+
+  const listed = await listSegments.execute({})
+  assert.equal(listed.ok, true)
+  assert.equal(listed.document.name, 'Targeted TM document')
+  assert.equal(listed.segments[0].status, 'confirmed')
+  assert.ok(listSegments.output.render({}, listed)[0].text.includes('[1] confirmed'))
+
+  const pre = await preTool.execute({ mode: 'tm', count: 4 })
+  assert.equal(pre.ok, true)
+  assert.equal(pre.filled, 0)
+  assert.deepEqual(pre.noMatch, [])
+  assert.deepEqual(pre.skipped, [{ index: 0, reason: 'confirmed' }])
+  assert.ok(preTool.output.render({}, pre)[0].text.includes('End of document reached.'))
+
+  const batch = await confirmSegments.execute({ indices: [0] })
+  assert.equal(batch.ok, true)
+  assert.deepEqual(batch.confirmed, [])
+  assert.deepEqual(batch.skipped, [{ index: 0, reason: 'confirmed' }])
+  assert.equal(batch.done, true)
 
   console.log('ALL PLUGIN TESTS PASSED')
 } finally {
