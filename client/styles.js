@@ -220,6 +220,7 @@
 .cait-mt-actions{display:flex;gap:5px;justify-content:flex-end}
 .cait-mt-error{padding:8px;margin-bottom:8px;border:1px solid color-mix(in srgb,var(--dsw-alias-state-error-primary) 30%,var(--dsw-alias-border-l1));border-radius:7px;background:color-mix(in srgb,var(--dsw-alias-state-error-primary) 7%,transparent);color:var(--dsw-alias-state-error-primary);font-size:10.5px;line-height:1.5}
 .cait-mt-hint{margin-top:9px;font-size:10px;line-height:1.55;color:var(--dsw-alias-label-secondary)}
+.cait-paneljump{display:flex;align-items:center;justify-content:flex-end;margin-top:1px}
 .cait-empty{display:grid;place-items:center;min-height:0;overflow-y:auto;padding:34px 28px}
 .cait-empty-inner{width:min(680px,100%);padding:6px 0 20px}
 .cait-kicker{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border:1px solid color-mix(in srgb,var(--dsw-alias-brand-primary) 22%,var(--dsw-alias-border-l1));border-radius:999px;background:color-mix(in srgb,var(--dsw-alias-brand-primary) 7%,transparent);color:var(--dsw-alias-brand-primary);font-size:10px;font-weight:700;letter-spacing:.08em}

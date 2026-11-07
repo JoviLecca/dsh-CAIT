@@ -1091,6 +1091,17 @@
                   }),
                   h('button', { className: 'cait-iconbtn', type: 'submit', title: t('panel.search') }, h(Icon, { name: 'arrowRight', size: 13 })),
                 ),
+                // The panel searches what is mounted; the library workspace
+                // searches everything. This carries the typed query across.
+                h(
+                  'div',
+                  { className: 'cait-paneljump' },
+                  h(
+                    'button',
+                    { className: 'cait-linkbtn', type: 'button', onClick: () => onSearchLibrary('tm', tmQuery) },
+                    t('panel.searchInLibrary'),
+                  ),
+                ),
                 h(
                   'div',
                   { className: 'cait-listhead' },
