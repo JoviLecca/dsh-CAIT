@@ -98,7 +98,7 @@ try {
   // 8. Glossary CSV round-trip keeps the note and the case-sensitivity flag.
   const csv = store.exportGlossary({ glossaryId: store.mounts.defaultGlossaryId, format: 'csv' })
   assert.match(csv.filename, /\.csv$/)
-  assert.match(csv.content, /^source,target,note,sourceLang,caseSensitive\n/)
+  assert.match(csv.content, /^source,target,note,sourceLang,caseSensitive,forbidden,preferred\n/)
   const parsed = parseGlossaryCsv(csv.content)
   assert.equal(parsed.length, 1)
   assert.equal(parsed[0].source, 'Nova')
@@ -123,7 +123,7 @@ try {
   const json = store.exportGlossary({ glossaryId: store.mounts.defaultGlossaryId, format: 'json' })
   const parsedJson = JSON.parse(json.content)
   assert.deepEqual(parsedJson, [
-    { source: 'Nova', target: '诺瓦', note: '产品名', sourceLang: '', caseSensitive: true },
+    { source: 'Nova', target: '诺瓦', note: '产品名', sourceLang: '', caseSensitive: true, forbidden: false, preferred: false },
   ])
 
   // 10. Unknown formats and libraries fail loudly.

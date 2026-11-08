@@ -37,6 +37,7 @@
         check: ['M3 8.5l3.2 3.2L13 4.3'],
         align: ['M2 5h8', 'M2 11h5', 'M12 3v10', 'M10 11l2 2 2-2'],
         folder: ['M2 4h4l1.5 2H14v6.5H2z'],
+        chart: ['M3 13V8', 'M8 13V3', 'M13 13V6', 'M2 14h12'],
       }
       const shape = paths[name] || paths.file
       return h(
@@ -419,7 +420,7 @@
             ? h(
                 'button',
                 { className: 'cait-btn', onClick: onImport, disabled: Boolean(busy), title: t('nav.import') },
-                h(Icon, { name: 'upload', size: 14 }),
+                h(Icon, { name: 'download', size: 14 }),
                 h('span', { className: 'cait-btn-label' }, t('nav.import')),
               )
             : null,
@@ -427,7 +428,7 @@
             ? h(
                 'button',
                 { className: 'cait-btn', onClick: onExport, disabled: Boolean(busy) || !doc, title: t('nav.export') },
-                h(Icon, { name: 'download', size: 14 }),
+                h(Icon, { name: 'upload', size: 14 }),
                 h('span', { className: 'cait-btn-label' }, t('nav.export')),
               )
             : null,
@@ -436,9 +437,9 @@
       )
     }
 
-    const SEGMENT_FILTERS = ['all', 'pending', 'translated', 'confirmed']
+    const SEGMENT_FILTERS = ['all', 'pending', 'translated', 'confirmed', 'risk']
 
-    function SegmentRail({ t, doc, selected, query, setQuery, filter, setFilter, onSelect, onConfirmAll, onPropagate, busy, qa }) {
+    function SegmentRail({ t, doc, selected, query, setQuery, filter, setFilter, onSelect, onConfirmAll, onPropagate, onClearPretranslated, busy, qa }) {
       const activeRef = useRef(null)
       const storage = typeof localStorage !== 'undefined' ? localStorage : null
       const [pageSize, setPageSize] = useState(() => readPageSize(storage))
@@ -458,12 +459,15 @@
         list.push(issue.code)
         warns.set(issue.index, list)
       }
+      const riskByIndex = new Map()
+      for (const item of qa?.risks || []) riskByIndex.set(item.index, item)
 
       const counts = {
         all: doc.progress.total,
         pending: doc.progress.pending,
         translated: doc.progress.translated,
         confirmed: doc.progress.confirmed,
+        risk: riskByIndex.size,
       }
 
       // How many empty segments could be filled from a sibling with the same
@@ -482,10 +486,17 @@
         if (list.length < 2 || !list.some((segment) => segment.target)) continue
         duplicated += list.filter((segment) => !segment.target).length
       }
+      const pretranslated = doc.segments.filter((segment) => (
+        segment.target &&
+        !segment.confirmedAt &&
+        ['tm', 'mt', 'auto'].includes(segment.origin)
+      )).length
       const needle = query.trim().toLowerCase()
       const filtered = doc.segments
         .map((segment, index) => ({ segment, index }))
-        .filter(({ segment }) => filter === 'all' || segment.status === filter)
+        .filter(({ segment, index }) =>
+          filter === 'all' || (filter === 'risk' ? riskByIndex.has(index) : segment.status === filter),
+        )
         .filter(({ segment }) => {
           if (!needle) return true
           return (
@@ -602,6 +613,19 @@
                 `${t('rail.propagate')} · ${duplicated}`,
               )
             : null,
+          pretranslated > 0
+            ? h(
+                'button',
+                {
+                  className: 'cait-batchbtn cait-batchbtn-danger',
+                  onClick: onClearPretranslated,
+                  disabled: Boolean(busy),
+                  title: t('rail.clearPretranslatedHint'),
+                },
+                h(Icon, { name: 'trash', size: 11 }),
+                `${t('rail.clearPretranslated')} · ${pretranslated}`,
+              )
+            : null,
           h(
             'div',
             { className: 'cait-rail-goto' },
@@ -664,7 +688,7 @@
                       h('span', { className: `cait-dot ${segment.status}` }),
                       warns.has(index)
                         ? h('span', {
-                            className: 'cait-seg-warn',
+                            className: `cait-seg-warn ${riskByIndex.get(index)?.risk || 'low'}`,
                             title: (warns.get(index) || []).map((code) => t(`qa.code.${code}`)).join(' · '),
                             'aria-label': t('qa.warn'),
                           })
@@ -720,7 +744,7 @@
       )
     }
 
-    function EditorPane({ t, doc, index, segment, detail, draft, setDraft, dirty, busy, onConfirm, onNext, onPrev, onSave, onAdopt, onApplyTerm, textareaRef }) {
+    function EditorPane({ t, doc, index, segment, detail, draft, setDraft, dirty, busy, onConfirm, onUnconfirm, onNext, onPrev, onSave, onAdopt, onApplyTerm, onOpenBrief, onOpenResources, onOpenAnalysis, qaRisk, textareaRef }) {
       const hits = detail?.index === index ? detail.glossaryHits : []
       const charCount = Array.from(draft || '').length
       const progress = doc.progress
@@ -771,6 +795,37 @@
               h(Icon, { name: 'arrowRight', size: 11 }),
               h('span', { className: 'cait-langchip' }, doc.targetLang),
               h('span', null, `· ${doc.segments.length} ${t('doc.segments')}`),
+              h(
+                'button',
+                {
+                  className: 'cait-linkbtn cait-brieflink',
+                  onClick: onOpenBrief,
+                  title: doc.brief ? t('panel.briefHint') : t('brief.empty'),
+                },
+                h(Icon, { name: 'file', size: 11 }),
+                t('editor.brief'),
+                doc.brief ? h('span', { className: 'cait-briefdot' }) : null,
+              ),
+              h(
+                'button',
+                {
+                  className: 'cait-linkbtn',
+                  onClick: onOpenResources,
+                  title: t('resources.hint'),
+                },
+                h(Icon, { name: 'database', size: 11 }),
+                t('editor.resources'),
+              ),
+              h(
+                'button',
+                {
+                  className: 'cait-linkbtn',
+                  onClick: onOpenAnalysis,
+                  title: t('analysis.hint'),
+                },
+                h(Icon, { name: 'chart', size: 11 }),
+                t('editor.analysis'),
+              ),
             ),
           ),
           h(
@@ -785,7 +840,18 @@
           'div',
           { className: 'cait-seg-head' },
           h('span', { className: 'cait-seg-label' }, `${t('editor.segment')} ${index + 1} / ${doc.segments.length}`),
-          h('span', { className: `cait-badge ${segment.status}` }, statusLabel),
+          h(
+            'span',
+            { className: 'cait-seg-flags' },
+            qaRisk
+              ? h(
+                  'span',
+                  { className: `cait-riskchip ${qaRisk.risk}`, title: qaRisk.codes.map((code) => t(`qa.code.${code}`)).join(' · ') },
+                  `${t('qa.risk')} · ${t(`qa.${qaRisk.risk}`)}`,
+                )
+              : null,
+            h('span', { className: `cait-badge ${segment.status}` }, statusLabel),
+          ),
         ),
         h(
           'div',
@@ -883,6 +949,14 @@
             busy === 'confirm' ? h(Spinner) : h(Icon, { name: 'check', size: 14 }),
             segment.status === 'confirmed' ? t('editor.update') : t('editor.confirm'),
           ),
+          segment.status === 'confirmed'
+            ? h(
+                'button',
+                { className: 'cait-btn cait-btn-ghost', onClick: onUnconfirm, disabled: Boolean(busy), title: t('editor.unconfirmHint') },
+                h(Icon, { name: 'refresh', size: 13 }),
+                t('editor.unconfirm'),
+              )
+            : null,
           h(
             'button',
             { className: 'cait-btn', onClick: onNext, disabled: Boolean(busy) },
@@ -1020,6 +1094,15 @@
       onCopy,
       onOpenSettings,
       onSearchLibrary,
+      qa,
+      onRefreshQa,
+      onJumpQa,
+      onFixQa,
+      concordance,
+      concordanceQuery,
+      setConcordanceQuery,
+      onConcordance,
+      onApplyConcordance,
       busy,
     }) {
       const [termQuery, setTermQuery] = useState('')
@@ -1099,6 +1182,19 @@
             h(Icon, { name: 'sparkles', size: 13 }),
             t('panel.mt'),
           ),
+          h(
+            'button',
+            { className: `cait-tab${tab === 'qa' ? ' active' : ''}`, onClick: () => setTab('qa') },
+            h(Icon, { name: 'alert', size: 13 }),
+            t('panel.qa'),
+            qa?.issueCount ? h('span', { className: 'cait-count' }, qa.issueCount) : null,
+          ),
+          h(
+            'button',
+            { className: `cait-tab${tab === 'concordance' ? ' active' : ''}`, onClick: () => setTab('concordance') },
+            h(Icon, { name: 'search', size: 13 }),
+            t('panel.concordance'),
+          ),
         ),
         h(
           'div',
@@ -1176,7 +1272,7 @@
                       event.target.value = ''
                     },
                   }),
-                  h('button', { className: 'cait-btn', onClick: () => tmxInput.current?.click(), disabled: Boolean(busy) }, h(Icon, { name: 'upload', size: 12 }), t('panel.importTmx')),
+                  h('button', { className: 'cait-btn', onClick: () => tmxInput.current?.click(), disabled: Boolean(busy) }, h(Icon, { name: 'download', size: 12 }), t('panel.importTmx')),
                   h('button', { className: 'cait-btn cait-btn-danger', onClick: onClearTm, disabled: Boolean(busy) || data.tm.count === 0 }, t('panel.clearTm')),
                 ),
               )
@@ -1194,7 +1290,7 @@
                         h(
                           'button',
                           { key: hit.id, className: 'cait-chip cait-chip-action', onClick: () => onApplyTerm(hit), title: hit.note || hit.target },
-                          `${hit.term} → ${hit.target}`,
+                          `${hit.term} → ${hit.target}${hit.forbidden ? ` · ${t('panel.termForbidden')}` : hit.preferred ? ` · ${t('panel.termPreferred')}` : ''}`,
                         ),
                       ),
                     )
@@ -1227,7 +1323,7 @@
                       event.target.value = ''
                     },
                   }),
-                  h('button', { className: 'cait-btn', onClick: () => glossaryInput.current?.click(), disabled: Boolean(busy) }, h(Icon, { name: 'upload', size: 12 }), t('panel.importCsv')),
+                  h('button', { className: 'cait-btn', onClick: () => glossaryInput.current?.click(), disabled: Boolean(busy) }, h(Icon, { name: 'download', size: 12 }), t('panel.importCsv')),
                   h('button', { className: 'cait-btn cait-btn-danger', onClick: onClearGlossary, disabled: Boolean(busy) || data.glossary.length === 0 }, t('panel.clearGlossary')),
                 ),
               )
@@ -1290,6 +1386,171 @@
                   { className: 'cait-panel-foot' },
                   h('button', { className: 'cait-btn', onClick: onOpenSettings }, h(Icon, { name: 'settings', size: 12 }), t('panel.mtSettings')),
                 ),
+              )
+            : null,
+          tab === 'qa'
+            ? h(
+                'div',
+                null,
+                h(
+                  'div',
+                  { className: 'cait-subhead' },
+                  h('span', null, t('qa.title')),
+                  h(
+                    'button',
+                    { className: 'cait-linkbtn', onClick: onRefreshQa, disabled: Boolean(busy) },
+                    h(Icon, { name: 'refresh', size: 12 }),
+                    t('qa.refresh'),
+                  ),
+                ),
+                qa
+                  ? h(
+                      'div',
+                      null,
+                      h(
+                        'div',
+                        { className: 'cait-riskcounts' },
+                        ['high', 'medium', 'low'].map((level) =>
+                          h(
+                            'span',
+                            { key: level, className: `cait-riskcount ${level}` },
+                            `${t(`qa.${level}`)} ${qa.riskCounts?.[level] || 0}`,
+                          ),
+                        ),
+                      ),
+                      (qa.risks || []).length
+                        ? qa.risks.map((item) => {
+                            const segment = doc.segments[item.index]
+                            const codes = (item.codes || []).map((code) => t(`qa.code.${code}`)).join(' · ')
+                            return h(
+                              'div',
+                              {
+                                key: item.index,
+                                className: `cait-riskrow ${item.risk}`,
+                                role: 'button',
+                                tabIndex: 0,
+                                onClick: () => onJumpQa(item.index),
+                                onKeyDown: (event) => {
+                                  if (event.key === 'Enter' || event.key === ' ') {
+                                    event.preventDefault()
+                                    onJumpQa(item.index)
+                                  }
+                                },
+                                title: codes,
+                              },
+                              h('span', { className: 'cait-riskrow-index' }, `${item.index + 1}`),
+                              h(
+                                'div',
+                                { className: 'cait-riskrow-body' },
+                                h('span', { className: 'cait-riskrow-source' }, segment?.source || ''),
+                                h('span', { className: 'cait-riskrow-codes' }, codes),
+                                onFixQa
+                                  ? h(
+                                      'div',
+                                      { className: 'cait-riskactions' },
+                                      h(
+                                        'button',
+                                        {
+                                          className: 'cait-riskaction',
+                                          onClick: (event) => {
+                                            event.stopPropagation()
+                                            onFixQa(item, 'copy-source')
+                                          },
+                                          disabled: Boolean(busy),
+                                        },
+                                        t('qa.fixCopy'),
+                                      ),
+                                      h(
+                                        'button',
+                                        {
+                                          className: 'cait-riskaction',
+                                          onClick: (event) => {
+                                            event.stopPropagation()
+                                            onFixQa(item, 'clear')
+                                          },
+                                          disabled: Boolean(busy),
+                                        },
+                                        t('qa.fixClear'),
+                                      ),
+                                      item.termTarget
+                                        ? h(
+                                            'button',
+                                            {
+                                              className: 'cait-riskaction',
+                                              onClick: (event) => {
+                                                event.stopPropagation()
+                                                onFixQa(item, 'term')
+                                              },
+                                              disabled: Boolean(busy),
+                                            },
+                                            t('qa.fixTerm'),
+                                          )
+                                        : null,
+                                    )
+                                  : null,
+                              ),
+                              h(Icon, { name: 'chevronRight', size: 12 }),
+                            )
+                          })
+                        : h('p', { className: 'cait-empty-note' }, t('qa.empty')),
+                    )
+                  : h('p', { className: 'cait-empty-note' }, t('qa.loading')),
+              )
+            : null,
+          tab === 'concordance'
+            ? h(
+                'div',
+                null,
+                h(
+                  'form',
+                  {
+                    className: 'cait-search',
+                    onSubmit: (event) => {
+                      event.preventDefault()
+                      onConcordance()
+                    },
+                  },
+                  h(Icon, { name: 'search', size: 13 }),
+                  h('input', {
+                    value: concordanceQuery,
+                    onChange: (event) => setConcordanceQuery(event.target.value),
+                    placeholder: t('panel.concordancePlaceholder'),
+                    'aria-label': t('panel.concordancePlaceholder'),
+                  }),
+                  h(
+                    'button',
+                    { className: 'cait-iconbtn', type: 'submit', title: t('panel.searchConcordance') },
+                    h(Icon, { name: 'arrowRight', size: 13 }),
+                  ),
+                ),
+                h('p', { className: 'cait-mt-hint' }, t('panel.concordanceHint')),
+                concordance
+                  ? h(
+                      'div',
+                      null,
+                      h(
+                        'div',
+                        { className: 'cait-listhead' },
+                        h('span', null, t('panel.concordance')),
+                        h('span', { className: 'cait-count' }, concordance.total ?? concordance.entries?.length ?? 0),
+                      ),
+                      (concordance.entries || []).length
+                        ? concordance.entries.map((entry, i) =>
+                            h(
+                              'button',
+                              {
+                                key: `${entry.tmId || entry.library || 'c'}-${i}`,
+                                className: 'cait-concordance-row',
+                                onClick: () => onApplyConcordance(entry),
+                              },
+                              h('span', { className: 'cait-concordance-source' }, entry.source),
+                              h('span', { className: 'cait-concordance-target' }, entry.target),
+                              h('span', { className: 'cait-concordance-meta' }, entry.library || ''),
+                            ),
+                          )
+                        : h('p', { className: 'cait-empty-note' }, t('panel.noConcordance')),
+                    )
+                  : null,
               )
             : null,
         ),
@@ -1766,6 +2027,7 @@
       onCreateLibrary,
       onRenameLibrary,
       onDeleteLibrary,
+      onSetMounts,
     }) {
       const storage = typeof localStorage !== 'undefined' ? localStorage : null
       const [kind, setKind] = useState(seed?.kind === 'glossary' ? 'glossary' : 'tm')
@@ -1793,7 +2055,23 @@
       const idKey = kind === 'tm' ? 'tmId' : 'glossaryId'
       const labelKey = 'name'
       const scopeKey = scopeIds.join(',')
-      const targetLibraryId = scopeIds[0] || (kind === 'tm' ? data?.mounts?.defaultTmId : data?.mounts?.defaultGlossaryId) || libraries[0]?.[idKey] || ''
+      const defaultWriteId = kind === 'tm' ? data?.mounts?.defaultTmId : data?.mounts?.defaultGlossaryId
+      const targetLibraryId = libraries.some((library) => library[idKey] === defaultWriteId)
+        ? defaultWriteId
+        : libraries[0]?.[idKey] || ''
+
+      const changeWriteLibrary = async (value) => {
+        if (!value || value === targetLibraryId) return
+        // A default must also be mounted; adding it here keeps the selector
+        // from failing when the chosen library was only in the list view.
+        if (kind === 'tm') {
+          const tmIds = Array.from(new Set([...(data?.mounts?.tmIds || []), value]))
+          await onSetMounts?.({ tmIds, defaultTmId: value })
+        } else {
+          const glossaryIds = Array.from(new Set([...(data?.mounts?.glossaryIds || []), value]))
+          await onSetMounts?.({ glossaryIds, defaultGlossaryId: value })
+        }
+      }
 
       useEffect(() => {
         const timer = setTimeout(() => setDebouncedQuery(query), 250)
@@ -2032,6 +2310,35 @@
             await loadRows()
           },
         })
+      }
+
+      const maintainTm = async (action) => {
+        if (!targetLibraryId) return
+        try {
+          const preview = await rpc('tmMaintenancePreview', {
+            action,
+            tmId: targetLibraryId,
+            emptyTarget: true,
+          })
+          const count = action === 'dedupe' ? preview.duplicates : preview.matched
+          onConfirm({
+            title: t(`tm.maintain.${action}`),
+            message: t(`tm.maintain.${action}Hint`).replace('{count}', String(count)),
+            confirmLabel: t(`tm.maintain.${action}`),
+            action: async () => {
+              const result = await rpc(action === 'dedupe' ? 'dedupeTmLibrary' : 'pruneTmLibrary', {
+                tmId: targetLibraryId,
+                emptyTarget: true,
+                confirm: true,
+              })
+              if (result?.state) onApplyState(result.state)
+              await loadRows()
+              notify(t('tm.maintain.done').replace('{count}', String(count)))
+            },
+          })
+        } catch (error) {
+          report(error)
+        }
       }
 
       const exportLibrary = async () => {
@@ -2306,6 +2613,28 @@
                     ['tbx', 'csv', 'json'].map((format) => h('option', { key: format, value: format }, format.toUpperCase())),
                   )
                 : null,
+              h(
+                'label',
+                { className: 'cait-libwrite', title: t(kind === 'tm' ? 'libraries.defaultTm' : 'libraries.defaultGlossary') },
+                h(
+                  'span',
+                  { className: 'cait-libwritelabel' },
+                  t(kind === 'tm' ? 'libraries.defaultTm' : 'libraries.defaultGlossary'),
+                ),
+                h(
+                  'select',
+                  {
+                    className: 'cait-liblang',
+                    value: targetLibraryId,
+                    onChange: (event) => changeWriteLibrary(event.target.value),
+                    disabled: Boolean(busy) || !libraries.length,
+                    'aria-label': t(kind === 'tm' ? 'libraries.defaultTm' : 'libraries.defaultGlossary'),
+                  },
+                  libraries.map((library) =>
+                    h('option', { key: library[idKey], value: library[idKey] }, library[labelKey]),
+                  ),
+                ),
+              ),
               kind === 'glossary'
                 ? h(
                     'button',
@@ -2335,7 +2664,7 @@
                   disabled: Boolean(busy) || !targetLibraryId,
                   title: t('library.import'),
                 },
-                h(Icon, { name: 'upload', size: 13 }),
+                h(Icon, { name: 'download', size: 13 }),
                 h('span', { className: 'cait-btn-label' }, t('library.import')),
               ),
               h(
@@ -2347,9 +2676,37 @@
                   disabled: Boolean(busy) || working === 'export' || !targetLibraryId,
                   title: t('library.export'),
                 },
-                h(Icon, { name: 'download', size: 13 }),
+                h(Icon, { name: 'upload', size: 13 }),
                 h('span', { className: 'cait-btn-label' }, kind === 'tm' ? 'TMX' : exportFormat.toUpperCase()),
               ),
+              kind === 'tm'
+                ? h(
+                    'button',
+                    {
+                      type: 'button',
+                      className: 'cait-btn',
+                      onClick: () => maintainTm('dedupe'),
+                      disabled: Boolean(busy) || !targetLibraryId,
+                      title: t('tm.maintain.dedupe'),
+                    },
+                    h(Icon, { name: 'database', size: 13 }),
+                    h('span', { className: 'cait-btn-label' }, t('tm.maintain.dedupe')),
+                  )
+                : null,
+              kind === 'tm'
+                ? h(
+                    'button',
+                    {
+                      type: 'button',
+                      className: 'cait-btn',
+                      onClick: () => maintainTm('prune'),
+                      disabled: Boolean(busy) || !targetLibraryId,
+                      title: t('tm.maintain.prune'),
+                    },
+                    h(Icon, { name: 'trash', size: 13 }),
+                    h('span', { className: 'cait-btn-label' }, t('tm.maintain.prune')),
+                  )
+                : null,
               h(
                 'button',
                 {
@@ -2360,6 +2717,7 @@
                   title: t('library.clear'),
                 },
                 h(Icon, { name: 'trash', size: 13 }),
+                h('span', { className: 'cait-btn-label' }, t('library.clear')),
               ),
               h('input', {
                 ref: fileRef,
@@ -2629,7 +2987,7 @@
       )
     }
 
-    function ExportModal({ t, busy, onClose, onExport, qa }) {
+    function ExportModal({ t, busy, onClose, onExport, onImportReview, qa }) {
       const issues = qa?.issueCount || 0
       const items = [
         ['bilingual-md', t('modal.export.bilingualMd'), t('modal.export.bilingual'), 'file'],
@@ -2638,11 +2996,13 @@
         ['target-txt', t('modal.export.targetTxt'), t('modal.export.target'), 'download'],
         ['target-md', t('modal.export.targetMd'), t('modal.export.target'), 'download'],
         ['docx', t('modal.export.docx'), t('modal.export.docxGroup'), 'file'],
+        ['bilingual-docx', t('modal.export.bilingualDocx'), t('modal.export.bilingual'), 'file'],
         ['epub', t('modal.export.epub'), t('modal.export.epubGroup'), 'file'],
         ['srt', t('modal.export.srt'), t('modal.export.subtitleGroup'), 'file'],
         ['vtt', t('modal.export.vtt'), t('modal.export.subtitleGroup'), 'file'],
         ['po', t('modal.export.po'), t('modal.export.localizationGroup'), 'file'],
         ['xliff', t('modal.export.xliff'), t('modal.export.localizationGroup'), 'file'],
+        ['xliff-review', t('modal.export.xliffReview'), t('modal.export.localizationGroup'), 'file'],
         ['xliff2', t('modal.export.xliff2'), t('modal.export.localizationGroup'), 'file'],
         ['sdlxliff', t('modal.export.sdlxliff'), t('modal.export.localizationGroup'), 'file'],
         ['html', t('modal.export.html'), t('modal.export.webGroup'), 'file'],
@@ -2685,6 +3045,30 @@
             ),
           ),
         ),
+        onImportReview
+          ? h(
+              'div',
+              { className: 'cait-review-import' },
+              h('p', { className: 'cait-libnote' }, t('modal.export.reviewImportHint')),
+              h(
+                'label',
+                { className: 'cait-btn' },
+                h(Icon, { name: 'upload', size: 13 }),
+                t('modal.export.reviewImport'),
+                h('input', {
+                  type: 'file',
+                  accept: '.xliff,.xlf,application/x-xliff+xml',
+                  style: { display: 'none' },
+                  disabled: Boolean(busy),
+                  onChange: (event) => {
+                    const file = event.target.files?.[0]
+                    if (file) onImportReview(file)
+                    event.target.value = ''
+                  },
+                }),
+              ),
+            )
+          : null,
       )
     }
 
@@ -3006,6 +3390,307 @@
       )
     }
 
+    function BriefModal({ t, doc, busy, onClose, onSave }) {
+      const initial = doc.brief || {}
+      const [form, setForm] = useState({
+        domain: initial.domain || '',
+        audience: initial.audience || '',
+        tone: initial.tone || '',
+        notes: initial.notes || '',
+        doNotTranslate: initial.doNotTranslate || '',
+        styleSample: initial.styleSample || '',
+      })
+      const field = (key, label, placeholder, rows) =>
+        h(
+          'label',
+          { className: 'cait-field' },
+          h('span', null, t(label)),
+          rows
+            ? h('textarea', {
+                className: 'cait-textarea',
+                rows,
+                value: form[key],
+                placeholder: t(placeholder),
+                onChange: (event) => setForm({ ...form, [key]: event.target.value }),
+              })
+            : h('input', {
+                className: 'cait-input',
+                value: form[key],
+                placeholder: t(placeholder),
+                onChange: (event) => setForm({ ...form, [key]: event.target.value }),
+              }),
+        )
+      return h(
+        Modal,
+        { title: t('brief.title'), onClose, wide: true },
+        h('p', { className: 'cait-mt-hint', style: { marginTop: 0 } }, t('brief.hint')),
+        h(
+          'div',
+          { className: 'cait-briefform' },
+          h('div', { className: 'cait-grid2' }, field('domain', 'brief.domain', 'brief.placeholder.domain'), field('audience', 'brief.audience', 'brief.placeholder.audience')),
+          field('tone', 'brief.tone', 'brief.placeholder.tone'),
+          field('notes', 'brief.notes', 'brief.placeholder.notes', 3),
+          field('doNotTranslate', 'brief.doNotTranslate', 'brief.placeholder.doNotTranslate', 3),
+          field('styleSample', 'brief.styleSample', 'brief.placeholder.styleSample', 4),
+        ),
+        h(
+          'div',
+          { className: 'cait-modal-actions' },
+          h('button', { className: 'cait-btn cait-btn-ghost', onClick: onClose, disabled: Boolean(busy) }, t('modal.confirm.cancel')),
+          h(
+            'button',
+            { className: 'cait-btn cait-btn-primary', onClick: () => onSave(form), disabled: Boolean(busy) },
+            busy ? h(Spinner) : null,
+            t('brief.save'),
+          ),
+        ),
+      )
+    }
+
+    function ResourceModal({ t, doc, libraries, mounts, busy, onClose, onSave }) {
+      const resources = doc.resources || {}
+      const [inheritTm, setInheritTm] = useState(resources.inheritsTm !== false)
+      const [inheritGlossary, setInheritGlossary] = useState(resources.inheritsGlossary !== false)
+      const [tmIds, setTmIds] = useState(
+        () => new Set(resources.tmIds ?? resources.effectiveTmIds ?? []),
+      )
+      const [glossaryIds, setGlossaryIds] = useState(
+        () => new Set(resources.glossaryIds ?? resources.effectiveGlossaryIds ?? []),
+      )
+      const [defaultWriteTmId, setDefaultWriteTmId] = useState(resources.defaultWriteTmId || '')
+
+      const allTm = libraries?.tm || []
+      const allGlossary = libraries?.glossary || []
+      const selectedTm = inheritTm ? mounts?.tmIds || [] : Array.from(tmIds)
+      const selectedGlossary = inheritGlossary ? mounts?.glossaryIds || [] : Array.from(glossaryIds)
+      const tmChoices = allTm.filter((library) => selectedTm.includes(library.tmId))
+      const checkedTmIds = new Set(selectedTm)
+      const checkedGlossaryIds = new Set(selectedGlossary)
+      const defaultTm = tmChoices.some((library) => library.tmId === defaultWriteTmId)
+        ? defaultWriteTmId
+        : ''
+
+      const toggleId = (setter, id) => {
+        setter((current) => {
+          const next = new Set(current)
+          if (next.has(id)) next.delete(id)
+          else next.add(id)
+          return next
+        })
+      }
+
+      const librarySection = (label, all, idKey, checkedIds, inherit, setInherit, toggle, inheritLabel) =>
+        h(
+          'div',
+          { className: 'cait-resource-section' },
+          h(
+            'div',
+            { className: 'cait-resource-head' },
+            h('strong', null, t(label)),
+            h(
+              'label',
+              { className: 'cait-checkline' },
+              h('input', {
+                type: 'checkbox',
+                checked: inherit,
+                onChange: (event) => setInherit(event.target.checked),
+              }),
+              t(inheritLabel),
+            ),
+          ),
+          h(
+            'div',
+            { className: 'cait-resource-list' },
+            all.length === 0
+              ? h('p', { className: 'cait-meta' }, t('resources.empty'))
+              : all.map((library) =>
+                  h(
+                    'label',
+                    { key: library[idKey], className: 'cait-resource-row' },
+                    h('input', {
+                      type: 'checkbox',
+                      checked: checkedIds.has(library[idKey]),
+                      disabled: inherit,
+                      onChange: () => toggle(library[idKey]),
+                    }),
+                    h('span', { className: 'cait-resource-name' }, library.name),
+                    h('span', { className: 'cait-meta' }, library[idKey]),
+                  ),
+                ),
+          ),
+        )
+
+      return h(
+        Modal,
+        { title: t('resources.title'), onClose, wide: true },
+        h('p', { className: 'cait-mt-hint', style: { marginTop: 0 } }, t('resources.hint')),
+        h(
+          'div',
+          { className: 'cait-briefform' },
+          librarySection(
+            'resources.tm',
+            allTm,
+            'tmId',
+            checkedTmIds,
+            inheritTm,
+            setInheritTm,
+            (id) => toggleId(setTmIds, id),
+            'resources.inheritTm',
+          ),
+          librarySection(
+            'resources.glossary',
+            allGlossary,
+            'glossaryId',
+            checkedGlossaryIds,
+            inheritGlossary,
+            setInheritGlossary,
+            (id) => toggleId(setGlossaryIds, id),
+            'resources.inheritGlossary',
+          ),
+          h(
+            'label',
+            { className: 'cait-field' },
+            h('span', null, t('resources.defaultWrite')),
+            h(
+              'select',
+              {
+                className: 'cait-input',
+                value: defaultTm,
+                onChange: (event) => setDefaultWriteTmId(event.target.value),
+              },
+              h('option', { value: '' }, t(inheritTm ? 'resources.followDefault' : 'resources.firstBound')),
+              tmChoices.map((library) => h('option', { key: library.tmId, value: library.tmId }, library.name)),
+            ),
+          ),
+        ),
+        h(
+          'div',
+          { className: 'cait-modal-actions' },
+          h('button', { className: 'cait-btn cait-btn-ghost', onClick: onClose, disabled: Boolean(busy) }, t('modal.confirm.cancel')),
+          h(
+            'button',
+            {
+              className: 'cait-btn cait-btn-primary',
+              disabled: Boolean(busy),
+              onClick: () =>
+                onSave({
+                  tmIds: inheritTm ? null : Array.from(tmIds),
+                  glossaryIds: inheritGlossary ? null : Array.from(glossaryIds),
+                  defaultWriteTmId: defaultTm || null,
+                }),
+            },
+            busy ? h(Spinner) : null,
+            t('resources.save'),
+          ),
+        ),
+      )
+    }
+
+    function AnalysisModal({ t, doc, analysis, busy, onClose }) {
+      const download = (format) => {
+        if (!analysis) return
+        const pairs = [
+          ['segments', analysis.segments],
+          ['words', analysis.words],
+          ['characters', analysis.characters],
+          ['duplicates.groups', analysis.duplicates.groups],
+          ['duplicates.segments', analysis.duplicates.segments],
+          ['translated', analysis.translated],
+          ['confirmed', analysis.confirmed],
+          ['ice', analysis.buckets.ice],
+          ['exact', analysis.buckets.exact],
+          ['fuzzy85', analysis.buckets.fuzzy85],
+          ['fuzzy70', analysis.buckets.fuzzy70],
+          ['new', analysis.buckets.new],
+          ['matched.segments', analysis.matched.segments],
+          ['matched.percent', analysis.matched.percent],
+          ['leverage.percent', analysis.leverage.percent],
+          ['generatedAt', analysis.generatedAt],
+        ]
+        const content =
+          format === 'json'
+            ? JSON.stringify(analysis, null, 2)
+            : ['metric,value', ...pairs.map(([key, value]) => `${key},${value}`)].join('\n')
+        const type = format === 'json' ? 'application/json' : 'text/csv'
+        const blob = new Blob([content], { type })
+        const url = URL.createObjectURL(blob)
+        const anchor = document.createElement('a')
+        anchor.href = url
+        anchor.download = `${analysis.name || 'document'}-analysis.${format}`
+        anchor.click()
+        URL.revokeObjectURL(url)
+      }
+
+      const rows = analysis
+        ? [
+            ['analysis.segments', analysis.segments],
+            ['analysis.words', analysis.words],
+            ['analysis.characters', analysis.characters],
+            ['analysis.duplicates', `${analysis.duplicates.segments} / ${analysis.duplicates.groups}`],
+            ['analysis.translated', analysis.translated],
+            ['analysis.confirmed', analysis.confirmed],
+          ]
+        : []
+      const buckets = analysis
+        ? [
+            ['analysis.ice', analysis.buckets.ice],
+            ['analysis.exact', analysis.buckets.exact],
+            ['analysis.fuzzy85', analysis.buckets.fuzzy85],
+            ['analysis.fuzzy70', analysis.buckets.fuzzy70],
+            ['analysis.new', analysis.buckets.new],
+          ]
+        : []
+
+      return h(
+        Modal,
+        { title: t('analysis.title'), onClose, wide: true },
+        h('p', { className: 'cait-mt-hint', style: { marginTop: 0 } }, t('analysis.hint')),
+        busy || !analysis
+          ? h('div', { className: 'cait-empty' }, h(Spinner))
+          : h(
+              'div',
+              { className: 'cait-analysis' },
+              h(
+                'div',
+                { className: 'cait-analysis-grid' },
+                rows.map(([label, value]) =>
+                  h(
+                    'div',
+                    { key: label, className: 'cait-analysis-stat' },
+                    h('span', null, t(label)),
+                    h('strong', null, String(value)),
+                  ),
+                ),
+              ),
+              h(
+                'div',
+                { className: 'cait-analysis-grid' },
+                buckets.map(([label, value]) =>
+                  h(
+                    'div',
+                    { key: label, className: 'cait-analysis-stat' },
+                    h('span', null, t(label)),
+                    h('strong', null, String(value)),
+                  ),
+                ),
+              ),
+              h(
+                'div',
+                { className: 'cait-analysis-total' },
+                h('span', null, `${t('analysis.matchRate')} ${analysis.matched.percent}%`),
+                h('span', null, `${t('analysis.leverage')} ${analysis.leverage.percent}%`),
+              ),
+            ),
+        h(
+          'div',
+          { className: 'cait-modal-actions' },
+          h('button', { className: 'cait-btn cait-btn-ghost', onClick: onClose, disabled: Boolean(busy) }, t('analysis.close')),
+          h('button', { className: 'cait-btn cait-btn-ghost', onClick: () => download('csv'), disabled: Boolean(busy) || !analysis }, t('analysis.exportCsv')),
+          h('button', { className: 'cait-btn cait-btn-primary', onClick: () => download('json'), disabled: Boolean(busy) || !analysis }, t('analysis.exportJson')),
+        ),
+      )
+    }
+
     function Workbench({ i18n, translate }) {
       const [data, setData] = useState(null)
       const [loading, setLoading] = useState(true)
@@ -3029,6 +3714,11 @@
       }
       const [pre, setPre] = useState({ running: false, done: 0, total: 0, filled: 0, failed: 0 })
       const [qa, setQa] = useState(null)
+      const [analysis, setAnalysis] = useState(null)
+      const [analysisBusy, setAnalysisBusy] = useState(false)
+      const [concordance, setConcordance] = useState(null)
+      const [concordanceQuery, setConcordanceQuery] = useState('')
+      const [concordanceBusy, setConcordanceBusy] = useState(false)
       const [tmQuery, setTmQuery] = useState('')
       const [tmResults, setTmResults] = useState(null)
       const [tmRefresh, setTmRefresh] = useState(0)
@@ -3302,6 +3992,8 @@
         setTmQuery('')
         setTmResults(null)
         setTmError('')
+        setConcordance(null)
+        setConcordanceQuery('')
       }, [doc?.id])
 
       useEffect(() => {
@@ -3339,7 +4031,8 @@
       const saveDraft = async (silent = true) => {
         if (!doc || !dirty) return true
         try {
-          await rpc('saveDraft', { documentId: doc.id, index: selected, target: draft })
+          const result = await rpc('saveDraft', { documentId: doc.id, index: selected, target: draft })
+          if (result.state) adoptState(result.state)
           setDirty(false)
           if (!silent) notify(t('toast.draftSaved'))
           return true
@@ -3520,12 +4213,156 @@
       }
 
       const applyTerm = (term) => {
+        if (term?.forbidden) {
+          notify(t('toast.termForbidden'), 'error')
+          return
+        }
         const separator = /^(zh|ja|ko)/i.test(doc?.targetLang || '') ? '' : ' '
         setDraft((current) => {
           const value = current.replace(/\s+$/, '')
           return value ? `${value}${separator}${term.target}` : term.target
         })
         setDirty(true)
+        setTimeout(() => textareaRef.current?.focus(), 0)
+      }
+
+      const unconfirmCurrent = async () => {
+        if (!doc || busy) return
+        setBusy('unconfirm')
+        try {
+          if (dirty) {
+            const saved = await saveDraft(true)
+            if (!saved) return
+          }
+          const result = await rpc('unconfirmSegment', { documentId: doc.id, index: selected })
+          adoptState(result.state)
+          notify(t('toast.unconfirmed'))
+        } catch (error) {
+          // Saving a dirty confirmed segment already revokes the confirmation.
+          // Treat the second call as idempotent instead of showing an error.
+          if (error?.code === 'NOT_CONFIRMED') notify(t('toast.unconfirmed'))
+          else report(error)
+        } finally {
+          setBusy('')
+        }
+      }
+
+      const saveBrief = async (brief) => {
+        if (!doc || busy) return false
+        setBusy('brief')
+        try {
+          const result = await rpc('setBrief', { documentId: doc.id, brief })
+          adoptState(result.state)
+          setModal(null)
+          notify(t('toast.briefSaved'))
+          return true
+        } catch (error) {
+          report(error)
+          return false
+        } finally {
+          setBusy('')
+        }
+      }
+
+      const saveResources = async (resources) => {
+        if (!doc || busy) return false
+        setBusy('resources')
+        try {
+          const result = await rpc('setDocumentResources', { documentId: doc.id, ...resources })
+          adoptState(result.state)
+          setModal(null)
+          notify(t('toast.resourcesSaved'))
+          return true
+        } catch (error) {
+          report(error)
+          return false
+        } finally {
+          setBusy('')
+        }
+      }
+
+      const openAnalysis = async () => {
+        if (!doc) return
+        setAnalysis(null)
+        setModal({ type: 'analysis' })
+        setAnalysisBusy(true)
+        try {
+          setAnalysis(await rpc('analyzeDocument', { documentId: doc.id }))
+        } catch (error) {
+          report(error)
+        } finally {
+          setAnalysisBusy(false)
+        }
+      }
+
+      const refreshQa = async () => {        if (!doc) return
+        setQa(null)
+        try {
+          setQa(await rpc('getQaReport', { documentId: doc.id }))
+        } catch {
+          // QA is advisory; a failure must not disturb the editor.
+        }
+      }
+
+      const jumpQa = (nextIndex) => {
+        if (Number.isInteger(nextIndex)) chooseSegment(nextIndex)
+      }
+
+      const applyQaFix = async (item, action) => {
+        if (!doc || busy || !item) return
+        const segment = doc.segments[item.index]
+        if (!segment) return
+        let target = segment.target || ''
+        if (action === 'copy-source') {
+          target = segment.source
+        } else if (action === 'clear') {
+          target = ''
+        } else if (action === 'term') {
+          const term = String(item.termTarget || '')
+          if (!term || target.includes(term)) return
+          const separator = /[A-Za-z0-9]$/.test(target) && /^[A-Za-z0-9]/.test(term) ? ' ' : ''
+          target = `${target}${separator}${term}`
+        } else {
+          return
+        }
+        setBusy('qa-fix')
+        try {
+          const result = await rpc('saveDraft', {
+            documentId: doc.id,
+            index: item.index,
+            target,
+          })
+          if (result.state) adoptState(result.state, item.index)
+          setQa(await rpc('getQaReport', { documentId: doc.id }))
+          notify(t('toast.qaFixed'))
+        } catch (error) {
+          report(error)
+        } finally {
+          setBusy('')
+        }
+      }
+
+      const runConcordance = async () => {
+        const query = concordanceQuery.trim()
+        if (!doc || !query) {
+          setConcordance(null)
+          return
+        }
+        setConcordanceBusy(true)
+        try {
+          setConcordance(await rpc('concordance', { documentId: doc.id, query, limit: 50 }))
+        } catch (error) {
+          report(error)
+        } finally {
+          setConcordanceBusy(false)
+        }
+      }
+
+      const applyConcordance = (entry) => {
+        if (!entry?.target) return
+        setDraft(entry.target)
+        setDirty(true)
+        setMt(null)
         setTimeout(() => textareaRef.current?.focus(), 0)
       }
 
@@ -3592,6 +4429,40 @@
             notify(t('toast.propagated').replace('{count}', String(result.filled)))
           },
         })
+      }
+
+      const clearPretranslated = async () => {
+        const active = data?.activeDocument
+        if (!active) return
+        try {
+          const preview = await rpc('getClearUnconfirmedPreview', { documentId: active.id })
+          const counts = preview?.counts || {}
+          const total = counts.total || 0
+          if (!total) {
+            notify(t('toast.nothingToClear'), 'info')
+            return
+          }
+          setModal({
+            type: 'confirm',
+            title: t('modal.confirm.clearPretranslatedTitle'),
+            message: t('modal.confirm.clearPretranslatedMessage')
+              .replace('{count}', String(total))
+              .replace('{mt}', String(counts.mt || 0))
+              .replace('{tm}', String(counts.tm || 0))
+              .replace('{auto}', String(counts.auto || 0)),
+            confirmLabel: t('modal.confirm.clearPretranslatedConfirm').replace('{count}', String(total)),
+            action: async () => {
+              const result = await rpc('clearUnconfirmedTranslations', {
+                documentId: active.id,
+                confirm: true,
+              })
+              adoptState(result.state, result.cursor)
+              notify(t('toast.pretranslatedCleared').replace('{count}', String(result.cleared)))
+            },
+          })
+        } catch (error) {
+          report(error)
+        }
       }
 
       const addTerm = async (form) => {        setBusy('term')
@@ -3783,6 +4654,32 @@
         }
       }
 
+      const importReview = (file) => {
+        if (!doc || !file) return
+        const reader = new FileReader()
+        reader.onload = async () => {
+          setBusy('review')
+          try {
+            const result = await rpc('applyXliffReview', {
+              documentId: doc.id,
+              text: String(reader.result || ''),
+            })
+            adoptState(result.state)
+            notify(
+              t('toast.reviewApplied')
+                .replace('{applied}', String(result.applied))
+                .replace('{unmatched}', String(result.unmatched + result.sourceMismatch)),
+            )
+            setModal(null)
+          } catch (error) {
+            report(error)
+          } finally {
+            setBusy('')
+          }
+        }
+        reader.readAsText(file, 'utf-8')
+      }
+
       const openConfirm = (state) => setModal({ type: 'confirm', ...state })
 
       const clearTm = () =>
@@ -3837,6 +4734,7 @@
 
       const openIds = new Set((data?.openDocuments || []).map((item) => item.id))
       const closedDocuments = (data?.documents || []).filter((item) => !openIds.has(item.id))
+      const qaRisk = (qa?.risks || []).find((item) => item.index === index) || null
 
       const deleteClosedDocument = (document) =>
         openConfirm({
@@ -3981,6 +4879,7 @@
               onCreateLibrary: createLibrary,
               onRenameLibrary: renameLibrary,
               onDeleteLibrary: deleteLibrary,
+              onSetMounts: setMounts,
             })
           : null,
         view === 'align'
@@ -3998,7 +4897,7 @@
           ? h(
           'div',
           { className: `cait-body${doc ? '' : ' cait-no-doc'}` },
-          doc ? h(SegmentRail, { t, doc, selected: index, query: railQuery, setQuery: setRailQuery, filter: railFilter, setFilter: setRailFilter, onSelect: chooseSegment, onConfirmAll: confirmAllTranslated, onPropagate: propagateRepeats, busy, qa }) : null,
+          doc ? h(SegmentRail, { t, doc, selected: index, query: railQuery, setQuery: setRailQuery, filter: railFilter, setFilter: setRailFilter, onSelect: chooseSegment, onConfirmAll: confirmAllTranslated, onPropagate: propagateRepeats, onClearPretranslated: clearPretranslated, busy, qa }) : null,
           h(
             'div',
             { className: `cait-main${doc ? '' : ' cait-main-empty'}` },
@@ -4017,11 +4916,16 @@
                   dirty,
                   busy,
                   onConfirm: confirmSegment,
+                  onUnconfirm: unconfirmCurrent,
                   onNext: () => moveSegment(1),
                   onPrev: () => moveSegment(-1),
                   onSave: () => saveDraft(false),
                   onAdopt: adoptSuggestion,
                   onApplyTerm: applyTerm,
+                  onOpenBrief: () => setModal({ type: 'brief' }),
+                  onOpenResources: () => setModal({ type: 'resources' }),
+                  onOpenAnalysis: openAnalysis,
+                  qaRisk,
                   textareaRef,
                 })
               : h(EmptyState, { t, settings, busy, onCreate: createFromForm, onDemo: loadDemo }),
@@ -4062,7 +4966,16 @@
                   onCopy: copy,
                   onOpenSettings: () => setModal({ type: 'settings' }),
                   onSearchLibrary: openLibrary,
-                  busy,
+                  qa,
+                  onRefreshQa: refreshQa,
+                  onJumpQa: jumpQa,
+                  onFixQa: applyQaFix,
+                  concordance,
+                  concordanceQuery,
+                  setConcordanceQuery,
+                  onConcordance: runConcordance,
+                  onApplyConcordance: applyConcordance,
+                  busy: busy || (concordanceBusy ? 'concordance' : ''),
                 })
               : null,
           ),
@@ -4079,7 +4992,30 @@
             })
           : null,
         modal?.type === 'export'
-          ? h(ExportModal, { t, busy, qa, onClose: () => setModal(null), onExport: exportAs })
+          ? h(ExportModal, { t, busy, qa, onClose: () => setModal(null), onExport: exportAs, onImportReview: importReview })
+          : null,
+        modal?.type === 'brief'
+          ? h(BriefModal, { t, doc, busy, onClose: () => setModal(null), onSave: saveBrief })
+          : null,
+        modal?.type === 'resources'
+          ? h(ResourceModal, {
+              t,
+              doc,
+              libraries: data?.libraries,
+              mounts: data?.mounts,
+              busy,
+              onClose: () => setModal(null),
+              onSave: saveResources,
+            })
+          : null,
+        modal?.type === 'analysis'
+          ? h(AnalysisModal, {
+              t,
+              doc,
+              analysis,
+              busy: analysisBusy,
+              onClose: () => setModal(null),
+            })
           : null,
         modal?.type === 'settings'
           ? h(SettingsModal, { t, settings, mtRoutes, busy, onClose: () => setModal(null), onSave: saveSettings })

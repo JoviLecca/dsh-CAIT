@@ -199,6 +199,22 @@ try {
   assert.equal(tooLarge.status, 413)
   assert.equal((await tooLarge.json()).error.code, 'BODY_TOO_LARGE')
 
+  const cleanupDoc = store.docs.get(documentId)
+  cleanupDoc.segments[0].target = 'machine draft'
+  cleanupDoc.segments[0].origin = 'mt'
+  cleanupDoc.segments[0].status = 'translated'
+  cleanupDoc.segments[0].confirmedAt = null
+  const cleanupPreview = await call('getClearUnconfirmedPreview', { documentId })
+  assert.equal(cleanupPreview.status, 200)
+  assert.equal(cleanupPreview.body.data.counts.total, 1)
+  const blockedCleanup = await call('clearUnconfirmedTranslations', { documentId })
+  assert.equal(blockedCleanup.status, 409)
+  assert.equal(blockedCleanup.body.error.code, 'CONFIRMATION_REQUIRED')
+  const clearedCleanup = await call('clearUnconfirmedTranslations', { documentId, confirm: true })
+  assert.equal(clearedCleanup.status, 200)
+  assert.equal(clearedCleanup.body.data.cleared, 1)
+  assert.equal(clearedCleanup.body.data.state.activeDocument.segments[0].target, '')
+
   const disposable = await call('createDocument', {
     name: 'Disposable document',
     text: 'This document is closed and then deleted.',

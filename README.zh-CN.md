@@ -16,7 +16,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm 版本" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
-  <img alt="29 套测试" src="https://img.shields.io/badge/tests-29%20suites-brightgreen.svg" />
+  <img alt="36 套测试" src="https://img.shields.io/badge/tests-36%20suites-brightgreen.svg" />
   <img alt="无需 API Key" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
 </p>
 
@@ -52,6 +52,23 @@ CAIT 为 DSH Web UI 和 DSH 桌面端增加一个 CAT 翻译工作台。它从�
 无需手动刷新即可出现。
 
 ## 功能
+
+### 1.1.5 新增
+
+- 每份文档可以**继承全局 TM/术语库挂载，或绑定自己的库**，并指定默认写入 TM；检索、术语命中、QA、预翻译和确认都按该作用域执行。
+- **字数与匹配率分析**：统计句段、词数、字符、重复、ICE/精确/模糊/新增分桶、匹配率和 leverage，可下载 CSV 或 JSON。
+- 导出**双语审校 DOCX**（原文/译文/状态），给不使用 CAIT 的审校人。
+- 导出并回填 **XLIFF 1.2 审校包**：按 uid、XLIFF id 或唯一源文匹配，源文不一致的条目拒绝回填，并报告未匹配数量。
+- **TM 维护**：合并、去重、清理都先预览再确认。
+
+### 1.1.4 新增
+
+- 每份文档可以带一份**翻译 brief**：领域、读者、语气、备注、禁译词和风格样例；它会被注入 MT 请求，Agent 可用 `cat_get_brief` 读取。
+- 预翻译改为**一次最多八段**批量请求，带上 brief 和相邻原文；模型漏掉的句段逐段回退，不再整篇中断。
+- 术语条目可以标记 **forbidden**（禁用译法）和 **preferred**（必用译法），CSV/JSON/TBX 导出与 CSV 导入都会保留。
+- QA 按 **high / medium / low** 分级，新增禁用术语和长度漂移检查；QA 面板可跳转、复制原文、清空译文、插入必用术语，Concordance 可检索所有已挂载 TM。
+- 已确认句段可以**撤销确认**，保留译文和 TM 条目；编辑已确认句段会自动退回 `translated`，再次确认时更新同一条 TM。
+- 句段栏可以**批量清理未确认的预翻译译文**；清理前会显示句数以及 MT/TM/自动传播的构成，并说明已确认句段、人工草稿和已写入 TM 的内容不受影响。
 
 ### 翻译记忆
 
@@ -230,7 +247,7 @@ CAIT 以 DSH bundle 的形式安装；发布的 npm 包名为 `dsh-cait`，插�
 plugin_manager install_bundle target: dsh-cait
 ```
 
-需要固定版本时写 `dsh-cait@1.1.3`，需要最新版时写 `dsh-cait@latest`。管理器会解析 registry
+需要固定版本时写 `dsh-cait@1.1.5`，需要最新版时写 `dsh-cait@latest`。管理器会解析 registry
 上的包、应用 bundle patch 并激活插件，不需要手工在配置档里加行。
 
 使用 CLI 管理的配置档：
@@ -428,7 +445,7 @@ node _dev/test-mt.mjs
 
 导入/导出 fixture 为 `_dev/sample.docx`、`_dev/sample-table.docx` 和
 `_dev/sample-format.docx`；可用对应的 `python _dev/make-*.py` 脚本重新生成。
-15 套测试应全部通过。
+36 套测试应全部通过。
 
 ### 发布
 

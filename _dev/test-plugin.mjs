@@ -50,7 +50,7 @@ const ctx = {
 }
 
 plugin.apply(ctx, { dataDir })
-assert.equal(tools.size, 15)
+assert.equal(tools.size, 20)
 assert.deepEqual([...tools.keys()], [
   'cat_get_segment',
   'cat_submit_translation',
@@ -66,6 +66,11 @@ assert.deepEqual([...tools.keys()], [
   'cat_align',
   'cat_consistency_report',
   'cat_term_candidates',
+  'cat_get_brief',
+  'cat_set_brief',
+  'cat_get_context',
+  'cat_unconfirm_segment',
+  'cat_concordance',
   'cat_add_terms',
 ])
 assert.equal(route.path, '/cait/api')
@@ -161,9 +166,11 @@ try {
   assert.deepEqual(Object.keys(terms.entries[0]).sort(), [
     'caseSensitive',
     'createdAt',
+    'forbidden',
     'glossaryId',
     'id',
     'note',
+    'preferred',
     'source',
     'sourceLang',
     'target',
@@ -218,11 +225,13 @@ try {
   assert.equal(firstSummary.progress.confirmed, 1)
   assert.equal(firstSummary.progress.total, 2)
   assert.deepEqual(Object.keys(firstSummary).sort(), [
+    'brief',
     'createdAt',
     'cursor',
     'id',
     'name',
     'progress',
+    'resources',
     'sourceLang',
     'targetLang',
     'updatedAt',

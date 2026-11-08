@@ -21,10 +21,23 @@ function section(name) {
 
 function stubMt(store, map = {}) {
   const calls = []
+  const translate = (text) => {
+    if (map[text] === 'THROW') throw Object.assign(new Error('route exploded'), { code: 'MT_PROVIDER_FAILED' })
+    return map[text] ?? `MT(${text})`
+  }
   store.mtSuggest = async ({ text }) => {
     calls.push(text)
-    if (map[text] === 'THROW') throw Object.assign(new Error('route exploded'), { code: 'MT_PROVIDER_FAILED' })
-    return { text: map[text] ?? `MT(${text})`, provider: 'stub', model: 'stub-model', latencyMs: 1 }
+    return { text: translate(text), provider: 'stub', model: 'stub-model', latencyMs: 1 }
+  }
+  store.mtSuggestBatch = async ({ items }) => {
+    calls.push(...items.map((item) => item.text))
+    return {
+      items: items.map((item) => ({ index: item.index, text: translate(item.text) })),
+      provider: 'stub',
+      model: 'stub-model',
+      latencyMs: 1,
+      partial: false,
+    }
   }
   return calls
 }
@@ -207,6 +220,55 @@ try {
       { index: 1, reason: 'confirmed' },
     ])
     assert.equal(final.done, true)
+  }
+
+  section('batch ids survive shuffled output, and renumbered partial output is rejected')
+  {
+    const store = new CatStore({ logger: silent })
+    const text = Array.from({ length: 50 }, (_, i) => `Line ${i}.`).join(' ')
+    const { document } = store.createDocument({ name: 'Batch ids', text, sourceLang: 'en', targetLang: 'zh-CN' })
+    const doc = store.docs.get(document.id)
+    store.resolveMtRoute = async () => ({ provider: 'stub', model: 'stub-model', mock: false })
+
+    const stream = (payload) => (async function* () {
+      yield { type: 'text-delta', index: 0, text: payload }
+      yield { type: 'finish', reason: { kind: 'stop' } }
+    })()
+
+    store.mtRuntime = {
+      stream: () =>
+        stream(
+          JSON.stringify(
+            Array.from({ length: 8 }, (_, offset) => {
+              const index = 47 - offset
+              return { id: `S${index}`, text: `T${index}` }
+            }),
+          ),
+        ),
+    }
+    const items = Array.from({ length: 8 }, (_, offset) => ({ index: 40 + offset, text: `Line ${40 + offset}.` }))
+    const result = await store.mtSuggestBatch({ documentId: doc.id, items })
+    assert.equal(result.items.length, 8)
+    assert.deepEqual(
+      result.items.map((item) => [item.index, item.text]),
+      Array.from({ length: 8 }, (_, offset) => [40 + offset, `T${40 + offset}`]),
+    )
+
+    // Seven objects numbered 1..7 for eight inputs is exactly the malformed
+    // shape that used to shift every later translation by one. There is no id
+    // to trust, so the batch must be rejected and retried one by one.
+    store.mtRuntime = {
+      stream: () =>
+        stream(
+          JSON.stringify(
+            Array.from({ length: 7 }, (_, offset) => ({ index: offset + 1, text: `wrong-${offset + 1}` })),
+          ),
+        ),
+    }
+    await assert.rejects(
+      store.mtSuggestBatch({ documentId: doc.id, items }),
+      (error) => error.code === 'MT_BATCH_INVALID',
+    )
   }
 
   console.log('\nALL PRE-TRANSLATE TESTS PASSED')

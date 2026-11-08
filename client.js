@@ -309,6 +309,49 @@ window.__ModuleLoader__.load({
 .cait-dot.confirmed{background:var(--dsw-alias-state-success-primary)}
 .cait-dot.translated{background:var(--dsw-alias-button-primary-fill)}
 .cait-seg-warn{width:5px;height:5px;border-radius:50%;background:var(--dsw-alias-state-warn-primary);flex:0 0 auto}
+.cait-seg-warn.high{background:var(--dsw-alias-state-error-primary)}
+.cait-seg-warn.medium{background:var(--dsw-alias-state-warn-primary)}
+.cait-seg-warn.low{background:var(--dsw-alias-label-secondary)}
+.cait-seg-flags{display:flex;align-items:center;gap:5px;flex:0 0 auto}
+.cait-riskchip{display:inline-flex;align-items:center;height:17px;padding:0 6px;border:1px solid transparent;border-radius:999px;font-size:9.5px;font-weight:650;letter-spacing:.01em}
+.cait-riskchip.high{color:var(--dsw-alias-state-error-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-error-primary) 35%,transparent);background:color-mix(in srgb,var(--dsw-alias-state-error-primary) 9%,transparent)}
+.cait-riskchip.medium{color:var(--dsw-alias-state-warn-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 38%,transparent);background:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 10%,transparent)}
+.cait-riskchip.low{color:var(--dsw-alias-label-secondary);border-color:var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1)}
+.cait-brieflink{height:20px;padding:0 4px;gap:3px;font-size:10px}
+.cait-briefdot{width:4px;height:4px;border-radius:50%;background:var(--dsw-alias-brand-primary)}
+.cait-briefform{display:flex;flex-direction:column;gap:11px;margin:12px 0 4px}
+.cait-resource-section{display:flex;flex-direction:column;gap:6px}
+.cait-resource-head{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cait-resource-list{max-height:132px;overflow:auto;border:1px solid var(--dsw-alias-border-secondary);border-radius:6px;padding:4px 6px}
+.cait-resource-row{display:flex;align-items:center;gap:7px;padding:3px 0;font-size:10.5px;cursor:pointer}
+.cait-resource-row input{flex:0 0 auto}
+.cait-resource-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--dsw-alias-label-primary)}
+.cait-analysis{display:flex;flex-direction:column;gap:10px;margin:8px 0}
+.cait-analysis-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.cait-analysis-stat{display:flex;flex-direction:column;gap:2px;padding:7px 9px;border:1px solid var(--dsw-alias-border-secondary);border-radius:6px;font-size:10.5px;color:var(--dsw-alias-label-secondary)}
+.cait-analysis-stat strong{font-size:15px;color:var(--dsw-alias-label-primary);font-variant-numeric:tabular-nums}
+.cait-analysis-total{display:flex;gap:14px;font-size:11px;color:var(--dsw-alias-label-secondary)}
+.cait-riskcounts{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 9px}
+.cait-riskcount{display:inline-flex;align-items:center;height:20px;padding:0 7px;border:1px solid var(--dsw-alias-border-l1);border-radius:999px;font-size:10px;font-weight:600;color:var(--dsw-alias-label-secondary)}
+.cait-riskcount.high{color:var(--dsw-alias-state-error-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-error-primary) 35%,transparent)}
+.cait-riskcount.medium{color:var(--dsw-alias-state-warn-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 38%,transparent)}
+.cait-riskrow{display:flex;align-items:flex-start;gap:8px;width:100%;margin-bottom:6px;padding:8px 8px;border:1px solid var(--dsw-alias-border-l1);border-left:3px solid var(--dsw-alias-label-secondary);border-radius:7px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);text-align:left}
+.cait-riskrow:hover{background:var(--dsw-alias-bg-layer-2)}
+.cait-riskrow.high{border-left-color:var(--dsw-alias-state-error-primary)}
+.cait-riskrow.medium{border-left-color:var(--dsw-alias-state-warn-primary)}
+.cait-riskrow.low{border-left-color:var(--dsw-alias-label-secondary)}
+.cait-riskrow-index{min-width:18px;font-size:10px;font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-secondary);padding-top:2px}
+.cait-riskrow-body{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.cait-riskrow-source{font-size:11px;line-height:1.4;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.cait-riskrow-codes{font-size:9.5px;color:var(--dsw-alias-label-secondary)}
+.cait-riskactions{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+.cait-riskaction{padding:2px 6px;border:1px solid var(--dsw-alias-border-l1);border-radius:4px;background:transparent;color:var(--dsw-alias-label-secondary);font-size:9.5px;cursor:pointer}
+.cait-riskaction:hover{background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-primary)}
+.cait-concordance-row{display:flex;flex-direction:column;gap:3px;width:100%;margin-bottom:6px;padding:8px 9px;border:1px solid var(--dsw-alias-border-l1);border-radius:8px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);text-align:left}
+.cait-concordance-row:hover{background:var(--dsw-alias-bg-layer-2)}
+.cait-concordance-source{font-size:11px;line-height:1.45;color:var(--dsw-alias-label-secondary)}
+.cait-concordance-target{font-size:11.5px;line-height:1.45}
+.cait-concordance-meta{font-size:9.5px;color:var(--dsw-alias-label-secondary)}
 .cait-qa-banner{display:flex;align-items:flex-start;gap:6px;margin-bottom:10px;padding:7px 9px;border:1px solid color-mix(in srgb,var(--dsw-alias-state-warn-primary) 45%,transparent);border-radius:8px;background:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 10%,transparent);color:var(--dsw-alias-label-primary);font-size:11px;line-height:1.5}
 .cait-seg-text{display:-webkit-box;overflow:hidden;-webkit-line-clamp:2;-webkit-box-orient:vertical;font-size:11.5px;line-height:1.42;color:var(--dsw-alias-label-primary)}
 .cait-segitem.active .cait-seg-text{font-weight:550}
@@ -391,8 +434,8 @@ window.__ModuleLoader__.load({
 .cait-libcreate{display:flex;align-items:center;gap:5px;margin-top:8px}
 .cait-libcreate .cait-input{height:27px;min-width:0;flex:1}
 .cait-libcreate .cait-btn{height:27px;padding:0 8px;font-size:10px;flex:0 0 auto}
-.cait-tabs{display:flex;gap:3px;padding:7px 9px;border-bottom:1px solid var(--dsw-alias-border-l1);flex:0 0 auto}
-.cait-tab{display:flex;align-items:center;justify-content:center;gap:5px;flex:1;height:29px;padding:0 6px;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--dsw-alias-label-secondary);font-size:11px;font-weight:500}
+.cait-tabs{display:flex;flex-wrap:wrap;gap:4px;padding:7px 9px;border-bottom:1px solid var(--dsw-alias-border-l1);flex:0 0 auto}
+.cait-tab{display:inline-flex;align-items:center;justify-content:center;gap:5px;flex:0 0 auto;white-space:nowrap;height:29px;padding:0 8px;border:1px solid transparent;border-radius:6px;background:transparent;color:var(--dsw-alias-label-secondary);font-size:10.5px;font-weight:500}
 .cait-tab:hover{background:color-mix(in srgb,var(--dsw-alias-label-primary) 5%,transparent)}
 .cait-tab.active{background:color-mix(in srgb,var(--dsw-alias-brand-primary) 11%,var(--dsw-alias-bg-layer-1));border-color:color-mix(in srgb,var(--dsw-alias-brand-primary) 18%,var(--dsw-alias-border-l1));color:var(--dsw-alias-brand-primary);font-weight:650}
 .cait-tab .cait-count{color:inherit;opacity:.72}
@@ -554,6 +597,8 @@ window.__ModuleLoader__.load({
 .cait-libsearch{display:flex;align-items:center;gap:6px;min-width:150px;flex:1;height:29px;padding:0 9px;border:1px solid var(--dsw-alias-border-l1);border-radius:7px;background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-secondary)}
 .cait-libsearch input{min-width:0;flex:1;border:0;outline:0;background:transparent;font-size:11.5px;color:var(--dsw-alias-label-primary)}
 .cait-liblang{height:29px;padding:0 5px;border:1px solid var(--dsw-alias-border-l1);border-radius:7px;background:var(--dsw-alias-bg-layer-1);font-size:11px;flex:0 0 auto}
+.cait-libwrite{display:inline-flex;align-items:center;gap:5px;flex:0 0 auto;font-size:10.5px;color:var(--dsw-alias-label-secondary);white-space:nowrap}
+.cait-libwritelabel{font-size:10.5px;color:var(--dsw-alias-label-secondary)}
 .cait-libscope{display:flex;align-items:center;gap:4px;padding:0 12px 8px;flex-wrap:wrap;flex:0 0 auto}
 .cait-libtable-wrap{flex:1;min-height:0;overflow:auto;padding:0 12px}
 .cait-libtable{width:100%;border-collapse:collapse;table-layout:fixed}
@@ -578,6 +623,8 @@ window.__ModuleLoader__.load({
 .cait-libform-actions{display:flex;align-items:center;gap:6px;margin-top:11px}
 .cait-libform-actions .cait-btn{flex:1}
 .cait-batchbtn-plain{border-style:dashed}
+.cait-batchbtn-danger{color:var(--dsw-alias-state-error-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-error-primary) 35%,var(--dsw-alias-border-l1))}
+.cait-batchbtn-danger:hover:not(:disabled){border-color:var(--dsw-alias-state-error-primary);color:var(--dsw-alias-state-error-primary)}
 .cait-alignpage{display:flex;flex-direction:column;gap:10px;flex:1;min-height:0;padding:12px 14px 14px;overflow:auto}
 .cait-alignhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .cait-alignhead h2{margin:0 0 3px;font-size:13.5px;font-weight:600;color:var(--dsw-alias-label-primary)}
@@ -754,6 +801,7 @@ window.__ModuleLoader__.load({
         check: ['M3 8.5l3.2 3.2L13 4.3'],
         align: ['M2 5h8', 'M2 11h5', 'M12 3v10', 'M10 11l2 2 2-2'],
         folder: ['M2 4h4l1.5 2H14v6.5H2z'],
+        chart: ['M3 13V8', 'M8 13V3', 'M13 13V6', 'M2 14h12'],
       }
       const shape = paths[name] || paths.file
       return h(
@@ -1136,7 +1184,7 @@ window.__ModuleLoader__.load({
             ? h(
                 'button',
                 { className: 'cait-btn', onClick: onImport, disabled: Boolean(busy), title: t('nav.import') },
-                h(Icon, { name: 'upload', size: 14 }),
+                h(Icon, { name: 'download', size: 14 }),
                 h('span', { className: 'cait-btn-label' }, t('nav.import')),
               )
             : null,
@@ -1144,7 +1192,7 @@ window.__ModuleLoader__.load({
             ? h(
                 'button',
                 { className: 'cait-btn', onClick: onExport, disabled: Boolean(busy) || !doc, title: t('nav.export') },
-                h(Icon, { name: 'download', size: 14 }),
+                h(Icon, { name: 'upload', size: 14 }),
                 h('span', { className: 'cait-btn-label' }, t('nav.export')),
               )
             : null,
@@ -1153,9 +1201,9 @@ window.__ModuleLoader__.load({
       )
     }
 
-    const SEGMENT_FILTERS = ['all', 'pending', 'translated', 'confirmed']
+    const SEGMENT_FILTERS = ['all', 'pending', 'translated', 'confirmed', 'risk']
 
-    function SegmentRail({ t, doc, selected, query, setQuery, filter, setFilter, onSelect, onConfirmAll, onPropagate, busy, qa }) {
+    function SegmentRail({ t, doc, selected, query, setQuery, filter, setFilter, onSelect, onConfirmAll, onPropagate, onClearPretranslated, busy, qa }) {
       const activeRef = useRef(null)
       const storage = typeof localStorage !== 'undefined' ? localStorage : null
       const [pageSize, setPageSize] = useState(() => readPageSize(storage))
@@ -1175,12 +1223,15 @@ window.__ModuleLoader__.load({
         list.push(issue.code)
         warns.set(issue.index, list)
       }
+      const riskByIndex = new Map()
+      for (const item of qa?.risks || []) riskByIndex.set(item.index, item)
 
       const counts = {
         all: doc.progress.total,
         pending: doc.progress.pending,
         translated: doc.progress.translated,
         confirmed: doc.progress.confirmed,
+        risk: riskByIndex.size,
       }
 
       // How many empty segments could be filled from a sibling with the same
@@ -1199,10 +1250,17 @@ window.__ModuleLoader__.load({
         if (list.length < 2 || !list.some((segment) => segment.target)) continue
         duplicated += list.filter((segment) => !segment.target).length
       }
+      const pretranslated = doc.segments.filter((segment) => (
+        segment.target &&
+        !segment.confirmedAt &&
+        ['tm', 'mt', 'auto'].includes(segment.origin)
+      )).length
       const needle = query.trim().toLowerCase()
       const filtered = doc.segments
         .map((segment, index) => ({ segment, index }))
-        .filter(({ segment }) => filter === 'all' || segment.status === filter)
+        .filter(({ segment, index }) =>
+          filter === 'all' || (filter === 'risk' ? riskByIndex.has(index) : segment.status === filter),
+        )
         .filter(({ segment }) => {
           if (!needle) return true
           return (
@@ -1319,6 +1377,19 @@ window.__ModuleLoader__.load({
                 `${t('rail.propagate')} · ${duplicated}`,
               )
             : null,
+          pretranslated > 0
+            ? h(
+                'button',
+                {
+                  className: 'cait-batchbtn cait-batchbtn-danger',
+                  onClick: onClearPretranslated,
+                  disabled: Boolean(busy),
+                  title: t('rail.clearPretranslatedHint'),
+                },
+                h(Icon, { name: 'trash', size: 11 }),
+                `${t('rail.clearPretranslated')} · ${pretranslated}`,
+              )
+            : null,
           h(
             'div',
             { className: 'cait-rail-goto' },
@@ -1381,7 +1452,7 @@ window.__ModuleLoader__.load({
                       h('span', { className: `cait-dot ${segment.status}` }),
                       warns.has(index)
                         ? h('span', {
-                            className: 'cait-seg-warn',
+                            className: `cait-seg-warn ${riskByIndex.get(index)?.risk || 'low'}`,
                             title: (warns.get(index) || []).map((code) => t(`qa.code.${code}`)).join(' · '),
                             'aria-label': t('qa.warn'),
                           })
@@ -1437,7 +1508,7 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function EditorPane({ t, doc, index, segment, detail, draft, setDraft, dirty, busy, onConfirm, onNext, onPrev, onSave, onAdopt, onApplyTerm, textareaRef }) {
+    function EditorPane({ t, doc, index, segment, detail, draft, setDraft, dirty, busy, onConfirm, onUnconfirm, onNext, onPrev, onSave, onAdopt, onApplyTerm, onOpenBrief, onOpenResources, onOpenAnalysis, qaRisk, textareaRef }) {
       const hits = detail?.index === index ? detail.glossaryHits : []
       const charCount = Array.from(draft || '').length
       const progress = doc.progress
@@ -1488,6 +1559,37 @@ window.__ModuleLoader__.load({
               h(Icon, { name: 'arrowRight', size: 11 }),
               h('span', { className: 'cait-langchip' }, doc.targetLang),
               h('span', null, `· ${doc.segments.length} ${t('doc.segments')}`),
+              h(
+                'button',
+                {
+                  className: 'cait-linkbtn cait-brieflink',
+                  onClick: onOpenBrief,
+                  title: doc.brief ? t('panel.briefHint') : t('brief.empty'),
+                },
+                h(Icon, { name: 'file', size: 11 }),
+                t('editor.brief'),
+                doc.brief ? h('span', { className: 'cait-briefdot' }) : null,
+              ),
+              h(
+                'button',
+                {
+                  className: 'cait-linkbtn',
+                  onClick: onOpenResources,
+                  title: t('resources.hint'),
+                },
+                h(Icon, { name: 'database', size: 11 }),
+                t('editor.resources'),
+              ),
+              h(
+                'button',
+                {
+                  className: 'cait-linkbtn',
+                  onClick: onOpenAnalysis,
+                  title: t('analysis.hint'),
+                },
+                h(Icon, { name: 'chart', size: 11 }),
+                t('editor.analysis'),
+              ),
             ),
           ),
           h(
@@ -1502,7 +1604,18 @@ window.__ModuleLoader__.load({
           'div',
           { className: 'cait-seg-head' },
           h('span', { className: 'cait-seg-label' }, `${t('editor.segment')} ${index + 1} / ${doc.segments.length}`),
-          h('span', { className: `cait-badge ${segment.status}` }, statusLabel),
+          h(
+            'span',
+            { className: 'cait-seg-flags' },
+            qaRisk
+              ? h(
+                  'span',
+                  { className: `cait-riskchip ${qaRisk.risk}`, title: qaRisk.codes.map((code) => t(`qa.code.${code}`)).join(' · ') },
+                  `${t('qa.risk')} · ${t(`qa.${qaRisk.risk}`)}`,
+                )
+              : null,
+            h('span', { className: `cait-badge ${segment.status}` }, statusLabel),
+          ),
         ),
         h(
           'div',
@@ -1600,6 +1713,14 @@ window.__ModuleLoader__.load({
             busy === 'confirm' ? h(Spinner) : h(Icon, { name: 'check', size: 14 }),
             segment.status === 'confirmed' ? t('editor.update') : t('editor.confirm'),
           ),
+          segment.status === 'confirmed'
+            ? h(
+                'button',
+                { className: 'cait-btn cait-btn-ghost', onClick: onUnconfirm, disabled: Boolean(busy), title: t('editor.unconfirmHint') },
+                h(Icon, { name: 'refresh', size: 13 }),
+                t('editor.unconfirm'),
+              )
+            : null,
           h(
             'button',
             { className: 'cait-btn', onClick: onNext, disabled: Boolean(busy) },
@@ -1737,6 +1858,15 @@ window.__ModuleLoader__.load({
       onCopy,
       onOpenSettings,
       onSearchLibrary,
+      qa,
+      onRefreshQa,
+      onJumpQa,
+      onFixQa,
+      concordance,
+      concordanceQuery,
+      setConcordanceQuery,
+      onConcordance,
+      onApplyConcordance,
       busy,
     }) {
       const [termQuery, setTermQuery] = useState('')
@@ -1816,6 +1946,19 @@ window.__ModuleLoader__.load({
             h(Icon, { name: 'sparkles', size: 13 }),
             t('panel.mt'),
           ),
+          h(
+            'button',
+            { className: `cait-tab${tab === 'qa' ? ' active' : ''}`, onClick: () => setTab('qa') },
+            h(Icon, { name: 'alert', size: 13 }),
+            t('panel.qa'),
+            qa?.issueCount ? h('span', { className: 'cait-count' }, qa.issueCount) : null,
+          ),
+          h(
+            'button',
+            { className: `cait-tab${tab === 'concordance' ? ' active' : ''}`, onClick: () => setTab('concordance') },
+            h(Icon, { name: 'search', size: 13 }),
+            t('panel.concordance'),
+          ),
         ),
         h(
           'div',
@@ -1893,7 +2036,7 @@ window.__ModuleLoader__.load({
                       event.target.value = ''
                     },
                   }),
-                  h('button', { className: 'cait-btn', onClick: () => tmxInput.current?.click(), disabled: Boolean(busy) }, h(Icon, { name: 'upload', size: 12 }), t('panel.importTmx')),
+                  h('button', { className: 'cait-btn', onClick: () => tmxInput.current?.click(), disabled: Boolean(busy) }, h(Icon, { name: 'download', size: 12 }), t('panel.importTmx')),
                   h('button', { className: 'cait-btn cait-btn-danger', onClick: onClearTm, disabled: Boolean(busy) || data.tm.count === 0 }, t('panel.clearTm')),
                 ),
               )
@@ -1911,7 +2054,7 @@ window.__ModuleLoader__.load({
                         h(
                           'button',
                           { key: hit.id, className: 'cait-chip cait-chip-action', onClick: () => onApplyTerm(hit), title: hit.note || hit.target },
-                          `${hit.term} → ${hit.target}`,
+                          `${hit.term} → ${hit.target}${hit.forbidden ? ` · ${t('panel.termForbidden')}` : hit.preferred ? ` · ${t('panel.termPreferred')}` : ''}`,
                         ),
                       ),
                     )
@@ -1944,7 +2087,7 @@ window.__ModuleLoader__.load({
                       event.target.value = ''
                     },
                   }),
-                  h('button', { className: 'cait-btn', onClick: () => glossaryInput.current?.click(), disabled: Boolean(busy) }, h(Icon, { name: 'upload', size: 12 }), t('panel.importCsv')),
+                  h('button', { className: 'cait-btn', onClick: () => glossaryInput.current?.click(), disabled: Boolean(busy) }, h(Icon, { name: 'download', size: 12 }), t('panel.importCsv')),
                   h('button', { className: 'cait-btn cait-btn-danger', onClick: onClearGlossary, disabled: Boolean(busy) || data.glossary.length === 0 }, t('panel.clearGlossary')),
                 ),
               )
@@ -2007,6 +2150,171 @@ window.__ModuleLoader__.load({
                   { className: 'cait-panel-foot' },
                   h('button', { className: 'cait-btn', onClick: onOpenSettings }, h(Icon, { name: 'settings', size: 12 }), t('panel.mtSettings')),
                 ),
+              )
+            : null,
+          tab === 'qa'
+            ? h(
+                'div',
+                null,
+                h(
+                  'div',
+                  { className: 'cait-subhead' },
+                  h('span', null, t('qa.title')),
+                  h(
+                    'button',
+                    { className: 'cait-linkbtn', onClick: onRefreshQa, disabled: Boolean(busy) },
+                    h(Icon, { name: 'refresh', size: 12 }),
+                    t('qa.refresh'),
+                  ),
+                ),
+                qa
+                  ? h(
+                      'div',
+                      null,
+                      h(
+                        'div',
+                        { className: 'cait-riskcounts' },
+                        ['high', 'medium', 'low'].map((level) =>
+                          h(
+                            'span',
+                            { key: level, className: `cait-riskcount ${level}` },
+                            `${t(`qa.${level}`)} ${qa.riskCounts?.[level] || 0}`,
+                          ),
+                        ),
+                      ),
+                      (qa.risks || []).length
+                        ? qa.risks.map((item) => {
+                            const segment = doc.segments[item.index]
+                            const codes = (item.codes || []).map((code) => t(`qa.code.${code}`)).join(' · ')
+                            return h(
+                              'div',
+                              {
+                                key: item.index,
+                                className: `cait-riskrow ${item.risk}`,
+                                role: 'button',
+                                tabIndex: 0,
+                                onClick: () => onJumpQa(item.index),
+                                onKeyDown: (event) => {
+                                  if (event.key === 'Enter' || event.key === ' ') {
+                                    event.preventDefault()
+                                    onJumpQa(item.index)
+                                  }
+                                },
+                                title: codes,
+                              },
+                              h('span', { className: 'cait-riskrow-index' }, `${item.index + 1}`),
+                              h(
+                                'div',
+                                { className: 'cait-riskrow-body' },
+                                h('span', { className: 'cait-riskrow-source' }, segment?.source || ''),
+                                h('span', { className: 'cait-riskrow-codes' }, codes),
+                                onFixQa
+                                  ? h(
+                                      'div',
+                                      { className: 'cait-riskactions' },
+                                      h(
+                                        'button',
+                                        {
+                                          className: 'cait-riskaction',
+                                          onClick: (event) => {
+                                            event.stopPropagation()
+                                            onFixQa(item, 'copy-source')
+                                          },
+                                          disabled: Boolean(busy),
+                                        },
+                                        t('qa.fixCopy'),
+                                      ),
+                                      h(
+                                        'button',
+                                        {
+                                          className: 'cait-riskaction',
+                                          onClick: (event) => {
+                                            event.stopPropagation()
+                                            onFixQa(item, 'clear')
+                                          },
+                                          disabled: Boolean(busy),
+                                        },
+                                        t('qa.fixClear'),
+                                      ),
+                                      item.termTarget
+                                        ? h(
+                                            'button',
+                                            {
+                                              className: 'cait-riskaction',
+                                              onClick: (event) => {
+                                                event.stopPropagation()
+                                                onFixQa(item, 'term')
+                                              },
+                                              disabled: Boolean(busy),
+                                            },
+                                            t('qa.fixTerm'),
+                                          )
+                                        : null,
+                                    )
+                                  : null,
+                              ),
+                              h(Icon, { name: 'chevronRight', size: 12 }),
+                            )
+                          })
+                        : h('p', { className: 'cait-empty-note' }, t('qa.empty')),
+                    )
+                  : h('p', { className: 'cait-empty-note' }, t('qa.loading')),
+              )
+            : null,
+          tab === 'concordance'
+            ? h(
+                'div',
+                null,
+                h(
+                  'form',
+                  {
+                    className: 'cait-search',
+                    onSubmit: (event) => {
+                      event.preventDefault()
+                      onConcordance()
+                    },
+                  },
+                  h(Icon, { name: 'search', size: 13 }),
+                  h('input', {
+                    value: concordanceQuery,
+                    onChange: (event) => setConcordanceQuery(event.target.value),
+                    placeholder: t('panel.concordancePlaceholder'),
+                    'aria-label': t('panel.concordancePlaceholder'),
+                  }),
+                  h(
+                    'button',
+                    { className: 'cait-iconbtn', type: 'submit', title: t('panel.searchConcordance') },
+                    h(Icon, { name: 'arrowRight', size: 13 }),
+                  ),
+                ),
+                h('p', { className: 'cait-mt-hint' }, t('panel.concordanceHint')),
+                concordance
+                  ? h(
+                      'div',
+                      null,
+                      h(
+                        'div',
+                        { className: 'cait-listhead' },
+                        h('span', null, t('panel.concordance')),
+                        h('span', { className: 'cait-count' }, concordance.total ?? concordance.entries?.length ?? 0),
+                      ),
+                      (concordance.entries || []).length
+                        ? concordance.entries.map((entry, i) =>
+                            h(
+                              'button',
+                              {
+                                key: `${entry.tmId || entry.library || 'c'}-${i}`,
+                                className: 'cait-concordance-row',
+                                onClick: () => onApplyConcordance(entry),
+                              },
+                              h('span', { className: 'cait-concordance-source' }, entry.source),
+                              h('span', { className: 'cait-concordance-target' }, entry.target),
+                              h('span', { className: 'cait-concordance-meta' }, entry.library || ''),
+                            ),
+                          )
+                        : h('p', { className: 'cait-empty-note' }, t('panel.noConcordance')),
+                    )
+                  : null,
               )
             : null,
         ),
@@ -2483,6 +2791,7 @@ window.__ModuleLoader__.load({
       onCreateLibrary,
       onRenameLibrary,
       onDeleteLibrary,
+      onSetMounts,
     }) {
       const storage = typeof localStorage !== 'undefined' ? localStorage : null
       const [kind, setKind] = useState(seed?.kind === 'glossary' ? 'glossary' : 'tm')
@@ -2510,7 +2819,23 @@ window.__ModuleLoader__.load({
       const idKey = kind === 'tm' ? 'tmId' : 'glossaryId'
       const labelKey = 'name'
       const scopeKey = scopeIds.join(',')
-      const targetLibraryId = scopeIds[0] || (kind === 'tm' ? data?.mounts?.defaultTmId : data?.mounts?.defaultGlossaryId) || libraries[0]?.[idKey] || ''
+      const defaultWriteId = kind === 'tm' ? data?.mounts?.defaultTmId : data?.mounts?.defaultGlossaryId
+      const targetLibraryId = libraries.some((library) => library[idKey] === defaultWriteId)
+        ? defaultWriteId
+        : libraries[0]?.[idKey] || ''
+
+      const changeWriteLibrary = async (value) => {
+        if (!value || value === targetLibraryId) return
+        // A default must also be mounted; adding it here keeps the selector
+        // from failing when the chosen library was only in the list view.
+        if (kind === 'tm') {
+          const tmIds = Array.from(new Set([...(data?.mounts?.tmIds || []), value]))
+          await onSetMounts?.({ tmIds, defaultTmId: value })
+        } else {
+          const glossaryIds = Array.from(new Set([...(data?.mounts?.glossaryIds || []), value]))
+          await onSetMounts?.({ glossaryIds, defaultGlossaryId: value })
+        }
+      }
 
       useEffect(() => {
         const timer = setTimeout(() => setDebouncedQuery(query), 250)
@@ -2749,6 +3074,35 @@ window.__ModuleLoader__.load({
             await loadRows()
           },
         })
+      }
+
+      const maintainTm = async (action) => {
+        if (!targetLibraryId) return
+        try {
+          const preview = await rpc('tmMaintenancePreview', {
+            action,
+            tmId: targetLibraryId,
+            emptyTarget: true,
+          })
+          const count = action === 'dedupe' ? preview.duplicates : preview.matched
+          onConfirm({
+            title: t(`tm.maintain.${action}`),
+            message: t(`tm.maintain.${action}Hint`).replace('{count}', String(count)),
+            confirmLabel: t(`tm.maintain.${action}`),
+            action: async () => {
+              const result = await rpc(action === 'dedupe' ? 'dedupeTmLibrary' : 'pruneTmLibrary', {
+                tmId: targetLibraryId,
+                emptyTarget: true,
+                confirm: true,
+              })
+              if (result?.state) onApplyState(result.state)
+              await loadRows()
+              notify(t('tm.maintain.done').replace('{count}', String(count)))
+            },
+          })
+        } catch (error) {
+          report(error)
+        }
       }
 
       const exportLibrary = async () => {
@@ -3023,6 +3377,28 @@ window.__ModuleLoader__.load({
                     ['tbx', 'csv', 'json'].map((format) => h('option', { key: format, value: format }, format.toUpperCase())),
                   )
                 : null,
+              h(
+                'label',
+                { className: 'cait-libwrite', title: t(kind === 'tm' ? 'libraries.defaultTm' : 'libraries.defaultGlossary') },
+                h(
+                  'span',
+                  { className: 'cait-libwritelabel' },
+                  t(kind === 'tm' ? 'libraries.defaultTm' : 'libraries.defaultGlossary'),
+                ),
+                h(
+                  'select',
+                  {
+                    className: 'cait-liblang',
+                    value: targetLibraryId,
+                    onChange: (event) => changeWriteLibrary(event.target.value),
+                    disabled: Boolean(busy) || !libraries.length,
+                    'aria-label': t(kind === 'tm' ? 'libraries.defaultTm' : 'libraries.defaultGlossary'),
+                  },
+                  libraries.map((library) =>
+                    h('option', { key: library[idKey], value: library[idKey] }, library[labelKey]),
+                  ),
+                ),
+              ),
               kind === 'glossary'
                 ? h(
                     'button',
@@ -3052,7 +3428,7 @@ window.__ModuleLoader__.load({
                   disabled: Boolean(busy) || !targetLibraryId,
                   title: t('library.import'),
                 },
-                h(Icon, { name: 'upload', size: 13 }),
+                h(Icon, { name: 'download', size: 13 }),
                 h('span', { className: 'cait-btn-label' }, t('library.import')),
               ),
               h(
@@ -3064,9 +3440,37 @@ window.__ModuleLoader__.load({
                   disabled: Boolean(busy) || working === 'export' || !targetLibraryId,
                   title: t('library.export'),
                 },
-                h(Icon, { name: 'download', size: 13 }),
+                h(Icon, { name: 'upload', size: 13 }),
                 h('span', { className: 'cait-btn-label' }, kind === 'tm' ? 'TMX' : exportFormat.toUpperCase()),
               ),
+              kind === 'tm'
+                ? h(
+                    'button',
+                    {
+                      type: 'button',
+                      className: 'cait-btn',
+                      onClick: () => maintainTm('dedupe'),
+                      disabled: Boolean(busy) || !targetLibraryId,
+                      title: t('tm.maintain.dedupe'),
+                    },
+                    h(Icon, { name: 'database', size: 13 }),
+                    h('span', { className: 'cait-btn-label' }, t('tm.maintain.dedupe')),
+                  )
+                : null,
+              kind === 'tm'
+                ? h(
+                    'button',
+                    {
+                      type: 'button',
+                      className: 'cait-btn',
+                      onClick: () => maintainTm('prune'),
+                      disabled: Boolean(busy) || !targetLibraryId,
+                      title: t('tm.maintain.prune'),
+                    },
+                    h(Icon, { name: 'trash', size: 13 }),
+                    h('span', { className: 'cait-btn-label' }, t('tm.maintain.prune')),
+                  )
+                : null,
               h(
                 'button',
                 {
@@ -3077,6 +3481,7 @@ window.__ModuleLoader__.load({
                   title: t('library.clear'),
                 },
                 h(Icon, { name: 'trash', size: 13 }),
+                h('span', { className: 'cait-btn-label' }, t('library.clear')),
               ),
               h('input', {
                 ref: fileRef,
@@ -3346,7 +3751,7 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function ExportModal({ t, busy, onClose, onExport, qa }) {
+    function ExportModal({ t, busy, onClose, onExport, onImportReview, qa }) {
       const issues = qa?.issueCount || 0
       const items = [
         ['bilingual-md', t('modal.export.bilingualMd'), t('modal.export.bilingual'), 'file'],
@@ -3355,11 +3760,13 @@ window.__ModuleLoader__.load({
         ['target-txt', t('modal.export.targetTxt'), t('modal.export.target'), 'download'],
         ['target-md', t('modal.export.targetMd'), t('modal.export.target'), 'download'],
         ['docx', t('modal.export.docx'), t('modal.export.docxGroup'), 'file'],
+        ['bilingual-docx', t('modal.export.bilingualDocx'), t('modal.export.bilingual'), 'file'],
         ['epub', t('modal.export.epub'), t('modal.export.epubGroup'), 'file'],
         ['srt', t('modal.export.srt'), t('modal.export.subtitleGroup'), 'file'],
         ['vtt', t('modal.export.vtt'), t('modal.export.subtitleGroup'), 'file'],
         ['po', t('modal.export.po'), t('modal.export.localizationGroup'), 'file'],
         ['xliff', t('modal.export.xliff'), t('modal.export.localizationGroup'), 'file'],
+        ['xliff-review', t('modal.export.xliffReview'), t('modal.export.localizationGroup'), 'file'],
         ['xliff2', t('modal.export.xliff2'), t('modal.export.localizationGroup'), 'file'],
         ['sdlxliff', t('modal.export.sdlxliff'), t('modal.export.localizationGroup'), 'file'],
         ['html', t('modal.export.html'), t('modal.export.webGroup'), 'file'],
@@ -3402,6 +3809,30 @@ window.__ModuleLoader__.load({
             ),
           ),
         ),
+        onImportReview
+          ? h(
+              'div',
+              { className: 'cait-review-import' },
+              h('p', { className: 'cait-libnote' }, t('modal.export.reviewImportHint')),
+              h(
+                'label',
+                { className: 'cait-btn' },
+                h(Icon, { name: 'upload', size: 13 }),
+                t('modal.export.reviewImport'),
+                h('input', {
+                  type: 'file',
+                  accept: '.xliff,.xlf,application/x-xliff+xml',
+                  style: { display: 'none' },
+                  disabled: Boolean(busy),
+                  onChange: (event) => {
+                    const file = event.target.files?.[0]
+                    if (file) onImportReview(file)
+                    event.target.value = ''
+                  },
+                }),
+              ),
+            )
+          : null,
       )
     }
 
@@ -3723,6 +4154,307 @@ window.__ModuleLoader__.load({
       )
     }
 
+    function BriefModal({ t, doc, busy, onClose, onSave }) {
+      const initial = doc.brief || {}
+      const [form, setForm] = useState({
+        domain: initial.domain || '',
+        audience: initial.audience || '',
+        tone: initial.tone || '',
+        notes: initial.notes || '',
+        doNotTranslate: initial.doNotTranslate || '',
+        styleSample: initial.styleSample || '',
+      })
+      const field = (key, label, placeholder, rows) =>
+        h(
+          'label',
+          { className: 'cait-field' },
+          h('span', null, t(label)),
+          rows
+            ? h('textarea', {
+                className: 'cait-textarea',
+                rows,
+                value: form[key],
+                placeholder: t(placeholder),
+                onChange: (event) => setForm({ ...form, [key]: event.target.value }),
+              })
+            : h('input', {
+                className: 'cait-input',
+                value: form[key],
+                placeholder: t(placeholder),
+                onChange: (event) => setForm({ ...form, [key]: event.target.value }),
+              }),
+        )
+      return h(
+        Modal,
+        { title: t('brief.title'), onClose, wide: true },
+        h('p', { className: 'cait-mt-hint', style: { marginTop: 0 } }, t('brief.hint')),
+        h(
+          'div',
+          { className: 'cait-briefform' },
+          h('div', { className: 'cait-grid2' }, field('domain', 'brief.domain', 'brief.placeholder.domain'), field('audience', 'brief.audience', 'brief.placeholder.audience')),
+          field('tone', 'brief.tone', 'brief.placeholder.tone'),
+          field('notes', 'brief.notes', 'brief.placeholder.notes', 3),
+          field('doNotTranslate', 'brief.doNotTranslate', 'brief.placeholder.doNotTranslate', 3),
+          field('styleSample', 'brief.styleSample', 'brief.placeholder.styleSample', 4),
+        ),
+        h(
+          'div',
+          { className: 'cait-modal-actions' },
+          h('button', { className: 'cait-btn cait-btn-ghost', onClick: onClose, disabled: Boolean(busy) }, t('modal.confirm.cancel')),
+          h(
+            'button',
+            { className: 'cait-btn cait-btn-primary', onClick: () => onSave(form), disabled: Boolean(busy) },
+            busy ? h(Spinner) : null,
+            t('brief.save'),
+          ),
+        ),
+      )
+    }
+
+    function ResourceModal({ t, doc, libraries, mounts, busy, onClose, onSave }) {
+      const resources = doc.resources || {}
+      const [inheritTm, setInheritTm] = useState(resources.inheritsTm !== false)
+      const [inheritGlossary, setInheritGlossary] = useState(resources.inheritsGlossary !== false)
+      const [tmIds, setTmIds] = useState(
+        () => new Set(resources.tmIds ?? resources.effectiveTmIds ?? []),
+      )
+      const [glossaryIds, setGlossaryIds] = useState(
+        () => new Set(resources.glossaryIds ?? resources.effectiveGlossaryIds ?? []),
+      )
+      const [defaultWriteTmId, setDefaultWriteTmId] = useState(resources.defaultWriteTmId || '')
+
+      const allTm = libraries?.tm || []
+      const allGlossary = libraries?.glossary || []
+      const selectedTm = inheritTm ? mounts?.tmIds || [] : Array.from(tmIds)
+      const selectedGlossary = inheritGlossary ? mounts?.glossaryIds || [] : Array.from(glossaryIds)
+      const tmChoices = allTm.filter((library) => selectedTm.includes(library.tmId))
+      const checkedTmIds = new Set(selectedTm)
+      const checkedGlossaryIds = new Set(selectedGlossary)
+      const defaultTm = tmChoices.some((library) => library.tmId === defaultWriteTmId)
+        ? defaultWriteTmId
+        : ''
+
+      const toggleId = (setter, id) => {
+        setter((current) => {
+          const next = new Set(current)
+          if (next.has(id)) next.delete(id)
+          else next.add(id)
+          return next
+        })
+      }
+
+      const librarySection = (label, all, idKey, checkedIds, inherit, setInherit, toggle, inheritLabel) =>
+        h(
+          'div',
+          { className: 'cait-resource-section' },
+          h(
+            'div',
+            { className: 'cait-resource-head' },
+            h('strong', null, t(label)),
+            h(
+              'label',
+              { className: 'cait-checkline' },
+              h('input', {
+                type: 'checkbox',
+                checked: inherit,
+                onChange: (event) => setInherit(event.target.checked),
+              }),
+              t(inheritLabel),
+            ),
+          ),
+          h(
+            'div',
+            { className: 'cait-resource-list' },
+            all.length === 0
+              ? h('p', { className: 'cait-meta' }, t('resources.empty'))
+              : all.map((library) =>
+                  h(
+                    'label',
+                    { key: library[idKey], className: 'cait-resource-row' },
+                    h('input', {
+                      type: 'checkbox',
+                      checked: checkedIds.has(library[idKey]),
+                      disabled: inherit,
+                      onChange: () => toggle(library[idKey]),
+                    }),
+                    h('span', { className: 'cait-resource-name' }, library.name),
+                    h('span', { className: 'cait-meta' }, library[idKey]),
+                  ),
+                ),
+          ),
+        )
+
+      return h(
+        Modal,
+        { title: t('resources.title'), onClose, wide: true },
+        h('p', { className: 'cait-mt-hint', style: { marginTop: 0 } }, t('resources.hint')),
+        h(
+          'div',
+          { className: 'cait-briefform' },
+          librarySection(
+            'resources.tm',
+            allTm,
+            'tmId',
+            checkedTmIds,
+            inheritTm,
+            setInheritTm,
+            (id) => toggleId(setTmIds, id),
+            'resources.inheritTm',
+          ),
+          librarySection(
+            'resources.glossary',
+            allGlossary,
+            'glossaryId',
+            checkedGlossaryIds,
+            inheritGlossary,
+            setInheritGlossary,
+            (id) => toggleId(setGlossaryIds, id),
+            'resources.inheritGlossary',
+          ),
+          h(
+            'label',
+            { className: 'cait-field' },
+            h('span', null, t('resources.defaultWrite')),
+            h(
+              'select',
+              {
+                className: 'cait-input',
+                value: defaultTm,
+                onChange: (event) => setDefaultWriteTmId(event.target.value),
+              },
+              h('option', { value: '' }, t(inheritTm ? 'resources.followDefault' : 'resources.firstBound')),
+              tmChoices.map((library) => h('option', { key: library.tmId, value: library.tmId }, library.name)),
+            ),
+          ),
+        ),
+        h(
+          'div',
+          { className: 'cait-modal-actions' },
+          h('button', { className: 'cait-btn cait-btn-ghost', onClick: onClose, disabled: Boolean(busy) }, t('modal.confirm.cancel')),
+          h(
+            'button',
+            {
+              className: 'cait-btn cait-btn-primary',
+              disabled: Boolean(busy),
+              onClick: () =>
+                onSave({
+                  tmIds: inheritTm ? null : Array.from(tmIds),
+                  glossaryIds: inheritGlossary ? null : Array.from(glossaryIds),
+                  defaultWriteTmId: defaultTm || null,
+                }),
+            },
+            busy ? h(Spinner) : null,
+            t('resources.save'),
+          ),
+        ),
+      )
+    }
+
+    function AnalysisModal({ t, doc, analysis, busy, onClose }) {
+      const download = (format) => {
+        if (!analysis) return
+        const pairs = [
+          ['segments', analysis.segments],
+          ['words', analysis.words],
+          ['characters', analysis.characters],
+          ['duplicates.groups', analysis.duplicates.groups],
+          ['duplicates.segments', analysis.duplicates.segments],
+          ['translated', analysis.translated],
+          ['confirmed', analysis.confirmed],
+          ['ice', analysis.buckets.ice],
+          ['exact', analysis.buckets.exact],
+          ['fuzzy85', analysis.buckets.fuzzy85],
+          ['fuzzy70', analysis.buckets.fuzzy70],
+          ['new', analysis.buckets.new],
+          ['matched.segments', analysis.matched.segments],
+          ['matched.percent', analysis.matched.percent],
+          ['leverage.percent', analysis.leverage.percent],
+          ['generatedAt', analysis.generatedAt],
+        ]
+        const content =
+          format === 'json'
+            ? JSON.stringify(analysis, null, 2)
+            : ['metric,value', ...pairs.map(([key, value]) => `${key},${value}`)].join('\n')
+        const type = format === 'json' ? 'application/json' : 'text/csv'
+        const blob = new Blob([content], { type })
+        const url = URL.createObjectURL(blob)
+        const anchor = document.createElement('a')
+        anchor.href = url
+        anchor.download = `${analysis.name || 'document'}-analysis.${format}`
+        anchor.click()
+        URL.revokeObjectURL(url)
+      }
+
+      const rows = analysis
+        ? [
+            ['analysis.segments', analysis.segments],
+            ['analysis.words', analysis.words],
+            ['analysis.characters', analysis.characters],
+            ['analysis.duplicates', `${analysis.duplicates.segments} / ${analysis.duplicates.groups}`],
+            ['analysis.translated', analysis.translated],
+            ['analysis.confirmed', analysis.confirmed],
+          ]
+        : []
+      const buckets = analysis
+        ? [
+            ['analysis.ice', analysis.buckets.ice],
+            ['analysis.exact', analysis.buckets.exact],
+            ['analysis.fuzzy85', analysis.buckets.fuzzy85],
+            ['analysis.fuzzy70', analysis.buckets.fuzzy70],
+            ['analysis.new', analysis.buckets.new],
+          ]
+        : []
+
+      return h(
+        Modal,
+        { title: t('analysis.title'), onClose, wide: true },
+        h('p', { className: 'cait-mt-hint', style: { marginTop: 0 } }, t('analysis.hint')),
+        busy || !analysis
+          ? h('div', { className: 'cait-empty' }, h(Spinner))
+          : h(
+              'div',
+              { className: 'cait-analysis' },
+              h(
+                'div',
+                { className: 'cait-analysis-grid' },
+                rows.map(([label, value]) =>
+                  h(
+                    'div',
+                    { key: label, className: 'cait-analysis-stat' },
+                    h('span', null, t(label)),
+                    h('strong', null, String(value)),
+                  ),
+                ),
+              ),
+              h(
+                'div',
+                { className: 'cait-analysis-grid' },
+                buckets.map(([label, value]) =>
+                  h(
+                    'div',
+                    { key: label, className: 'cait-analysis-stat' },
+                    h('span', null, t(label)),
+                    h('strong', null, String(value)),
+                  ),
+                ),
+              ),
+              h(
+                'div',
+                { className: 'cait-analysis-total' },
+                h('span', null, `${t('analysis.matchRate')} ${analysis.matched.percent}%`),
+                h('span', null, `${t('analysis.leverage')} ${analysis.leverage.percent}%`),
+              ),
+            ),
+        h(
+          'div',
+          { className: 'cait-modal-actions' },
+          h('button', { className: 'cait-btn cait-btn-ghost', onClick: onClose, disabled: Boolean(busy) }, t('analysis.close')),
+          h('button', { className: 'cait-btn cait-btn-ghost', onClick: () => download('csv'), disabled: Boolean(busy) || !analysis }, t('analysis.exportCsv')),
+          h('button', { className: 'cait-btn cait-btn-primary', onClick: () => download('json'), disabled: Boolean(busy) || !analysis }, t('analysis.exportJson')),
+        ),
+      )
+    }
+
     function Workbench({ i18n, translate }) {
       const [data, setData] = useState(null)
       const [loading, setLoading] = useState(true)
@@ -3746,6 +4478,11 @@ window.__ModuleLoader__.load({
       }
       const [pre, setPre] = useState({ running: false, done: 0, total: 0, filled: 0, failed: 0 })
       const [qa, setQa] = useState(null)
+      const [analysis, setAnalysis] = useState(null)
+      const [analysisBusy, setAnalysisBusy] = useState(false)
+      const [concordance, setConcordance] = useState(null)
+      const [concordanceQuery, setConcordanceQuery] = useState('')
+      const [concordanceBusy, setConcordanceBusy] = useState(false)
       const [tmQuery, setTmQuery] = useState('')
       const [tmResults, setTmResults] = useState(null)
       const [tmRefresh, setTmRefresh] = useState(0)
@@ -4019,6 +4756,8 @@ window.__ModuleLoader__.load({
         setTmQuery('')
         setTmResults(null)
         setTmError('')
+        setConcordance(null)
+        setConcordanceQuery('')
       }, [doc?.id])
 
       useEffect(() => {
@@ -4056,7 +4795,8 @@ window.__ModuleLoader__.load({
       const saveDraft = async (silent = true) => {
         if (!doc || !dirty) return true
         try {
-          await rpc('saveDraft', { documentId: doc.id, index: selected, target: draft })
+          const result = await rpc('saveDraft', { documentId: doc.id, index: selected, target: draft })
+          if (result.state) adoptState(result.state)
           setDirty(false)
           if (!silent) notify(t('toast.draftSaved'))
           return true
@@ -4237,12 +4977,156 @@ window.__ModuleLoader__.load({
       }
 
       const applyTerm = (term) => {
+        if (term?.forbidden) {
+          notify(t('toast.termForbidden'), 'error')
+          return
+        }
         const separator = /^(zh|ja|ko)/i.test(doc?.targetLang || '') ? '' : ' '
         setDraft((current) => {
           const value = current.replace(/\s+$/, '')
           return value ? `${value}${separator}${term.target}` : term.target
         })
         setDirty(true)
+        setTimeout(() => textareaRef.current?.focus(), 0)
+      }
+
+      const unconfirmCurrent = async () => {
+        if (!doc || busy) return
+        setBusy('unconfirm')
+        try {
+          if (dirty) {
+            const saved = await saveDraft(true)
+            if (!saved) return
+          }
+          const result = await rpc('unconfirmSegment', { documentId: doc.id, index: selected })
+          adoptState(result.state)
+          notify(t('toast.unconfirmed'))
+        } catch (error) {
+          // Saving a dirty confirmed segment already revokes the confirmation.
+          // Treat the second call as idempotent instead of showing an error.
+          if (error?.code === 'NOT_CONFIRMED') notify(t('toast.unconfirmed'))
+          else report(error)
+        } finally {
+          setBusy('')
+        }
+      }
+
+      const saveBrief = async (brief) => {
+        if (!doc || busy) return false
+        setBusy('brief')
+        try {
+          const result = await rpc('setBrief', { documentId: doc.id, brief })
+          adoptState(result.state)
+          setModal(null)
+          notify(t('toast.briefSaved'))
+          return true
+        } catch (error) {
+          report(error)
+          return false
+        } finally {
+          setBusy('')
+        }
+      }
+
+      const saveResources = async (resources) => {
+        if (!doc || busy) return false
+        setBusy('resources')
+        try {
+          const result = await rpc('setDocumentResources', { documentId: doc.id, ...resources })
+          adoptState(result.state)
+          setModal(null)
+          notify(t('toast.resourcesSaved'))
+          return true
+        } catch (error) {
+          report(error)
+          return false
+        } finally {
+          setBusy('')
+        }
+      }
+
+      const openAnalysis = async () => {
+        if (!doc) return
+        setAnalysis(null)
+        setModal({ type: 'analysis' })
+        setAnalysisBusy(true)
+        try {
+          setAnalysis(await rpc('analyzeDocument', { documentId: doc.id }))
+        } catch (error) {
+          report(error)
+        } finally {
+          setAnalysisBusy(false)
+        }
+      }
+
+      const refreshQa = async () => {        if (!doc) return
+        setQa(null)
+        try {
+          setQa(await rpc('getQaReport', { documentId: doc.id }))
+        } catch {
+          // QA is advisory; a failure must not disturb the editor.
+        }
+      }
+
+      const jumpQa = (nextIndex) => {
+        if (Number.isInteger(nextIndex)) chooseSegment(nextIndex)
+      }
+
+      const applyQaFix = async (item, action) => {
+        if (!doc || busy || !item) return
+        const segment = doc.segments[item.index]
+        if (!segment) return
+        let target = segment.target || ''
+        if (action === 'copy-source') {
+          target = segment.source
+        } else if (action === 'clear') {
+          target = ''
+        } else if (action === 'term') {
+          const term = String(item.termTarget || '')
+          if (!term || target.includes(term)) return
+          const separator = /[A-Za-z0-9]$/.test(target) && /^[A-Za-z0-9]/.test(term) ? ' ' : ''
+          target = `${target}${separator}${term}`
+        } else {
+          return
+        }
+        setBusy('qa-fix')
+        try {
+          const result = await rpc('saveDraft', {
+            documentId: doc.id,
+            index: item.index,
+            target,
+          })
+          if (result.state) adoptState(result.state, item.index)
+          setQa(await rpc('getQaReport', { documentId: doc.id }))
+          notify(t('toast.qaFixed'))
+        } catch (error) {
+          report(error)
+        } finally {
+          setBusy('')
+        }
+      }
+
+      const runConcordance = async () => {
+        const query = concordanceQuery.trim()
+        if (!doc || !query) {
+          setConcordance(null)
+          return
+        }
+        setConcordanceBusy(true)
+        try {
+          setConcordance(await rpc('concordance', { documentId: doc.id, query, limit: 50 }))
+        } catch (error) {
+          report(error)
+        } finally {
+          setConcordanceBusy(false)
+        }
+      }
+
+      const applyConcordance = (entry) => {
+        if (!entry?.target) return
+        setDraft(entry.target)
+        setDirty(true)
+        setMt(null)
         setTimeout(() => textareaRef.current?.focus(), 0)
       }
 
@@ -4309,6 +5193,40 @@ window.__ModuleLoader__.load({
             notify(t('toast.propagated').replace('{count}', String(result.filled)))
           },
         })
+      }
+
+      const clearPretranslated = async () => {
+        const active = data?.activeDocument
+        if (!active) return
+        try {
+          const preview = await rpc('getClearUnconfirmedPreview', { documentId: active.id })
+          const counts = preview?.counts || {}
+          const total = counts.total || 0
+          if (!total) {
+            notify(t('toast.nothingToClear'), 'info')
+            return
+          }
+          setModal({
+            type: 'confirm',
+            title: t('modal.confirm.clearPretranslatedTitle'),
+            message: t('modal.confirm.clearPretranslatedMessage')
+              .replace('{count}', String(total))
+              .replace('{mt}', String(counts.mt || 0))
+              .replace('{tm}', String(counts.tm || 0))
+              .replace('{auto}', String(counts.auto || 0)),
+            confirmLabel: t('modal.confirm.clearPretranslatedConfirm').replace('{count}', String(total)),
+            action: async () => {
+              const result = await rpc('clearUnconfirmedTranslations', {
+                documentId: active.id,
+                confirm: true,
+              })
+              adoptState(result.state, result.cursor)
+              notify(t('toast.pretranslatedCleared').replace('{count}', String(result.cleared)))
+            },
+          })
+        } catch (error) {
+          report(error)
+        }
       }
 
       const addTerm = async (form) => {        setBusy('term')
@@ -4500,6 +5418,32 @@ window.__ModuleLoader__.load({
         }
       }
 
+      const importReview = (file) => {
+        if (!doc || !file) return
+        const reader = new FileReader()
+        reader.onload = async () => {
+          setBusy('review')
+          try {
+            const result = await rpc('applyXliffReview', {
+              documentId: doc.id,
+              text: String(reader.result || ''),
+            })
+            adoptState(result.state)
+            notify(
+              t('toast.reviewApplied')
+                .replace('{applied}', String(result.applied))
+                .replace('{unmatched}', String(result.unmatched + result.sourceMismatch)),
+            )
+            setModal(null)
+          } catch (error) {
+            report(error)
+          } finally {
+            setBusy('')
+          }
+        }
+        reader.readAsText(file, 'utf-8')
+      }
+
       const openConfirm = (state) => setModal({ type: 'confirm', ...state })
 
       const clearTm = () =>
@@ -4554,6 +5498,7 @@ window.__ModuleLoader__.load({
 
       const openIds = new Set((data?.openDocuments || []).map((item) => item.id))
       const closedDocuments = (data?.documents || []).filter((item) => !openIds.has(item.id))
+      const qaRisk = (qa?.risks || []).find((item) => item.index === index) || null
 
       const deleteClosedDocument = (document) =>
         openConfirm({
@@ -4698,6 +5643,7 @@ window.__ModuleLoader__.load({
               onCreateLibrary: createLibrary,
               onRenameLibrary: renameLibrary,
               onDeleteLibrary: deleteLibrary,
+              onSetMounts: setMounts,
             })
           : null,
         view === 'align'
@@ -4715,7 +5661,7 @@ window.__ModuleLoader__.load({
           ? h(
           'div',
           { className: `cait-body${doc ? '' : ' cait-no-doc'}` },
-          doc ? h(SegmentRail, { t, doc, selected: index, query: railQuery, setQuery: setRailQuery, filter: railFilter, setFilter: setRailFilter, onSelect: chooseSegment, onConfirmAll: confirmAllTranslated, onPropagate: propagateRepeats, busy, qa }) : null,
+          doc ? h(SegmentRail, { t, doc, selected: index, query: railQuery, setQuery: setRailQuery, filter: railFilter, setFilter: setRailFilter, onSelect: chooseSegment, onConfirmAll: confirmAllTranslated, onPropagate: propagateRepeats, onClearPretranslated: clearPretranslated, busy, qa }) : null,
           h(
             'div',
             { className: `cait-main${doc ? '' : ' cait-main-empty'}` },
@@ -4734,11 +5680,16 @@ window.__ModuleLoader__.load({
                   dirty,
                   busy,
                   onConfirm: confirmSegment,
+                  onUnconfirm: unconfirmCurrent,
                   onNext: () => moveSegment(1),
                   onPrev: () => moveSegment(-1),
                   onSave: () => saveDraft(false),
                   onAdopt: adoptSuggestion,
                   onApplyTerm: applyTerm,
+                  onOpenBrief: () => setModal({ type: 'brief' }),
+                  onOpenResources: () => setModal({ type: 'resources' }),
+                  onOpenAnalysis: openAnalysis,
+                  qaRisk,
                   textareaRef,
                 })
               : h(EmptyState, { t, settings, busy, onCreate: createFromForm, onDemo: loadDemo }),
@@ -4779,7 +5730,16 @@ window.__ModuleLoader__.load({
                   onCopy: copy,
                   onOpenSettings: () => setModal({ type: 'settings' }),
                   onSearchLibrary: openLibrary,
-                  busy,
+                  qa,
+                  onRefreshQa: refreshQa,
+                  onJumpQa: jumpQa,
+                  onFixQa: applyQaFix,
+                  concordance,
+                  concordanceQuery,
+                  setConcordanceQuery,
+                  onConcordance: runConcordance,
+                  onApplyConcordance: applyConcordance,
+                  busy: busy || (concordanceBusy ? 'concordance' : ''),
                 })
               : null,
           ),
@@ -4796,7 +5756,30 @@ window.__ModuleLoader__.load({
             })
           : null,
         modal?.type === 'export'
-          ? h(ExportModal, { t, busy, qa, onClose: () => setModal(null), onExport: exportAs })
+          ? h(ExportModal, { t, busy, qa, onClose: () => setModal(null), onExport: exportAs, onImportReview: importReview })
+          : null,
+        modal?.type === 'brief'
+          ? h(BriefModal, { t, doc, busy, onClose: () => setModal(null), onSave: saveBrief })
+          : null,
+        modal?.type === 'resources'
+          ? h(ResourceModal, {
+              t,
+              doc,
+              libraries: data?.libraries,
+              mounts: data?.mounts,
+              busy,
+              onClose: () => setModal(null),
+              onSave: saveResources,
+            })
+          : null,
+        modal?.type === 'analysis'
+          ? h(AnalysisModal, {
+              t,
+              doc,
+              analysis,
+              busy: analysisBusy,
+              onClose: () => setModal(null),
+            })
           : null,
         modal?.type === 'settings'
           ? h(SettingsModal, { t, settings, mtRoutes, busy, onClose: () => setModal(null), onSave: saveSettings })
@@ -4880,6 +5863,14 @@ window.__ModuleLoader__.load({
       'rail.filter.pending': '待译',
       'rail.filter.translated': '待审',
       'rail.filter.confirmed': '已确认',
+      'rail.filter.risk': '重点审',
+      'rail.clearPretranslated': '清理预翻译',
+      'rail.clearPretranslatedHint': '清空未确认的预翻译与自动填充译文，保留人工草稿和已确认句段',
+      'modal.confirm.clearPretranslatedTitle': '清理预翻译译文？',
+      'modal.confirm.clearPretranslatedMessage': '将清空当前文档中 {count} 句未确认的预翻译译文（MT {mt}、TM {tm}、自动传播 {auto}）。已确认句段和人工编辑的译文不会受影响；TM 中已保存的内容也不会删除。清理后这些句段回到未翻译状态，且无法撤销。',
+      'modal.confirm.clearPretranslatedConfirm': '清理 {count} 句',
+      'toast.pretranslatedCleared': '已清理 {count} 句预翻译译文',
+      'toast.nothingToClear': '没有可清理的未确认预翻译',
       'rail.confirmAll': '全部确认',
       'rail.confirmAllHint': '把当前所有「待审」句段一次性确认并写入翻译记忆',
       'rail.confirmAllMessage': '将确认 {count} 个待审句段并写入翻译记忆，句段译文不会经过逐句复核。确定继续？',
@@ -5021,6 +6012,7 @@ window.__ModuleLoader__.load({
       'modal.export.targetTxt': '纯文本',
       'modal.export.targetMd': 'Markdown',
       'modal.export.docx': 'Word DOCX',
+      'modal.export.bilingualDocx': '双语审校稿 DOCX',
       'modal.export.docxGroup': '保留源格式',
       'modal.export.epub': 'EPUB 电子书',
       'modal.export.epubGroup': '保留源排版',
@@ -5031,6 +6023,10 @@ window.__ModuleLoader__.load({
       'modal.export.vtt': 'WebVTT 字幕',
       'modal.export.po': 'PO 本地化',
       'modal.export.xliff': 'XLIFF 1.2',
+      'modal.export.xliffReview': 'XLIFF 审校包',
+      'modal.export.reviewImport': '回填审校包',
+      'modal.export.reviewImportHint': '选择外部返回的 XLIFF 审校包，只更新能按 id 或源文对上的句段。',
+      'toast.reviewApplied': '审校包已回填 {applied} 段，{unmatched} 段未匹配',
       'modal.export.xliff2': 'XLIFF 2.0',
       'modal.export.sdlxliff': 'SDL XLIFF（基础）',
       'modal.export.webGroup': '网页与结构化文本',
@@ -5117,6 +6113,11 @@ window.__ModuleLoader__.load({
       'library.import': '导入',
       'library.export': '导出',
       'library.clear': '清空',
+      'tm.maintain.dedupe': '去重',
+      'tm.maintain.prune': '清理空译文',
+      'tm.maintain.dedupeHint': '将删除 {count} 条重复条目，保留最新一条。',
+      'tm.maintain.pruneHint': '将删除 {count} 条空译文条目。',
+      'tm.maintain.done': 'TM 维护完成：{count} 条',
       'library.newLibrary': '新建库',
       'library.rename': '重命名',
       'library.deleteLibrary': '删除库',
@@ -5249,6 +6250,14 @@ window.__ModuleLoader__.load({
       'rail.filter.pending': 'To translate',
       'rail.filter.translated': 'To review',
       'rail.filter.confirmed': 'Confirmed',
+      'rail.filter.risk': 'Needs review',
+      'rail.clearPretranslated': 'Clear pretranslated',
+      'rail.clearPretranslatedHint': 'Clear unconfirmed pretranslated and auto-filled targets; manual drafts and confirmed segments are kept',
+      'modal.confirm.clearPretranslatedTitle': 'Clear pretranslated targets?',
+      'modal.confirm.clearPretranslatedMessage': 'This will clear {count} unconfirmed pretranslated target(s) in the current document (MT {mt}, TM {tm}, auto-propagated {auto}). Confirmed segments and manually edited targets are not affected, and saved TM entries are not deleted. The cleared segments return to untranslated and this cannot be undone.',
+      'modal.confirm.clearPretranslatedConfirm': 'Clear {count} segment(s)',
+      'toast.pretranslatedCleared': 'Cleared {count} pretranslated target(s)',
+      'toast.nothingToClear': 'No unconfirmed pretranslated targets to clear',
       'rail.confirmAll': 'Confirm all',
       'rail.confirmAllHint': 'Confirm every "To review" segment at once and write them to translation memory',
       'rail.confirmAllMessage': 'This confirms {count} segment(s) awaiting review and writes them to translation memory, without reviewing them one by one. Continue?',
@@ -5390,6 +6399,7 @@ window.__ModuleLoader__.load({
       'modal.export.targetTxt': 'Plain text',
       'modal.export.targetMd': 'Markdown',
       'modal.export.docx': 'Word DOCX',
+      'modal.export.bilingualDocx': 'Bilingual review DOCX',
       'modal.export.docxGroup': 'Preserve source formatting',
       'modal.export.epub': 'EPUB ebook',
       'modal.export.epubGroup': 'Preserve source layout',
@@ -5400,6 +6410,10 @@ window.__ModuleLoader__.load({
       'modal.export.vtt': 'WebVTT subtitles',
       'modal.export.po': 'PO localization',
       'modal.export.xliff': 'XLIFF 1.2',
+      'modal.export.xliffReview': 'XLIFF review package',
+      'modal.export.reviewImport': 'Apply review package',
+      'modal.export.reviewImportHint': 'Choose an XLIFF review package. Only segments matched by id or source are updated.',
+      'toast.reviewApplied': 'Review applied: {applied} segments, {unmatched} unmatched',
       'modal.export.xliff2': 'XLIFF 2.0',
       'modal.export.sdlxliff': 'SDL XLIFF (basic)',
       'modal.export.webGroup': 'Web and structured text',
@@ -5487,6 +6501,11 @@ window.__ModuleLoader__.load({
       'library.import': 'Import',
       'library.export': 'Export',
       'library.clear': 'Clear',
+      'tm.maintain.dedupe': 'Deduplicate',
+      'tm.maintain.prune': 'Prune empty targets',
+      'tm.maintain.dedupeHint': 'Delete {count} duplicate entries, keeping the newest.',
+      'tm.maintain.pruneHint': 'Delete {count} entries with an empty target.',
+      'tm.maintain.done': 'TM maintenance done: {count} entries',
       'library.newLibrary': 'New library',
       'library.rename': 'Rename',
       'library.deleteLibrary': 'Delete library',
@@ -5619,6 +6638,14 @@ window.__ModuleLoader__.load({
       'rail.filter.pending': '未翻訳',
       'rail.filter.translated': '要確認',
       'rail.filter.confirmed': '確認済み',
+      'rail.filter.risk': '重点確認',
+      'rail.clearPretranslated': '事前翻訳をクリア',
+      'rail.clearPretranslatedHint': '未確認の事前翻訳・自動反映の訳文を消去します。手動の下書きと確認済みセグメントは残します',
+      'modal.confirm.clearPretranslatedTitle': '事前翻訳をクリアしますか？',
+      'modal.confirm.clearPretranslatedMessage': '現在の文書で未確認の事前翻訳訳文 {count} 件（MT {mt}、TM {tm}、自動反映 {auto}）を消去します。確認済みセグメントと手動編集の訳文は影響を受けず、TM に保存済みの内容も削除されません。消去後は未翻訳に戻り、元に戻せません。',
+      'modal.confirm.clearPretranslatedConfirm': '{count} 件をクリア',
+      'toast.pretranslatedCleared': '事前翻訳訳文を {count} 件クリアしました',
+      'toast.nothingToClear': 'クリアできる未確認の事前翻訳はありません',
       'rail.confirmAll': 'まとめて確認',
       'rail.confirmAllHint': '「要確認」の文をまとめて確認し、翻訳メモリに書き込みます',
       'rail.confirmAllMessage': '要確認の {count} 文をまとめて確認し、翻訳メモリに書き込みます。1 文ずつ見直すことはありません。続けますか？',
@@ -5760,6 +6787,7 @@ window.__ModuleLoader__.load({
       'modal.export.targetTxt': 'プレーンテキスト',
       'modal.export.targetMd': 'Markdown',
       'modal.export.docx': 'Word DOCX',
+      'modal.export.bilingualDocx': 'バイリンガル校閲 DOCX',
       'modal.export.docxGroup': '元の書式を保持',
       'modal.export.epub': 'EPUB 電子書',
       'modal.export.epubGroup': '元のレイアウトを保持',
@@ -5770,6 +6798,10 @@ window.__ModuleLoader__.load({
       'modal.export.vtt': 'WebVTT 字幕',
       'modal.export.po': 'PO ローカライズ',
       'modal.export.xliff': 'XLIFF 1.2',
+      'modal.export.xliffReview': 'XLIFF 校閲パッケージ',
+      'modal.export.reviewImport': '校閲パッケージを反映',
+      'modal.export.reviewImportHint': '外部から返却された XLIFF を選択。id または原文が一致するセグメントだけ更新します。',
+      'toast.reviewApplied': '校閲を反映: {applied} セグメント、未一致 {unmatched}',
       'modal.export.xliff2': 'XLIFF 2.0',
       'modal.export.sdlxliff': 'SDL XLIFF（基本）',
       'modal.export.webGroup': 'Web と構造化テキスト',
@@ -5857,6 +6889,11 @@ window.__ModuleLoader__.load({
       'library.import': 'インポート',
       'library.export': 'エクスポート',
       'library.clear': 'クリア',
+      'tm.maintain.dedupe': '重複排除',
+      'tm.maintain.prune': '空訳を整理',
+      'tm.maintain.dedupeHint': '{count} 件の重複を削除し、最新のみ残します。',
+      'tm.maintain.pruneHint': '空の訳文を持つ {count} 件を削除します。',
+      'tm.maintain.done': 'TM メンテナンス完了: {count} 件',
       'library.newLibrary': '新しいライブラリ',
       'library.rename': '名前を変更',
       'library.deleteLibrary': 'ライブラリを削除',
@@ -5926,6 +6963,261 @@ window.__ModuleLoader__.load({
       'term.noDoc': '先に文書を開いてください。',
       'term.inLibrary': '登録済み',
     }
+
+    // 1.1.4: brief, risk-aware QA, unconfirm and concordance. Kept in one place
+    // so the three dictionaries cannot drift apart.
+    Object.assign(ZH, {
+      'panel.qa': '检查',
+      'panel.concordance': '检索',
+      'panel.concordancePlaceholder': '在翻译记忆中检索…',
+      'panel.concordanceHint': '在已挂载的记忆库中检索源文或译文；点击结果写入当前句段的译文。',
+      'panel.noConcordance': '没有检索结果。',
+      'panel.searchConcordance': '检索',
+      'panel.brief': '文档 brief',
+      'panel.briefHint': '给译者和 agent 的领域、读者、语气与术语约束。',
+      'panel.termForbidden': '禁用',
+      'panel.termPreferred': '必用',
+      'brief.title': '文档 brief',
+      'brief.hint': '这些信息会注入预翻译和 agent 上下文；留空表示不限制。',
+      'brief.domain': '领域',
+      'brief.audience': '读者',
+      'brief.tone': '语气',
+      'brief.notes': '补充说明',
+      'brief.doNotTranslate': '不要翻译',
+      'brief.styleSample': '风格示例',
+      'brief.save': '保存 brief',
+      'brief.saved': 'brief 已保存',
+      'brief.empty': '尚未填写 brief',
+      'brief.placeholder.domain': '例如：法律、医疗、游戏',
+      'brief.placeholder.audience': '例如：终端用户、开发者',
+      'brief.placeholder.tone': '例如：正式、简洁、口语',
+      'brief.placeholder.notes': '术语偏好、格式要求、背景…',
+      'brief.placeholder.doNotTranslate': '每行一个词或短语',
+      'brief.placeholder.styleSample': '粘贴一段期望风格的译文…',
+      'editor.unconfirm': '撤销确认',
+      'editor.unconfirmHint': '回到待审状态，不改动翻译记忆',
+      'editor.brief': 'Brief',
+      'editor.risk': '风险',
+      'qa.title': '检查',
+      'qa.refresh': '重新检查',
+      'qa.empty': '没有发现问题。',
+      'qa.loading': '正在检查…',
+      'qa.high': '高',
+      'qa.medium': '中',
+      'qa.low': '低',
+      'qa.jump': '跳到句段',
+      'qa.risk': '风险',
+      'qa.code.TERM_FORBIDDEN': '禁用术语',
+      'qa.code.LENGTH_DRIFT': '长度异常',
+      'qa.fixCopy': '复制源文',
+      'qa.fixClear': '清空译文',
+      'qa.fixTerm': '插入术语',
+      'toast.qaFixed': '已修复该句，可继续检查',
+      'toast.unconfirmed': '已撤销确认，可继续编辑',
+      'toast.briefSaved': 'brief 已保存',
+      'toast.termForbidden': '这是禁用术语，不能插入',
+      'editor.resources': '资源',
+      'resources.title': '文档资源',
+      'resources.hint': '限定这篇文档读写哪些 TM 和术语库；不勾选“继承全局”时只使用下面选中的库。',
+      'resources.inheritTm': '继承全局 TM 挂载',
+      'resources.inheritGlossary': '继承全局术语库挂载',
+      'resources.tm': '翻译记忆',
+      'resources.glossary': '术语库',
+      'resources.defaultWrite': '默认写入',
+      'resources.followDefault': '跟随全局默认',
+      'resources.firstBound': '首个绑定库',
+      'resources.none': '未绑定（不读不写）',
+      'resources.empty': '没有可用的库。',
+      'resources.save': '保存资源',
+      'toast.resourcesSaved': '文档资源已保存',
+      'editor.analysis': '分析',
+      'analysis.title': '文档分析',
+      'analysis.hint': '按当前文档绑定的 TM 统计；匹配率用于报价参考。',
+      'analysis.words': '字数',
+      'analysis.characters': '字符',
+      'analysis.segments': '句段',
+      'analysis.duplicates': '重复句段',
+      'analysis.translated': '已有译文',
+      'analysis.confirmed': '已确认',
+      'analysis.ice': 'ICE / 上下文',
+      'analysis.exact': '完全匹配',
+      'analysis.fuzzy85': '85–99%',
+      'analysis.fuzzy70': '70–84%',
+      'analysis.new': '新句段',
+      'analysis.matchRate': '匹配率',
+      'analysis.leverage': '加权 leverage',
+      'analysis.exportCsv': '导出 CSV',
+      'analysis.exportJson': '导出 JSON',
+      'analysis.close': '关闭',
+    })
+    Object.assign(EN, {
+      'panel.qa': 'Checks',
+      'panel.concordance': 'Concordance',
+      'panel.concordancePlaceholder': 'Search translation memory…',
+      'panel.concordanceHint': 'Search source or target across mounted memories; click a result to use its target in the current segment.',
+      'panel.noConcordance': 'No matches.',
+      'panel.searchConcordance': 'Search',
+      'panel.brief': 'Document brief',
+      'panel.briefHint': 'Domain, audience, tone and terminology guidance for translators and agents.',
+      'panel.termForbidden': 'Forbidden',
+      'panel.termPreferred': 'Required',
+      'brief.title': 'Document brief',
+      'brief.hint': 'Injected into pre-translation and agent context. Empty fields mean no constraint.',
+      'brief.domain': 'Domain',
+      'brief.audience': 'Audience',
+      'brief.tone': 'Tone',
+      'brief.notes': 'Notes',
+      'brief.doNotTranslate': 'Do not translate',
+      'brief.styleSample': 'Style sample',
+      'brief.save': 'Save brief',
+      'brief.saved': 'Brief saved',
+      'brief.empty': 'No brief yet',
+      'brief.placeholder.domain': 'e.g. legal, medical, games',
+      'brief.placeholder.audience': 'e.g. end users, developers',
+      'brief.placeholder.tone': 'e.g. formal, concise, conversational',
+      'brief.placeholder.notes': 'Terminology preferences, formatting requirements, background…',
+      'brief.placeholder.doNotTranslate': 'One term or phrase per line',
+      'brief.placeholder.styleSample': 'Paste a sample of the desired style…',
+      'editor.unconfirm': 'Unconfirm',
+      'editor.unconfirmHint': 'Return to review without changing translation memory',
+      'editor.brief': 'Brief',
+      'editor.risk': 'Risk',
+      'qa.title': 'Checks',
+      'qa.refresh': 'Re-run checks',
+      'qa.empty': 'No issues found.',
+      'qa.loading': 'Running checks…',
+      'qa.high': 'High',
+      'qa.medium': 'Medium',
+      'qa.low': 'Low',
+      'qa.jump': 'Jump to segment',
+      'qa.risk': 'Risk',
+      'qa.code.TERM_FORBIDDEN': 'Forbidden term',
+      'qa.code.LENGTH_DRIFT': 'Length drift',
+      'qa.fixCopy': 'Copy source',
+      'qa.fixClear': 'Clear target',
+      'qa.fixTerm': 'Insert term',
+      'toast.qaFixed': 'Segment fixed; checks refreshed',
+      'toast.unconfirmed': 'Confirmation revoked; editing is enabled again',
+      'toast.briefSaved': 'Brief saved',
+      'toast.termForbidden': 'This is a forbidden term and cannot be inserted',
+      'editor.resources': 'Resources',
+      'resources.title': 'Document resources',
+      'resources.hint': 'Limit which translation memories and glossaries this document reads and writes. Without inheritance, only the selected libraries are used.',
+      'resources.inheritTm': 'Inherit global TM mounts',
+      'resources.inheritGlossary': 'Inherit global glossary mounts',
+      'resources.tm': 'Translation memories',
+      'resources.glossary': 'Glossaries',
+      'resources.defaultWrite': 'Default write',
+      'resources.followDefault': 'Follow global default',
+      'resources.firstBound': 'First bound library',
+      'resources.none': 'None (no read, no write)',
+      'resources.empty': 'No libraries available.',
+      'resources.save': 'Save resources',
+      'toast.resourcesSaved': 'Document resources saved',
+      'editor.analysis': 'Analysis',
+      'analysis.title': 'Document analysis',
+      'analysis.hint': 'Counted against the memory bound to this document; match rate is a quoting aid.',
+      'analysis.words': 'Words',
+      'analysis.characters': 'Characters',
+      'analysis.segments': 'Segments',
+      'analysis.duplicates': 'Duplicate segments',
+      'analysis.translated': 'With target',
+      'analysis.confirmed': 'Confirmed',
+      'analysis.ice': 'ICE / context',
+      'analysis.exact': 'Exact',
+      'analysis.fuzzy85': '85–99%',
+      'analysis.fuzzy70': '70–84%',
+      'analysis.new': 'New',
+      'analysis.matchRate': 'Match rate',
+      'analysis.leverage': 'Weighted leverage',
+      'analysis.exportCsv': 'Export CSV',
+      'analysis.exportJson': 'Export JSON',
+      'analysis.close': 'Close',
+    })
+    Object.assign(JA, {
+      'panel.qa': 'チェック',
+      'panel.concordance': '検索',
+      'panel.concordancePlaceholder': '翻訳メモリを検索…',
+      'panel.concordanceHint': 'マウント中の TM を原文・訳文で検索し、結果をクリックすると現在のセグメントの訳文に書き込みます。',
+      'panel.noConcordance': '一致なし。',
+      'panel.searchConcordance': '検索',
+      'panel.brief': '文書ブリーフ',
+      'panel.briefHint': '译者と agent のための分野・読者・トーン・用語指示。',
+      'panel.termForbidden': '禁止',
+      'panel.termPreferred': '必須',
+      'brief.title': '文書ブリーフ',
+      'brief.hint': 'この情報は事前翻訳と agent のコンテキストに渡されます。空欄は制約なし。',
+      'brief.domain': '分野',
+      'brief.audience': '読者',
+      'brief.tone': 'トーン',
+      'brief.notes': '補足',
+      'brief.doNotTranslate': '翻訳しない語句',
+      'brief.styleSample': 'スタイル例',
+      'brief.save': 'ブリーフを保存',
+      'brief.saved': 'ブリーフを保存しました',
+      'brief.empty': 'ブリーフは未入力です',
+      'brief.placeholder.domain': '例：法律、医療、ゲーム',
+      'brief.placeholder.audience': '例：エンドユーザー、開発者',
+      'brief.placeholder.tone': '例：正式、簡潔、会話的',
+      'brief.placeholder.notes': '用語の好み、書式、背景…',
+      'brief.placeholder.doNotTranslate': '1 行に 1 語句',
+      'brief.placeholder.styleSample': '希望するスタイルの訳文を貼り付け…',
+      'editor.unconfirm': '確認を取り消す',
+      'editor.unconfirmHint': '確認だけを解除し、TM は変更しません',
+      'editor.brief': 'ブリーフ',
+      'editor.risk': 'リスク',
+      'qa.title': 'チェック',
+      'qa.refresh': '再チェック',
+      'qa.empty': '問題はありません。',
+      'qa.loading': 'チェック中…',
+      'qa.high': '高',
+      'qa.medium': '中',
+      'qa.low': '低',
+      'qa.jump': 'セグメントへ',
+      'qa.risk': 'リスク',
+      'qa.code.TERM_FORBIDDEN': '禁止用語',
+      'qa.code.LENGTH_DRIFT': '長さの不一致',
+      'qa.fixCopy': '原文をコピー',
+      'qa.fixClear': '訳文を空にする',
+      'qa.fixTerm': '用語を挿入',
+      'toast.qaFixed': '修正しました。チェックを更新しました',
+      'toast.unconfirmed': '確認を取り消しました。編集を続けられます',
+      'toast.briefSaved': 'ブリーフを保存しました',
+      'toast.termForbidden': '禁止用語のため挿入できません',
+      'editor.resources': 'リソース',
+      'resources.title': '文書リソース',
+      'resources.hint': 'この文書が読み書きする TM と用語集を限定します。「グローバルを継承」を外すと、下で選んだライブラリだけを使います。',
+      'resources.inheritTm': 'グローバル TM マウントを継承',
+      'resources.inheritGlossary': 'グローバル用語集マウントを継承',
+      'resources.tm': '翻訳メモリ',
+      'resources.glossary': '用語集',
+      'resources.defaultWrite': '既定の書き込み先',
+      'resources.followDefault': 'グローバル既定に従う',
+      'resources.firstBound': '最初のバインド先',
+      'resources.none': '未バインド（読み書きなし）',
+      'resources.empty': '利用できるライブラリがありません。',
+      'resources.save': 'リソースを保存',
+      'toast.resourcesSaved': '文書リソースを保存しました',
+      'editor.analysis': '分析',
+      'analysis.title': '文書分析',
+      'analysis.hint': 'この文書に紐づく TM で集計します。マッチ率は見積もりの参考値です。',
+      'analysis.words': '語数',
+      'analysis.characters': '文字数',
+      'analysis.segments': 'セグメント',
+      'analysis.duplicates': '重複セグメント',
+      'analysis.translated': '訳文あり',
+      'analysis.confirmed': '確認済み',
+      'analysis.ice': 'ICE / コンテキスト',
+      'analysis.exact': '完全一致',
+      'analysis.fuzzy85': '85–99%',
+      'analysis.fuzzy70': '70–84%',
+      'analysis.new': '新規',
+      'analysis.matchRate': 'マッチ率',
+      'analysis.leverage': '加重レバレッジ',
+      'analysis.exportCsv': 'CSV を書き出す',
+      'analysis.exportJson': 'JSON を書き出す',
+      'analysis.close': '閉じる',
+    })
 
     // UI languages offered by the in-app switch. 'auto' follows the DSH locale
     // through the bound DSH translator; the other entries use the dictionaries

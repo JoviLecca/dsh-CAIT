@@ -17,7 +17,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm バージョン" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
-  <img alt="テスト 29 スイート" src="https://img.shields.io/badge/tests-29%20suites-brightgreen.svg" />
+  <img alt="テスト 36 スイート" src="https://img.shields.io/badge/tests-36%20suites-brightgreen.svg" />
   <img alt="API キー不要" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
 </p>
 
@@ -55,6 +55,23 @@ CAIT は DSH Web UI と DSH デスクトップに CAT ワークベンチを追�
 Host のリビジョンをポーリングするため、エージェントによる変更も手動リロードなしで反映されます。
 
 ## 機能
+
+### 1.1.5 の新機能
+
+- 文書ごとに**グローバルな TM/用語集のマウントを継承するか、独自のライブラリをバインド**でき、既定の書き込み TM も指定できます。検索、用語ヒット、QA、事前翻訳、確定はすべてそのスコープに従います。
+- **語数とレバレッジ分析**：セグメント、語数、文字数、重複、ICE/完全/ファジー/新規の内訳、マッチ率、レバレッジを表示し、CSV/JSON でダウンロードできます。
+- CAIT を使わない校閲者向けに**バイリンガル校閲 DOCX**（原文/訳文/状態）を出力します。
+- **XLIFF 1.2 校閲パッケージ**を出力・再取り込みできます。uid、XLIFF id、一意な原文で照合し、原文不一致は拒否、未一致件数を報告します。
+- **TM メンテナンス**：マージ、重複排除、整理をプレビューしてから確定します。
+
+### 1.1.4 の新機能
+
+- 文書ごとに**翻訳ブリーフ**（領域、読者、トーン、メモ、訳禁用語、スタイル例）を持て、MT プロンプトに注入されます。Agent は `cat_get_brief` で読み取れます。
+- 事前翻訳は**1 リクエスト最大 8 セグメント**のバッチになり、ブリーフと隣接原文を送ります。モデルが返さなかったセグメントは 1 件ずつフォールバックします。
+- 用語集エントリに **forbidden**（使用禁止の訳）と **preferred**（必ず使う訳）を設定でき、CSV/JSON/TBX 出力と CSV 入力で保持されます。
+- QA は **high / medium / low** に分類され、禁止用語と長さドリフトの検査が加わりました。QA タブからジャンプ、原文コピー、訳文クリア、必須用語の挿入ができます。Concordance はマウント中の全 TM を検索します。
+- 確定済みセグメントを**確定解除**でき、訳文と TM エントリは残ります。確定済みセグメントを編集すると自動的に `translated` に戻り、再確定で同じ TM エントリを更新します。
+- セグメントレールから**未確定の事前翻訳を一括クリア**できます。実行前に件数と MT/TM/自動伝播の内訳を示し、確定済み・手動下書き・保存済み TM は対象外であることを明示します。
 
 ### 翻訳メモリ
 
@@ -247,7 +264,7 @@ DSH デスクトップ（または `plugin_manager` ツールがある任意の�
 plugin_manager install_bundle target: dsh-cait
 ```
 
-バージョンを固定するときは `dsh-cait@1.1.3`、最新版は `dsh-cait@latest` を指定します。
+バージョンを固定するときは `dsh-cait@1.1.5`、最新版は `dsh-cait@latest` を指定します。
 マネージャが registry のパッケージを解決し、bundle patch を適用してプラグインを有効化します。
 
 CLI 管理のプロファイル:
@@ -451,7 +468,7 @@ node _dev/test-mt.mjs
 
 インポート / エクスポートのフィクスチャは `_dev/sample.docx`、`_dev/sample-table.docx`、
 `_dev/sample-format.docx` です。対応する `python _dev/make-*.py` スクリプトで再生成
-できます。29 スイートすべてが通るはずです。
+できます。36 スイートすべてが通るはずです。
 
 ### リリース
 

@@ -4,6 +4,101 @@ All notable changes to CAIT are documented here. The project follows
 [Semantic Versioning](https://semver.org/) and the format is based on
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.1.5] - 2026-11-08
+
+Project resources, delivery output, and TM upkeep: each document can bind its own
+TM and glossary libraries, the workbench can price a job and hand off a bilingual
+or XLIFF review package, and TM libraries can be merged, deduplicated, or pruned.
+
+### Added
+
+- **Per-document resources.** A document can inherit the global mounts or bind its
+  own TM/glossary libraries and default write TM. Writes are checked against the
+  document scope (`NO_TM_BOUND`, `TM_NOT_MOUNTED`, `TM_NOT_BOUND`), and deleting a
+  library removes dangling document references.
+- **Word count and leverage analysis.** `analyzeDocument` reports segments, words,
+  characters, translated/confirmed counts, duplicates, ICE/exact/fuzzy/new buckets,
+  match rate, and leverage. The workbench shows the breakdown and downloads it as
+  CSV or JSON.
+- **Bilingual review DOCX.** Export a three-column Source/Target/Status table for
+  reviewers who do not use CAIT.
+- **XLIFF 1.2 review packages.** Export carries the segment uid, target state, and
+  a note; re-import applies only segments matched by uid, XLIFF id, or a unique
+  source, refuses source mismatches, and reports unmatched entries.
+- **TM maintenance.** Preview and confirm merge, deduplicate, and prune operations;
+  merges preserve the target library and optionally delete the source.
+
+### Changed
+
+- Confirmations write to the document's default write TM when one is bound.
+- TM lookup, glossary hits, QA term checks, and pre-translation all honor the
+  document's effective resource scope.
+
+## [1.1.4] - 2026-11-08
+
+Brief and context: CAIT now carries a per-document translation brief and the
+neighbouring source sentences into pre-translation and agent work, and lets a
+reviewer undo a confirmation without losing the translation-memory record.
+
+### Added
+
+- **Document brief.** Six optional fields — domain, audience, tone, notes,
+  do-not-translate terms, and a style sample — are stored with the document,
+  editable from the workbench, and injected into single and batch MT prompts.
+  Agents read and write it with `cat_get_brief` and `cat_set_brief`.
+- **Context for agents.** `cat_get_context` returns the brief, the current
+  segment, its previous/next source segments, and paragraph information, so an
+  agent can resolve pronouns and omitted subjects before translating.
+- **Context-aware batch pre-translation.** Pre-translation now sends up to eight
+  segments per request with the brief and neighbouring source sentences, then
+  falls back to one-segment calls for anything the model omits. A partial batch
+  no longer aborts the document.
+- **Terminology status.** Glossary entries can be marked `forbidden` (never use
+  this rendering) or `preferred` (must use it when the source term appears).
+  The flags survive CSV/JSON/TBX export, CSV import, the glossary UI, and
+  `cat_add_terms`.
+- **Risk-graded QA.** Findings are graded high / medium / low; forbidden terms
+  and length drift are new checks. The report returns `risks` and `riskCounts`,
+  and the rail can filter to segments that need attention.
+- **QA panel and fixes.** A QA tab lists risk counts and findings with jump,
+  copy-source, clear-target, and insert-term actions. A concordance tab and
+  `cat_concordance` search every mounted TM for a word or phrase.
+- **Undo confirmation.** `cat_unconfirm_segment` and the editor button revoke a
+  confirmation, keep the text as a draft, and leave TM untouched. Editing a
+  confirmed segment now revokes its confirmation automatically; confirming it
+  again updates the same TM entry.
+- **Stable segment identity.** Every segment gets a `uid`; the store schema moves
+  to version 5 and migrates version 4 snapshots in place.
+- **Bulk pre-translation cleanup.** The rail can clear every unconfirmed
+  pre-translated or auto-propagated target in the document after a confirmation
+  dialog that states the count and the MT/TM/auto breakdown. Confirmed segments,
+  manual drafts, and saved TM entries are left untouched.
+
+### Changed
+
+- Pre-translation uses batched MT requests with per-segment fallback instead of
+  one request per segment.
+- `getQaReport` also reports `risks` and `riskCounts`; `counts` includes
+  `TERM_FORBIDDEN` and `LENGTH_DRIFT`.
+- `segmentView` includes `uid`; document summaries include `brief`; glossary CSV
+  exports use seven columns including `forbidden` and `preferred`.
+
+### Fixed
+
+- Batch pre-translation now asks for stable segment ids and rejects ambiguous
+  positional output; a dropped, merged, or renumbered entry falls back to
+  one-segment calls instead of shifting later translations onto the wrong
+  segment.
+- `cat_concordance` renders the previous/next context of a match instead of
+  assuming an array.
+- TM and glossary toolbars now use the import/export icon in the direction the
+  button actually moves data; the document toolbar follows the same convention.
+- The library toolbar has an explicit **default write** selector again, and the
+  scope checkboxes no longer silently choose which library receives new entries,
+  imports, exports, or clears.
+- Unconfirming a segment that was just auto-unconfirmed by saving an edit is
+  treated as idempotent instead of showing a `NOT_CONFIRMED` error.
+
 ## [1.1.3] - 2026-11-07
 
 Alignment, repetition and terminology: CAIT can now build a translation memory

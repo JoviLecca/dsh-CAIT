@@ -178,7 +178,7 @@ try {
     writeFileSync(file, JSON.stringify(payload))
 
     const reopened = new CatStore({ dataDir: dir, logger: silent })
-    assert.equal(STORE_VERSION, 4)
+    assert.equal(STORE_VERSION, 6)
     assert.equal(reopened.tm.length, payload.tm.length)
     for (const entry of reopened.tm) {
       assert.equal(entry.context, null)
@@ -186,7 +186,7 @@ try {
     }
     const next = reopened.docs.get(doc.id)
     reopened.confirmSegment({ documentId: next.id, index: 1, target: '贝塔' })
-    assert.equal(JSON.parse(readFileSync(file, 'utf8')).version, 4)
+    assert.equal(JSON.parse(readFileSync(file, 'utf8')).version, 6)
   }
 
   section('TMX carries x-context through export and import')

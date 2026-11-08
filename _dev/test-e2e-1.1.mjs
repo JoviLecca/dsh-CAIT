@@ -32,6 +32,12 @@ try {
   )
 
   store.mtSuggest = async ({ text }) => ({ text: `译(${text})`, provider: 'stub', model: 'stub', latencyMs: 1 })
+  store.mtSuggestBatch = async ({ items }) => ({
+    items: items.map(({ index, text }) => ({ index, text: `译(${text})` })),
+    provider: 'stub',
+    model: 'stub',
+    latencyMs: 1,
+  })
 
   const blocks = []
   let from = 0
@@ -90,7 +96,7 @@ try {
   assert.equal(again.segments.length, 3)
   assert.deepEqual(
     again.segments.map((s) => s.status),
-    ['confirmed', 'confirmed', 'confirmed'],
+    ['confirmed', 'confirmed', 'translated'],
   )
   assert.ok(again.segments[1].suggestion.startsWith('译('), 'suggestion persisted')
 

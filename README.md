@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Computer-aided translation, inside DeepSeek Harness.</strong><br/>
-  Translation memory · glossary · segment editor · MT assistance · document tabs · Office / subtitle / localization formats
+  Translation memory 路 glossary 路 segment editor 路 MT assistance 路 document tabs 路 Office / subtitle / localization formats
 </p>
 <p align="center">
   <a href="README.zh-CN.md">简体中文</a> · <a href="README.ja.md">日本語</a> · <a href="README.md">English</a>
@@ -16,12 +16,12 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm version" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
-  <img alt="Tests: 29 suites" src="https://img.shields.io/badge/tests-29%20suites-brightgreen.svg" />
+  <img alt="Tests: 36 suites" src="https://img.shields.io/badge/tests-36%20suites-brightgreen.svg" />
   <img alt="No API key required" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
 </p>
 
 CAIT adds a CAT workbench to the DSH Web UI and Desktop. It opens from a
-left-sidebar entry, keeps one shared store behind the workbench and seven agent
+left-sidebar entry, keeps one shared store behind the workbench and twenty agent
 tools, and covers the practical path from importing a source file to exporting a
 translated document.
 
@@ -38,7 +38,7 @@ translated document.
 | **Glossary-aware editing** | Multiple term bases, source-language filtering, inline highlighting, click-to-insert terms, and per-term case sensitivity. |
 | **A document workflow** | Tabs, close/reopen, recent-document cleanup, duplicate-import reuse, and progress per document. |
 | **Real format coverage** | TXT, Markdown, DOCX, EPUB, TMX, CSV, SRT/VTT, PO, XLIFF 1.2/2.0/SDLXLIFF, HTML, JSON, XLSX, PPTX, and RTF. |
-| **Agent-ready** | Seven tools share the open document and store, so an agent can translate alongside you. |
+| **Agent-ready** | Twenty tools share the open document and store, so an agent can translate alongside you. |
 
 ## Quick start
 
@@ -56,6 +56,42 @@ Host revision every two seconds, so changes made by an agent appear without a
 manual reload.
 
 ## Features
+
+### New in 1.1.5
+
+- Each document can **inherit the global TM/glossary mounts or bind its own
+  libraries**, with a default write TM per document. Lookup, glossary hits, QA,
+  pre-translation, and confirmations all honor that scope.
+- **Word count and leverage analysis** reports segments, words, characters,
+  duplicates, ICE/exact/fuzzy/new buckets, match rate, and leverage, with CSV and
+  JSON download.
+- Export a **bilingual review DOCX** (Source/Target/Status) for reviewers who do
+  not use CAIT.
+- Export and re-import an **XLIFF 1.2 review package**. Re-import matches by uid,
+  XLIFF id, or a unique source, refuses source mismatches, and reports unmatched
+  segments.
+- **TM maintenance** previews and confirms merge, deduplicate, and prune actions.
+
+### New in 1.1.4
+
+- Each document can carry a **translation brief** — domain, audience, tone,
+  notes, do-not-translate terms, and a style sample — which is injected into MT
+  prompts and readable by agents through `cat_get_brief`.
+- Pre-translation now sends **up to eight segments per request** with the brief
+  and neighbouring source sentences, then falls back to one segment at a time
+  for anything the model leaves out.
+- Glossary entries can be **forbidden** (never use this rendering) or
+  **preferred** (must use it when the source term appears), and the flags survive
+  CSV/JSON/TBX export and CSV import.
+- QA findings are graded **high / medium / low**, and the QA tab can jump to a
+  finding, copy the source, clear the target, or insert the required term. A
+  concordance tab searches every mounted TM for a word or phrase.
+- A confirmed segment can be **unconfirmed** without deleting its text or its TM
+  entry; editing a confirmed segment revokes the confirmation automatically.
+- The segment rail can **clear all unconfirmed pre-translated targets** in one
+  action. A confirmation dialog states the count and the MT/TM/auto breakdown,
+  and confirms that confirmed segments, manual drafts, and saved TM entries are
+  left untouched.
 
 ### Translation memory
 
@@ -92,9 +128,10 @@ manual reload.
   only decides what the workbench searches and writes.
 - **Terminology mining**: *Mine terms from the document* in the glossary toolbar
   lists candidates with occurrence counts, sample wording from memory, and a
-  marker when the term is already known. Counting finds the candidates and ranks
-  them (Latin n-grams, repeated CJK substrings filtered by boundary entropy);
-  a model only judges a shortlist, which is the part models are good at.
+  marker when the term is already known. Counting finds and ranks the candidates
+  (Latin n-grams, repeated CJK substrings filtered by boundary entropy); you
+  confirm the wording and add them. A model-assisted shortlist that can include
+  single-occurrence proper nouns is planned for 1.1.6.
 
 ### Library workspace
 
@@ -136,8 +173,13 @@ separate files in any supported format and any pair of languages.
   size of 20/50/100/200 and a box to jump straight to a segment number. Jumping
   clears the filter when the target segment would otherwise be hidden.
 - **Pre-translate** fills the whole document from exact TM matches and machine
-  translation in small blocks, shows `done/total`, and can be stopped between
-  blocks. Confirmed and already-translated segments are never overwritten.
+  translation in batches of up to eight segments, carrying the document brief
+  and neighbouring source sentences, and falls back to one segment at a time
+  when a batch response is partial. It shows `done/total` and can be stopped
+  between blocks. Confirmed and already-translated segments are never overwritten.
+- **Translation brief** lives beside the document: domain, audience, tone, notes,
+  do-not-translate terms, and a style sample. It is editable from the segment
+  header and used by both pre-translation and agent translation.
 - **Stacked review**: source, the machine/agent baseline, and the editable target
   are laid out top to bottom, so each block gets the full pane width.
   **Confirm all** accepts every segment awaiting review after one confirmation
@@ -149,10 +191,16 @@ separate files in any supported format and any pair of languages.
   unconfirmed copy with the same source (`origin: auto`), editing a draft keeps
   them in sync, and *Fill repeated segments* does the whole document at once.
   Confirmed segments are never touched.
-- Advisory QA markers in the rail and an export-time summary: missing
-  placeholders/tags, mismatched numbers, unused glossary terms, empty targets,
-  an untouched copy of the source, and one source with several translations.
+- Advisory QA markers in the rail and an export-time summary, graded **high /
+  medium / low**: missing placeholders/tags, mismatched numbers, unused or
+  forbidden glossary terms, empty targets, an untouched copy of the source,
+  length drift, and one source with several translations. The QA tab lists
+  findings and offers jump, copy-source, clear-target, and insert-term actions.
   Nothing is blocked and nothing is stored.
+- **Undo confirmation.** A confirmed segment can be unconfirmed back to
+  `translated`; its text and TM entry stay in place. Editing a confirmed segment
+  revokes the confirmation automatically, and confirming it again updates the
+  same TM entry.
 - Document tabs; closing a tab does not delete the document.
 - **Open existing document** reopens a closed document.
 - Interface language switch in **Settings → Interface**: *Follow DSH language*
@@ -194,7 +242,10 @@ CAIT does not own an endpoint or key. The selector is built from DSH:
 - `ctx.llm.listModels(provider)` supplies model ids; CAIT selects the first model
   by default.
 - `ctx.llm.stream({ provider, model, messages, temperature, purpose: 'cait-mt' })`
-  performs the call; CAIT concatenates `text-delta` chunks.
+  performs the call; CAIT concatenates `text-delta` chunks. Batch pre-translation
+  uses `purpose: 'cait-mt-batch'` and asks for a JSON array keyed by position;
+  both paths include the document brief, the neighbouring source sentences, and
+  the usable/forbidden glossary rules in the prompt.
 
 If no usable route exists, the selected route disappears, or it has no models,
 CAIT falls back to offline glossary substitution and says so in the UI and in the
@@ -205,21 +256,21 @@ provider/model/code/status; the client receives only `MT_PROVIDER_FAILED`.
 
 | Format | Import | Export | Notes |
 | --- | :---: | :---: | --- |
-| TXT / Markdown | ✅ | ✅ | Paragraph and sentence segmentation |
-| CSV | ✅ | ✅ | Comma, semicolon, tab, or pipe delimiter auto-detected; source/target column by header name or 1-based number; existing bilingual export |
-| DOCX | ✅ | ✅ | Body paragraphs; table blocks are excluded from import. Export patches the original package, keeping styles, numbering, images, headers, tables, and layout. |
-| EPUB | ✅ | ✅ | EPUB 3 spine order; XHTML text blocks with inline markup kept as tokens and patched back into the retained package. DRM-protected, fixed-layout, and scripted EPUBs are not supported. |
-| TMX 1.4 | ✅ | ✅ | Common `<tu>/<tuv>/<seg>` subset; inline markup flattened with warning; context kept in `<prop type="x-context">` |
-| SRT / WebVTT | ✅ | ✅ | One cue per segment, timings/settings/identifier retained; semantic tags kept; invalid ranges rejected |
-| PO | ✅ | ✅ | Contexts, plural forms, translator comments, obsolete `#~` entries |
-| XLIFF 1.2 | ✅ | ✅ | Inline tags become `{n}` tokens; missing tokens block confirmation |
-| XLIFF 2.0 | ✅ | ✅ | Basic `<unit><segment><source>/<target>` subset |
-| SDLXLIFF | ✅ | ✅ | Basic XLIFF 1.2 path; SDL-specific extensions are not round-tripped |
-| HTML | ✅ | ✅ | Text blocks and inline tags preserved; document CSS/layout is not rebuilt |
-| JSON | ✅ | ✅ | String-path subset; object/array structure preserved via a template; keys and numbers are not translated |
-| XLSX | ✅ | ✅ | First worksheet; `Source`/`Target` headers or columns A/B; export is a new two-column workbook |
-| PPTX | ✅ | ✅* | Source-preserving export; requires the imported `.pptx` package. Body text only; notes/charts/SmartArt not imported. |
-| RTF | ✅ | ✅ | Basic paragraphs, `\uN`, `\'hh`, control words; original styling not round-tripped |
+| TXT / Markdown | 鉁?| 鉁?| Paragraph and sentence segmentation |
+| CSV | 鉁?| 鉁?| Comma, semicolon, tab, or pipe delimiter auto-detected; source/target column by header name or 1-based number; existing bilingual export |
+| DOCX | 鉁?| 鉁?| Body paragraphs; table blocks are excluded from import. Export patches the original package, keeping styles, numbering, images, headers, tables, and layout. |
+| EPUB | 鉁?| 鉁?| EPUB 3 spine order; XHTML text blocks with inline markup kept as tokens and patched back into the retained package. DRM-protected, fixed-layout, and scripted EPUBs are not supported. |
+| TMX 1.4 | 鉁?| 鉁?| Common `<tu>/<tuv>/<seg>` subset; inline markup flattened with warning; context kept in `<prop type="x-context">` |
+| SRT / WebVTT | 鉁?| 鉁?| One cue per segment, timings/settings/identifier retained; semantic tags kept; invalid ranges rejected |
+| PO | 鉁?| 鉁?| Contexts, plural forms, translator comments, obsolete `#~` entries |
+| XLIFF 1.2 | 鉁?| 鉁?| Inline tags become `{n}` tokens; missing tokens block confirmation |
+| XLIFF 2.0 | 鉁?| 鉁?| Basic `<unit><segment><source>/<target>` subset |
+| SDLXLIFF | 鉁?| 鉁?| Basic XLIFF 1.2 path; SDL-specific extensions are not round-tripped |
+| HTML | 鉁?| 鉁?| Text blocks and inline tags preserved; document CSS/layout is not rebuilt |
+| JSON | 鉁?| 鉁?| String-path subset; object/array structure preserved via a template; keys and numbers are not translated |
+| XLSX | 鉁?| 鉁?| First worksheet; `Source`/`Target` headers or columns A/B; export is a new two-column workbook |
+| PPTX | 鉁?| 鉁? | Source-preserving export; requires the imported `.pptx` package. Body text only; notes/charts/SmartArt not imported. |
+| RTF | 鉁?| 鉁?| Basic paragraphs, `\uN`, `\'hh`, control words; original styling not round-tripped |
 
 \* PPTX export fails with `PPTX_SOURCE_REQUIRED` when the retained source package
 is missing rather than silently producing an unformatted deck.
@@ -263,7 +314,7 @@ In DSH Desktop (or any profile with the `plugin_manager` tool):
 plugin_manager install_bundle target: dsh-cait
 ```
 
-Pin a release with `dsh-cait@1.1.3`, or ask for the newest one with
+Pin a release with `dsh-cait@1.1.5`, or ask for the newest one with
 `dsh-cait@latest`. The manager resolves the registry package, applies the bundle
 patch, and activates the plugin — no hand-written profile rows.
 
@@ -366,6 +417,11 @@ confirmed becomes `translated` with `origin: manual`.
 | `cat_align` | Align two texts and report high / to-review / doubtful pairs |
 | `cat_consistency_report` | Group repeated sources that carry different translations |
 | `cat_term_candidates` | Mining shortlist: frequency, sample sentences, existing memory wording |
+| `cat_get_brief` | Read the document brief before translating |
+| `cat_set_brief` | Update brief fields, or clear the whole brief |
+| `cat_get_context` | Brief, current segment, previous/next sources, and paragraph around a segment |
+| `cat_unconfirm_segment` | Revoke a confirmation without deleting the text or TM entry |
+| `cat_concordance` | Search every mounted TM for a word or phrase in source or target |
 | `cat_add_terms` | Add accepted terminology to a library in one batch |
 
 An agent can therefore draft a whole document without clicking in the UI:
@@ -383,7 +439,7 @@ document the user has open.
 flowchart LR
   UI["DSH Web UI<br/>(sidebar + workbench)"] --> Client["client.js<br/>generated Web bundle"]
   Client --> API["/cait/api/rpc<br/>same-origin JSON"]
-  Tools["15 agent tools"] --> Store["CatStore"]
+  Tools["20 agent tools"] --> Store["CatStore"]
   API --> Store
   Store --> Snapshot[("store.json<br/>+ sources/")]
 ```
@@ -400,48 +456,48 @@ flowchart LR
 
 ```text
 cait/
-├─ package.json
-├─ cordis.patch.yml
-├─ index.js                 # Host half
-├─ client.js                # generated Web bundle
-├─ client/                  # helpers, styles, RPC, components, locales, entry
-├─ scripts/build-client.mjs
-├─ icon.svg
-├─ locale/{en,zh,ja}.json
-├─ NOTICE
-├─ README.md
-├─ README.zh-CN.md
-├─ README.ja.md
-├─ CHANGELOG.md
-├─ lib/
-│  ├─ store.js              # CatStore facade + document/segment core
-│  ├─ errors.js
-│  ├─ store-utils.js
-│  ├─ libraries.js          # TM/glossary registries + mounts
-│  ├─ library-view.js       # Library paging/search + export entry points
-│  ├─ library-export.js     # Glossary TBX / CSV / JSON builders
-│  ├─ tm.js
-│  ├─ glossary.js
-│  ├─ persistence.js
-│  ├─ import-export.js
-│  ├─ formats.js            # CSV/SRT/VTT/PO/XLIFF/HTML/JSON/RTF
-│  ├─ html.js               # Shared HTML/XHTML run scanner + patcher
-│  ├─ epub.js               # EPUB package read / spine import / patch export
-│  ├─ preprocess.js         # Import-time source cleaning stage
-│  ├─ pre-translate.js      # Block pre-translation methods
-│  ├─ qa.js                 # Derived QA report (never persisted)
-│  ├─ xlsx.js
-│  ├─ pptx.js
-│  ├─ segmenter.js
-│  ├─ similarity.js
-│  ├─ tmx.js
-│  ├─ docx.js
-│  ├─ markdown.js
-│  ├─ xml.js
-│  ├─ mt.js
-│  ├─ tools.js
-│  └─ api.js
-└─ _dev/                    # tests, fixtures, local patch overlay
+鈹溾攢 package.json
+鈹溾攢 cordis.patch.yml
+鈹溾攢 index.js                 # Host half
+鈹溾攢 client.js                # generated Web bundle
+鈹溾攢 client/                  # helpers, styles, RPC, components, locales, entry
+鈹溾攢 scripts/build-client.mjs
+鈹溾攢 icon.svg
+鈹溾攢 locale/{en,zh,ja}.json
+鈹溾攢 NOTICE
+鈹溾攢 README.md
+鈹溾攢 README.zh-CN.md
+鈹溾攢 README.ja.md
+鈹溾攢 CHANGELOG.md
+鈹溾攢 lib/
+鈹? 鈹溾攢 store.js              # CatStore facade + document/segment core
+鈹? 鈹溾攢 errors.js
+鈹? 鈹溾攢 store-utils.js
+鈹? 鈹溾攢 libraries.js          # TM/glossary registries + mounts
+鈹? 鈹溾攢 library-view.js       # Library paging/search + export entry points
+鈹? 鈹溾攢 library-export.js     # Glossary TBX / CSV / JSON builders
+鈹? 鈹溾攢 tm.js
+鈹? 鈹溾攢 glossary.js
+鈹? 鈹溾攢 persistence.js
+鈹? 鈹溾攢 import-export.js
+鈹? 鈹溾攢 formats.js            # CSV/SRT/VTT/PO/XLIFF/HTML/JSON/RTF
+鈹? 鈹溾攢 html.js               # Shared HTML/XHTML run scanner + patcher
+鈹? 鈹溾攢 epub.js               # EPUB package read / spine import / patch export
+鈹? 鈹溾攢 preprocess.js         # Import-time source cleaning stage
+鈹? 鈹溾攢 pre-translate.js      # Block pre-translation methods
+鈹? 鈹溾攢 qa.js                 # Derived QA report (never persisted)
+鈹? 鈹溾攢 xlsx.js
+鈹? 鈹溾攢 pptx.js
+鈹? 鈹溾攢 segmenter.js
+鈹? 鈹溾攢 similarity.js
+鈹? 鈹溾攢 tmx.js
+鈹? 鈹溾攢 docx.js
+鈹? 鈹溾攢 markdown.js
+鈹? 鈹溾攢 xml.js
+鈹? 鈹溾攢 mt.js
+鈹? 鈹溾攢 tools.js
+鈹? 鈹斺攢 api.js
+鈹斺攢 _dev/                    # tests, fixtures, local patch overlay
 ```
 
 </details>
@@ -483,7 +539,7 @@ node _dev/test-e2e-1.1.mjs
 
 The import/export fixtures are `_dev/sample.docx`, `_dev/sample-table.docx`, and
 `_dev/sample-format.docx`; regenerate them with the matching
-`python _dev/make-*.py` scripts. All 29 suites should pass.
+`python _dev/make-*.py` scripts. All 36 suites should pass.
 
 ### Releasing
 
@@ -543,15 +599,19 @@ GitHub with a release.
 - One translation per source text per context: a repeated sentence keeps a
   separate variant for each surrounding pair, capped at 8 variants per key, and
   reuses the generic entry when the neighbours differ.
-- Context is the two neighbouring source sentences only; document, customer, or
-  project metadata is not part of the match.
+- TM context is the two neighbouring source sentences only; the document brief
+  and project metadata are used by MT prompts but are not part of TM scoring.
 - TBX and JSON glossary exports are one-way; only TMX and CSV import back.
 - The workbench UI ships in Chinese, English, and Japanese, switchable in
   Settings; this README ships in English, Simplified Chinese, and Japanese, and
   the English version is the source of truth.
 
-Planned next: image/vision input through a multimodal DSH route,
-style-preserving XLSX output, and XLIFF `<alt-trans>` / notes support.
+Planned next: per-document TM/glossary binding, word-count and leverage analysis,
+bilingual DOCX review output, and an XLIFF review package (1.1.5); then
+find/replace, segment merge/split/lock, comments, local undo (1.1.6), plus a
+term-extraction overhaul that stops ranking by frequency and can surface
+single-occurrence proper nouns and fiction terms, and an optional LLM review
+pass (1.1.6).
 
 ## Changelog and versioning
 
@@ -564,8 +624,13 @@ and the PDF policy, `v1.1.0` adds agent-driven pre-translation, the
 three-state segment model, stacked review, and advisory QA, `v1.1.1` adds
 the library workspace with TMX/TBX/CSV/JSON export, segment paging, and the
 panel-to-library jump, `v1.1.2` adds context-aware memory with 101% (ICE)
-matches, and `v1.1.3` adds two-file alignment, automatic propagation of
-repeated segments, terminology mining, and the proposal primitive agents use.
+matches, `v1.1.3` adds two-file alignment, automatic propagation of repeated
+segments, terminology mining, and the proposal primitive agents use, and
+`v1.1.4` adds the document brief, context-aware batch pre-translation,
+forbidden/preferred terminology, risk-graded QA with one-click fixes,
+concordance, and undo confirmation, and `v1.1.5` adds per-document TM/glossary
+scopes, word-count and leverage analysis, bilingual DOCX and XLIFF review
+packages, and TM maintenance.
 The project
 was developed as `0.1.0` and renumbered for the GitHub release.
 

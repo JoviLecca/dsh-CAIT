@@ -29,9 +29,11 @@ try {
       PLACEHOLDER_MISSING: 0,
       NUMBER_MISMATCH: 0,
       TERM_NOT_USED: 0,
+      TERM_FORBIDDEN: 0,
       EMPTY_TARGET: 0,
       UNTRANSLATED_RESIDUE: 0,
       INCONSISTENT_TARGET: 0,
+      LENGTH_DRIFT: 0,
     })
   }
 
@@ -84,6 +86,21 @@ try {
     const report = store.getQaReport({ documentId: doc.id })
     assert.equal(report.counts.TERM_NOT_USED, 1)
     assert.match(report.issues[0].message, /设置面板/)
+    assert.equal(report.issues[0].termTarget, '设置面板')
+    assert.equal(report.risks[0].risk, 'medium')
+    assert.deepEqual(report.risks[0].codes, ['TERM_NOT_USED'])
+  }
+
+  section('a forbidden term in the target is high risk')
+  {
+    const { store, doc } = storeWith('Open the settings panel.')
+    store.addGlossary({ source: 'settings panel', target: '设置面板', forbidden: true })
+    store.saveDraft({ documentId: doc.id, index: 0, target: '打开设置面板。' })
+    const report = store.getQaReport({ documentId: doc.id })
+    assert.equal(report.counts.TERM_FORBIDDEN, 1)
+    assert.equal(report.riskCounts.high, 1)
+    assert.equal(report.risks[0].risk, 'high')
+    assert.ok(report.risks[0].codes.includes('TERM_FORBIDDEN'))
   }
 
   section('a segment claimed as translated but empty is reported')
