@@ -273,21 +273,21 @@ provider/model/code/status; the client receives only `MT_PROVIDER_FAILED`.
 
 | Format | Import | Export | Notes |
 | --- | :---: | :---: | --- |
-| TXT / Markdown | 鉁?| 鉁?| Paragraph and sentence segmentation |
-| CSV | 鉁?| 鉁?| Comma, semicolon, tab, or pipe delimiter auto-detected; source/target column by header name or 1-based number; existing bilingual export |
-| DOCX | 鉁?| 鉁?| Body paragraphs; table blocks are excluded from import. Export patches the original package, keeping styles, numbering, images, headers, tables, and layout. |
-| EPUB | 鉁?| 鉁?| EPUB 3 spine order; XHTML text blocks with inline markup kept as tokens and patched back into the retained package. DRM-protected, fixed-layout, and scripted EPUBs are not supported. |
-| TMX 1.4 | 鉁?| 鉁?| Common `<tu>/<tuv>/<seg>` subset; inline markup flattened with warning; context kept in `<prop type="x-context">` |
-| SRT / WebVTT | 鉁?| 鉁?| One cue per segment, timings/settings/identifier retained; semantic tags kept; invalid ranges rejected |
-| PO | 鉁?| 鉁?| Contexts, plural forms, translator comments, obsolete `#~` entries |
-| XLIFF 1.2 | 鉁?| 鉁?| Inline tags become `{n}` tokens; missing tokens block confirmation |
-| XLIFF 2.0 | 鉁?| 鉁?| Basic `<unit><segment><source>/<target>` subset |
-| SDLXLIFF | 鉁?| 鉁?| Basic XLIFF 1.2 path; SDL-specific extensions are not round-tripped |
-| HTML | 鉁?| 鉁?| Text blocks and inline tags preserved; document CSS/layout is not rebuilt |
-| JSON | 鉁?| 鉁?| String-path subset; object/array structure preserved via a template; keys and numbers are not translated |
-| XLSX | 鉁?| 鉁?| First worksheet; `Source`/`Target` headers or columns A/B; export is a new two-column workbook |
-| PPTX | 鉁?| 鉁? | Source-preserving export; requires the imported `.pptx` package. Body text only; notes/charts/SmartArt not imported. |
-| RTF | 鉁?| 鉁?| Basic paragraphs, `\uN`, `\'hh`, control words; original styling not round-tripped |
+| TXT / Markdown | ✅ | ✅ | Paragraph and sentence segmentation |
+| CSV | ✅ | ✅ | Comma, semicolon, tab, or pipe delimiter auto-detected; source/target column by header name or 1-based number; existing bilingual export |
+| DOCX | ✅ | ✅ | Body paragraphs; table blocks are excluded from import. Export patches the original package, keeping styles, numbering, images, headers, tables, and layout. |
+| EPUB | ✅ | ✅ | EPUB 3 spine order; XHTML text blocks with inline markup kept as tokens and patched back into the retained package. DRM-protected, fixed-layout, and scripted EPUBs are not supported. |
+| TMX 1.4 | ✅ | ✅ | Common `<tu>/<tuv>/<seg>` subset; inline markup flattened with warning; context kept in `<prop type="x-context">` |
+| SRT / WebVTT | ✅ | ✅ | One cue per segment, timings/settings/identifier retained; semantic tags kept; invalid ranges rejected |
+| PO | ✅ | ✅ | Contexts, plural forms, translator comments, obsolete `#~` entries |
+| XLIFF 1.2 | ✅ | ✅ | Inline tags become `{n}` tokens; missing tokens block confirmation |
+| XLIFF 2.0 | ✅ | ✅ | Basic `<unit><segment><source>/<target>` subset |
+| SDLXLIFF | ✅ | ✅ | Basic XLIFF 1.2 path; SDL-specific extensions are not round-tripped |
+| HTML | ✅ | ✅ | Text blocks and inline tags preserved; document CSS/layout is not rebuilt |
+| JSON | ✅ | ✅ | String-path subset; object/array structure preserved via a template; keys and numbers are not translated |
+| XLSX | ✅ | ✅ | First worksheet; `Source`/`Target` headers or columns A/B; export is a new two-column workbook |
+| PPTX | ✅ | ✅ | Source-preserving export; requires the imported `.pptx` package. Body text only; notes/charts/SmartArt not imported. |
+| RTF | ✅ | ✅ | Basic paragraphs, `\uN`, `\'hh`, control words; original styling not round-tripped |
 
 \* PPTX export fails with `PPTX_SOURCE_REQUIRED` when the retained source package
 is missing rather than silently producing an unformatted deck.
@@ -474,48 +474,48 @@ flowchart LR
 
 ```text
 cait/
-鈹溾攢 package.json
-鈹溾攢 cordis.patch.yml
-鈹溾攢 index.js                 # Host half
-鈹溾攢 client.js                # generated Web bundle
-鈹溾攢 client/                  # helpers, styles, RPC, components, locales, entry
-鈹溾攢 scripts/build-client.mjs
-鈹溾攢 icon.svg
-鈹溾攢 locale/{en,zh,ja}.json
-鈹溾攢 NOTICE
-鈹溾攢 README.md
-鈹溾攢 README.zh-CN.md
-鈹溾攢 README.ja.md
-鈹溾攢 CHANGELOG.md
-鈹溾攢 lib/
-鈹? 鈹溾攢 store.js              # CatStore facade + document/segment core
-鈹? 鈹溾攢 errors.js
-鈹? 鈹溾攢 store-utils.js
-鈹? 鈹溾攢 libraries.js          # TM/glossary registries + mounts
-鈹? 鈹溾攢 library-view.js       # Library paging/search + export entry points
-鈹? 鈹溾攢 library-export.js     # Glossary TBX / CSV / JSON builders
-鈹? 鈹溾攢 tm.js
-鈹? 鈹溾攢 glossary.js
-鈹? 鈹溾攢 persistence.js
-鈹? 鈹溾攢 import-export.js
-鈹? 鈹溾攢 formats.js            # CSV/SRT/VTT/PO/XLIFF/HTML/JSON/RTF
-鈹? 鈹溾攢 html.js               # Shared HTML/XHTML run scanner + patcher
-鈹? 鈹溾攢 epub.js               # EPUB package read / spine import / patch export
-鈹? 鈹溾攢 preprocess.js         # Import-time source cleaning stage
-鈹? 鈹溾攢 pre-translate.js      # Block pre-translation methods
-鈹? 鈹溾攢 qa.js                 # Derived QA report (never persisted)
-鈹? 鈹溾攢 xlsx.js
-鈹? 鈹溾攢 pptx.js
-鈹? 鈹溾攢 segmenter.js
-鈹? 鈹溾攢 similarity.js
-鈹? 鈹溾攢 tmx.js
-鈹? 鈹溾攢 docx.js
-鈹? 鈹溾攢 markdown.js
-鈹? 鈹溾攢 xml.js
-鈹? 鈹溾攢 mt.js
-鈹? 鈹溾攢 tools.js
-鈹? 鈹斺攢 api.js
-鈹斺攢 _dev/                    # tests, fixtures, local patch overlay
+├─ package.json
+├─ cordis.patch.yml
+├─ index.js                 # Host half
+├─ client.js                # generated Web bundle
+├─ client/                  # helpers, styles, RPC, components, locales, entry
+├─ scripts/build-client.mjs
+├─ icon.svg
+├─ locale/{en,zh,ja}.json
+├─ NOTICE
+├─ README.md
+├─ README.zh-CN.md
+├─ README.ja.md
+├─ CHANGELOG.md
+├─ lib/
+│  ├─ store.js              # CatStore facade + document/segment core
+│  ├─ errors.js
+│  ├─ store-utils.js
+│  ├─ libraries.js          # TM/glossary registries + mounts
+│  ├─ library-view.js       # Library paging/search + export entry points
+│  ├─ library-export.js     # Glossary TBX / CSV / JSON builders
+│  ├─ tm.js
+│  ├─ glossary.js
+│  ├─ persistence.js
+│  ├─ import-export.js
+│  ├─ formats.js            # CSV/SRT/VTT/PO/XLIFF/HTML/JSON/RTF
+│  ├─ html.js               # Shared HTML/XHTML run scanner + patcher
+│  ├─ epub.js               # EPUB package read / spine import / patch export
+│  ├─ preprocess.js         # Import-time source cleaning stage
+│  ├─ pre-translate.js      # Block pre-translation methods
+│  ├─ qa.js                 # Derived QA report (never persisted)
+│  ├─ xlsx.js
+│  ├─ pptx.js
+│  ├─ segmenter.js
+│  ├─ similarity.js
+│  ├─ tmx.js
+│  ├─ docx.js
+│  ├─ markdown.js
+│  ├─ xml.js
+│  ├─ mt.js
+│  ├─ tools.js
+│  └─ api.js
+└─ _dev/                    # tests, fixtures, local patch overlay
 ```
 
 </details>
