@@ -16,12 +16,12 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm 版本" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
-  <img alt="36 套测试" src="https://img.shields.io/badge/tests-36%20suites-brightgreen.svg" />
+  <img alt="41 套测试" src="https://img.shields.io/badge/tests-41%20suites-brightgreen.svg" />
   <img alt="无需 API Key" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
 </p>
 
 CAIT 为 DSH Web UI 和 DSH 桌面端增加一个 CAT 翻译工作台。它从左侧栏入口打开，
-工作台与十五个 Agent 工具共用一个数据存储，覆盖从导入源文件到导出译文的完整流程。
+工作台与二十一个 Agent 工具共用一个数据存储，覆盖从导入源文件到导出译文的完整流程。
 
 > **已在 DSH `0.2.2-rc.1` 中验证。** CAIT 使用 DSH 自己的模型路由和凭据，
 > 不会要求用户填写 API Key。内部回退提供方仍叫 `mock`，界面显示为
@@ -36,7 +36,7 @@ CAIT 为 DSH Web UI 和 DSH 桌面端增加一个 CAT 翻译工作台。它从�
 | **术语感知编辑** | 支持多个术语库、按源语言过滤、行内高亮、点击插入术语，以及按术语设置是否区分大小写。 |
 | **完整文档流程** | 文档标签页、关闭/重新打开、最近文档清理、重复导入复用、逐文档进度。 |
 | **真实格式覆盖** | TXT、Markdown、DOCX、EPUB、TMX、CSV、SRT/VTT、PO、XLIFF 1.2/2.0/SDLXLIFF、HTML、JSON、XLSX、PPTX、RTF。 |
-| **面向 Agent** | 十个工具共享当前文档和存储，Agent 可以与用户同时翻译。 |
+| **面向 Agent** | 二十一个工具共享当前文档和存储，Agent 可以与用户同时翻译。 |
 
 ## 快速开始
 
@@ -52,6 +52,15 @@ CAIT 为 DSH Web UI 和 DSH 桌面端增加一个 CAT 翻译工作台。它从�
 无需手动刷新即可出现。
 
 ## 功能
+
+### 1.1.6 新增
+
+- **查找替换**：原文/译文预览、一次应用、撤销上次替换；已确认句段的译文被改动时自动回到待审状态。
+- **命令面板**（`Ctrl/Cmd+K`）与 `Ctrl/Cmd+F` 查找替换。
+- **句段备注**，以及句段内的**草稿撤销/重做**（`Ctrl/Cmd+Z`、`Ctrl/Cmd+Shift+Z`、`Ctrl/Cmd+Y`）。
+- **合并、拆分、锁定**文本句段；合并/拆分目前只开放 TXT 与 Markdown，Office 段落映射还不能安全回填。
+- **单次专名术语发现**：引号内术语、句中大写名、中文人名/地名/造物名即使只出现一次也会进入候选，并带类型、置信度和原句证据；不会自动入库。
+- **AI 审校**：QA 标签页可以请求当前 DSH 模型给出结构化建议，跳到对应句段或把建议填入译文；Agent 可调用 `cat_review`，两者都不会直接写文档。审校默认跟随翻译模型，也可以在设置里单独选择 provider 和模型。
 
 ### 1.1.5 新增
 
@@ -247,7 +256,7 @@ CAIT 以 DSH bundle 的形式安装；发布的 npm 包名为 `dsh-cait`，插�
 plugin_manager install_bundle target: dsh-cait
 ```
 
-需要固定版本时写 `dsh-cait@1.1.5`，需要最新版时写 `dsh-cait@latest`。管理器会解析 registry
+需要固定版本时写 `dsh-cait@1.1.6`，需要最新版时写 `dsh-cait@latest`。管理器会解析 registry
 上的包、应用 bundle patch 并激活插件，不需要手工在配置档里加行。
 
 使用 CLI 管理的配置档：
@@ -346,6 +355,7 @@ TM 返回条数、MT 路由/模型/温度，以及界面语言（`uiLang`：`aut
 | `cat_consistency_report` | 按原文分组列出译文不一致的句段 |
 | `cat_term_candidates` | 术语候选短名单：频次、例句、记忆库里已有的译法 |
 | `cat_add_terms` | 一次性把选中的术语写进术语库 |
+| `cat_review` | 请求模型给出结构化审校建议；不会直接写文档 |
 
 因此 Agent 可以完全不点界面就把整篇铺底：反复调用 `cat_pre_translate`
 （`from: next`）直到 `next` 为 `null`，用 `cat_get_segments` 查看，再用
@@ -360,7 +370,7 @@ TM 返回条数、MT 路由/模型/温度，以及界面语言（`uiLang`：`aut
 flowchart LR
   UI["DSH Web UI<br/>(侧栏 + 工作台)"] --> Client["client.js<br/>生成的 Web bundle"]
   Client --> API["/cait/api/rpc<br/>同源 JSON"]
-  Tools["15 个 Agent 工具"] --> Store["CatStore"]
+  Tools["21 个 Agent 工具"] --> Store["CatStore"]
   API --> Store
   Store --> Snapshot[("store.json<br/>+ sources/")]
 ```
@@ -445,7 +455,7 @@ node _dev/test-mt.mjs
 
 导入/导出 fixture 为 `_dev/sample.docx`、`_dev/sample-table.docx` 和
 `_dev/sample-format.docx`；可用对应的 `python _dev/make-*.py` 脚本重新生成。
-36 套测试应全部通过。
+41 套测试应全部通过。
 
 ### 发布
 

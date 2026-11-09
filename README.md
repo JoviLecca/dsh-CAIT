@@ -16,7 +16,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm version" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
-  <img alt="Tests: 36 suites" src="https://img.shields.io/badge/tests-36%20suites-brightgreen.svg" />
+  <img alt="Tests: 41 suites" src="https://img.shields.io/badge/tests-41%20suites-brightgreen.svg" />
   <img alt="No API key required" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
 </p>
 
@@ -38,7 +38,7 @@ translated document.
 | **Glossary-aware editing** | Multiple term bases, source-language filtering, inline highlighting, click-to-insert terms, and per-term case sensitivity. |
 | **A document workflow** | Tabs, close/reopen, recent-document cleanup, duplicate-import reuse, and progress per document. |
 | **Real format coverage** | TXT, Markdown, DOCX, EPUB, TMX, CSV, SRT/VTT, PO, XLIFF 1.2/2.0/SDLXLIFF, HTML, JSON, XLSX, PPTX, and RTF. |
-| **Agent-ready** | Twenty tools share the open document and store, so an agent can translate alongside you. |
+| **Agent-ready** | Twenty-one tools share the open document and store, so an agent can translate alongside you. |
 
 ## Quick start
 
@@ -56,6 +56,23 @@ Host revision every two seconds, so changes made by an agent appear without a
 manual reload.
 
 ## Features
+
+### New in 1.1.6
+
+- **Find and replace** across source/target with a preview, one-step apply, and
+  undo; confirmed segments return to review when their target changes.
+- **Command palette** (`Ctrl/Cmd+K`) and `Ctrl/Cmd+F` for find and replace.
+- **Segment notes** for review comments, plus per-segment **draft undo/redo**.
+- **Merge, split, and lock** text segments. Merge/split are limited to TXT and
+  Markdown until Office paragraph mapping can be written back safely.
+- **Term discovery for one-off names.** Quoted terms, capitalized names, and
+  Chinese proper names that occur once are offered as candidates with evidence,
+  type, and confidence; nothing is added to the glossary automatically.
+- **AI review.** The QA tab can ask the configured DSH route for structured
+  suggestions, jump to a segment, and fill a suggestion into the draft. Agents can
+  call `cat_review`; neither path writes the document. Review follows the
+  translation model by default, and Settings can give it a separate provider and
+  model.
 
 ### New in 1.1.5
 
@@ -314,7 +331,7 @@ In DSH Desktop (or any profile with the `plugin_manager` tool):
 plugin_manager install_bundle target: dsh-cait
 ```
 
-Pin a release with `dsh-cait@1.1.5`, or ask for the newest one with
+Pin a release with `dsh-cait@1.1.6`, or ask for the newest one with
 `dsh-cait@latest`. The manager resolves the registry package, applies the bundle
 patch, and activates the plugin — no hand-written profile rows.
 
@@ -416,13 +433,14 @@ confirmed becomes `translated` with `origin: manual`.
 | `cat_propose_translation` | Leave a suggestion plus a reason without touching the confirmed target |
 | `cat_align` | Align two texts and report high / to-review / doubtful pairs |
 | `cat_consistency_report` | Group repeated sources that carry different translations |
-| `cat_term_candidates` | Mining shortlist: frequency, sample sentences, existing memory wording |
+| `cat_term_candidates` | Mining shortlist, including one-off proper names, with type/confidence and evidence |
 | `cat_get_brief` | Read the document brief before translating |
 | `cat_set_brief` | Update brief fields, or clear the whole brief |
 | `cat_get_context` | Brief, current segment, previous/next sources, and paragraph around a segment |
 | `cat_unconfirm_segment` | Revoke a confirmation without deleting the text or TM entry |
 | `cat_concordance` | Search every mounted TM for a word or phrase in source or target |
 | `cat_add_terms` | Add accepted terminology to a library in one batch |
+| `cat_review` | Ask the model for structured review suggestions; never writes the document |
 
 An agent can therefore draft a whole document without clicking in the UI:
 `cat_pre_translate` with `from: next` until `next` is `null`, then
@@ -439,7 +457,7 @@ document the user has open.
 flowchart LR
   UI["DSH Web UI<br/>(sidebar + workbench)"] --> Client["client.js<br/>generated Web bundle"]
   Client --> API["/cait/api/rpc<br/>same-origin JSON"]
-  Tools["20 agent tools"] --> Store["CatStore"]
+  Tools["21 agent tools"] --> Store["CatStore"]
   API --> Store
   Store --> Snapshot[("store.json<br/>+ sources/")]
 ```
@@ -533,6 +551,11 @@ node _dev/test-qa.mjs
 node _dev/test-library-crud.mjs
 node _dev/test-library-view.mjs
 node _dev/test-pagination.mjs
+node _dev/test-replace.mjs
+node _dev/test-notes.mjs
+node _dev/test-lock.mjs
+node _dev/test-segment-edit.mjs
+node _dev/test-review.mjs
 node _dev/test-theme-tokens.mjs
 node _dev/test-e2e-1.1.mjs
 ```

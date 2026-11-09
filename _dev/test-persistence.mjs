@@ -39,7 +39,7 @@ try {
 
   const snapshot = JSON.parse(readFileSync(file, 'utf8'))
   assert.equal(snapshot.version, STORE_VERSION)
-  assert.equal(STORE_VERSION, 6, 'per-document library bindings need a new store version')
+  assert.equal(STORE_VERSION, 7, 'segment notes need a new store version')
   assert.equal(snapshot.activeDocId, documentId)
   assert.deepEqual(snapshot.openDocIds, [documentId])
   assert.equal(snapshot.documents.length, 1)

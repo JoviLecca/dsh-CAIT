@@ -313,11 +313,31 @@ window.__ModuleLoader__.load({
 .cait-seg-warn.medium{background:var(--dsw-alias-state-warn-primary)}
 .cait-seg-warn.low{background:var(--dsw-alias-label-secondary)}
 .cait-seg-flags{display:flex;align-items:center;gap:5px;flex:0 0 auto}
+.cait-seg-flags .cait-linkbtn{display:inline-flex;align-items:center;justify-content:center;gap:3px;height:21px;padding:0 5px;border-radius:6px;font-size:10px;line-height:1;white-space:nowrap;text-decoration:none}
+.cait-seg-flags .cait-linkbtn:hover{background:var(--dsw-alias-bg-layer-1);text-decoration:none}
+.cait-seg-flags .cait-linkbtn.active{background:color-mix(in srgb,var(--dsw-alias-brand-primary) 12%,transparent);color:var(--dsw-alias-brand-primary)}
+.cait-seg-flags .cait-linkbtn svg{flex:0 0 auto}
+.cait-seg-flags .cait-badge{height:21px;padding:0 9px;line-height:1;font-size:10px}
+.cait-seg-flags .cait-riskchip{height:18px}
+.cait-seg-flags .cait-notecount{height:15px;min-width:15px;line-height:1}
 .cait-riskchip{display:inline-flex;align-items:center;height:17px;padding:0 6px;border:1px solid transparent;border-radius:999px;font-size:9.5px;font-weight:650;letter-spacing:.01em}
 .cait-riskchip.high{color:var(--dsw-alias-state-error-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-error-primary) 35%,transparent);background:color-mix(in srgb,var(--dsw-alias-state-error-primary) 9%,transparent)}
 .cait-riskchip.medium{color:var(--dsw-alias-state-warn-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 38%,transparent);background:color-mix(in srgb,var(--dsw-alias-state-warn-primary) 10%,transparent)}
 .cait-riskchip.low{color:var(--dsw-alias-label-secondary);border-color:var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1)}
 .cait-brieflink{height:20px;padding:0 4px;gap:3px;font-size:10px}
+.cait-notelink{height:20px;padding:0 4px;gap:3px;font-size:10px}
+.cait-notecount{display:inline-grid;place-items:center;min-width:14px;height:14px;padding:0 3px;border-radius:7px;background:color-mix(in srgb,var(--dsw-alias-brand-primary) 16%,transparent);color:var(--dsw-alias-brand-primary);font-size:9px}
+.cait-notelist{display:flex;flex-direction:column;gap:7px;margin:10px 0 12px;font-size:11.5px;line-height:1.55;color:var(--dsw-alias-label-secondary)}
+.cait-noteitem{padding:8px 9px;border:1px solid var(--dsw-alias-border-l1);border-radius:8px;background:var(--dsw-alias-bg-layer-1)}
+.cait-notehead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.cait-noteauthor{font-size:10px;font-weight:650;color:var(--dsw-alias-label-primary)}
+.cait-notetime{font-size:9.5px;color:var(--dsw-alias-label-secondary);font-variant-numeric:tabular-nums}
+.cait-notetext{font-size:11.5px;line-height:1.6;color:var(--dsw-alias-label-primary);white-space:pre-wrap;overflow-wrap:anywhere}
+.cait-noteactions{display:flex;align-items:center;justify-content:flex-end;gap:5px;margin-top:5px}
+.cait-noteactions .cait-minibtn{margin-left:0}
+.cait-noteadd{display:flex;flex-direction:column;gap:7px;margin-top:8px}
+.cait-noteadd .cait-textarea,.cait-noteitem .cait-textarea{min-height:64px;padding:7px 8px;border-radius:7px;font-size:11.5px;line-height:1.55}
+.cait-minibtn.cait-danger:hover{color:var(--dsw-alias-state-error-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-error-primary) 32%,var(--dsw-alias-border-l1))}
 .cait-briefdot{width:4px;height:4px;border-radius:50%;background:var(--dsw-alias-brand-primary)}
 .cait-briefform{display:flex;flex-direction:column;gap:11px;margin:12px 0 4px}
 .cait-resource-section{display:flex;flex-direction:column;gap:6px}
@@ -331,6 +351,27 @@ window.__ModuleLoader__.load({
 .cait-analysis-stat{display:flex;flex-direction:column;gap:2px;padding:7px 9px;border:1px solid var(--dsw-alias-border-secondary);border-radius:6px;font-size:10.5px;color:var(--dsw-alias-label-secondary)}
 .cait-analysis-stat strong{font-size:15px;color:var(--dsw-alias-label-primary);font-variant-numeric:tabular-nums}
 .cait-analysis-total{display:flex;gap:14px;font-size:11px;color:var(--dsw-alias-label-secondary)}
+.cait-replaceform{display:flex;flex-direction:column;gap:10px;margin:12px 0}
+.cait-replaceoptions{display:flex;align-items:flex-end;flex-wrap:wrap;gap:14px}
+.cait-replaceresults{margin-top:12px}
+.cait-replacecounts{font-size:11px;font-weight:600;color:var(--dsw-alias-label-primary)}
+.cait-replacelist{max-height:220px;overflow:auto;margin-top:7px;border:1px solid var(--dsw-alias-border-l1);border-radius:7px}
+.cait-replaceitem{padding:7px 9px;border-bottom:1px solid var(--dsw-alias-border-l1);font-size:10.5px}
+.cait-replaceitem:last-child{border-bottom:0}
+.cait-replacehead{display:flex;align-items:center;gap:8px;margin-bottom:3px;color:var(--dsw-alias-label-secondary)}
+.cait-replacefield{font-weight:600;color:var(--dsw-alias-label-primary)}
+.cait-replacecount{margin-left:auto;font-variant-numeric:tabular-nums}
+.cait-replacebefore,.cait-replaceafter{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--dsw-font-mono,monospace);line-height:1.5}
+.cait-replacebefore{color:var(--dsw-alias-label-secondary);text-decoration:line-through}
+.cait-replaceafter{color:var(--dsw-alias-label-primary)}
+.cait-palette-input{margin:10px 0 7px}
+.cait-palette-list{max-height:280px;overflow:auto;border:1px solid var(--dsw-alias-border-l1);border-radius:7px}
+.cait-palette-item{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:8px 10px;border:0;border-bottom:1px solid var(--dsw-alias-border-l1);background:transparent;color:var(--dsw-alias-label-primary);text-align:left;font-size:11px}
+.cait-palette-item:last-child{border-bottom:0}
+.cait-palette-item.active{background:var(--dsw-alias-bg-layer-1)}
+.cait-palette-label{font-weight:600}
+.cait-palette-hint{color:var(--dsw-alias-label-secondary);font-size:10px}
+.cait-palette-foot{margin:8px 0 0;font-size:10px;color:var(--dsw-alias-label-secondary);text-align:right}
 .cait-riskcounts{display:flex;flex-wrap:wrap;gap:6px;margin:2px 0 9px}
 .cait-riskcount{display:inline-flex;align-items:center;height:20px;padding:0 7px;border:1px solid var(--dsw-alias-border-l1);border-radius:999px;font-size:10px;font-weight:600;color:var(--dsw-alias-label-secondary)}
 .cait-riskcount.high{color:var(--dsw-alias-state-error-primary);border-color:color-mix(in srgb,var(--dsw-alias-state-error-primary) 35%,transparent)}
@@ -469,6 +510,16 @@ window.__ModuleLoader__.load({
 .cait-panel-foot{display:flex;align-items:center;gap:5px;margin-top:10px;padding-top:9px;border-top:1px solid var(--dsw-alias-border-l1);flex-wrap:wrap}
 .cait-panel-foot .cait-btn{height:26px;padding:0 7px;font-size:10px}
 .cait-subhead{display:flex;align-items:center;justify-content:space-between;margin:2px 1px 7px;font-size:10px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--dsw-alias-label-secondary)}
+.cait-subhead-actions{display:flex;align-items:center;gap:6px}
+.cait-review{margin-top:10px;padding-top:8px;border-top:1px solid var(--dsw-alias-border-l1)}
+.cait-reviewrow{display:flex;align-items:flex-start;gap:7px;width:100%;margin-bottom:6px;padding:7px 8px;border:1px solid var(--dsw-alias-border-l1);border-left:3px solid var(--dsw-alias-state-warn-primary);border-radius:7px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);text-align:left;cursor:pointer}
+.cait-reviewrow:hover{background:var(--dsw-alias-bg-layer-2)}
+.cait-reviewrow-index{min-width:18px;font-size:10px;font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-secondary);padding-top:2px}
+.cait-reviewrow-body{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0;flex:1}
+.cait-reviewrow-msg{font-size:11px;line-height:1.45;overflow-wrap:anywhere}
+.cait-reviewrow-msg.high{color:var(--dsw-alias-state-error-primary)}
+.cait-reviewrow-msg.medium{color:var(--dsw-alias-state-warn-primary)}
+.cait-reviewrow-msg.low{color:var(--dsw-alias-label-secondary)}
 .cait-term{padding:8px 9px;margin-bottom:6px;border:1px solid var(--dsw-alias-border-l1);border-radius:8px;background:var(--dsw-alias-bg-layer-1)}
 .cait-term-main{display:flex;align-items:baseline;gap:5px;min-width:0;font-size:11.5px}
 .cait-term-main strong{font-weight:650;overflow-wrap:anywhere}
@@ -524,6 +575,7 @@ window.__ModuleLoader__.load({
 .cait-formfoot .cait-btn{margin-left:auto}
 .cait-linkbtn{border:0;background:transparent;color:var(--dsw-alias-brand-primary);font-size:11px;font-weight:600;padding:3px 0}
 .cait-linkbtn:hover{text-decoration:underline}
+.cait-linkbtn.active{color:var(--dsw-alias-label-primary);text-decoration:none}
 .cait-demo-row{display:flex;align-items:center;gap:8px;margin-top:11px;font-size:10.5px;color:var(--dsw-alias-label-secondary)}
 .cait-overlay{position:absolute;inset:0;z-index:20;display:grid;place-items:center;padding:18px;background:color-mix(in srgb,var(--dsw-alias-label-primary) 22%,transparent);backdrop-filter:blur(2px)}
 .cait-modal{width:min(530px,100%);max-height:92%;overflow:auto;border:1px solid var(--dsw-alias-border-l1);border-radius:13px;background:var(--dsw-alias-bg-layer-2);box-shadow:0 18px 55px color-mix(in srgb,var(--dsw-alias-label-primary) 22%,transparent)}
@@ -802,6 +854,9 @@ window.__ModuleLoader__.load({
         align: ['M2 5h8', 'M2 11h5', 'M12 3v10', 'M10 11l2 2 2-2'],
         folder: ['M2 4h4l1.5 2H14v6.5H2z'],
         chart: ['M3 13V8', 'M8 13V3', 'M13 13V6', 'M2 14h12'],
+        message: ['M2 3h12v8H8l-3 3v-3H2z'],
+        lock: ['M4 7h8v6H4z', 'M6 7V5a2 2 0 0 1 4 0v2'],
+        unlock: ['M4 7h8v6H4z', 'M6 7V5a2 2 0 0 1 3.8-1'],
       }
       const shape = paths[name] || paths.file
       return h(
@@ -1067,6 +1122,7 @@ window.__ModuleLoader__.load({
       pre,
       onPreTranslate,
       onCancelPreTranslate,
+      onReplace,
       view,
       onView,
     }) {
@@ -1170,6 +1226,19 @@ window.__ModuleLoader__.load({
                 },
                 h(Icon, { name: 'sparkles', size: 14 }),
                 h('span', { className: 'cait-btn-label' }, t('pretranslate.start')),
+              )
+            : null,
+          documentsView
+            ? h(
+                'button',
+                {
+                  className: 'cait-btn',
+                  onClick: onReplace,
+                  disabled: Boolean(busy) || !doc,
+                  title: t('replace.open'),
+                },
+                h(Icon, { name: 'search', size: 14 }),
+                h('span', { className: 'cait-btn-label' }, t('replace.open')),
               )
             : null,
           documentsView
@@ -1508,7 +1577,7 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function EditorPane({ t, doc, index, segment, detail, draft, setDraft, dirty, busy, onConfirm, onUnconfirm, onNext, onPrev, onSave, onAdopt, onApplyTerm, onOpenBrief, onOpenResources, onOpenAnalysis, qaRisk, textareaRef }) {
+    function EditorPane({ t, doc, index, segment, detail, draft, setDraft, dirty, busy, onConfirm, onUnconfirm, onNext, onPrev, onSave, onUndo, onRedo, canUndo, canRedo, onToggleLock, onMerge, onSplit, onAdopt, onApplyTerm, onOpenBrief, onOpenResources, onOpenAnalysis, onOpenNotes, noteCount, qaRisk, textareaRef }) {
       const hits = detail?.index === index ? detail.glossaryHits : []
       const charCount = Array.from(draft || '').length
       const progress = doc.progress
@@ -1525,9 +1594,31 @@ window.__ModuleLoader__.load({
       // against. It is stored in `suggestion`, which adoption already preserves.
       const baselineText = segment.suggestion || ''
       const baselineOrigin = segment.origin || 'agent'
+      const canMerge = !segment.locked && index < doc.segments.length - 1
+      const canSplit = !segment.locked && String(segment.source || '').length > 1
+      const splitAtCursor = () => {
+        const sourceLength = String(segment.source || '').length
+        const targetLength = String(draft || '').length
+        const cursor = textareaRef?.current?.selectionStart
+        const ratio = targetLength > 0 && Number.isInteger(cursor) ? cursor / targetLength : 0.5
+        const at = Math.max(1, Math.min(sourceLength - 1, Math.round(sourceLength * ratio)))
+        onSplit(at)
+      }
 
-      const onKeyDown = (event) => {        const mod = event.metaKey || event.ctrlKey
-        if (mod && event.key === 'Enter') {
+      const onKeyDown = (event) => {
+        const mod = event.metaKey || event.ctrlKey
+        if (mod && event.key.toLowerCase() === 'z') {
+          if (canUndo || canRedo) {
+            event.preventDefault()
+            if (event.shiftKey) onRedo()
+            else onUndo()
+          }
+        } else if (mod && event.key.toLowerCase() === 'y') {
+          if (canRedo) {
+            event.preventDefault()
+            onRedo()
+          }
+        } else if (mod && event.key === 'Enter') {
           event.preventDefault()
           onConfirm()
         } else if (mod && event.key.toLowerCase() === 's') {
@@ -1607,6 +1698,28 @@ window.__ModuleLoader__.load({
           h(
             'span',
             { className: 'cait-seg-flags' },
+            h(
+              'button',
+              {
+                className: `cait-linkbtn ${segment.locked ? 'active' : ''}`,
+                onClick: onToggleLock,
+                title: segment.locked ? t('editor.unlock') : t('editor.lock'),
+                'aria-pressed': Boolean(segment.locked),
+              },
+              h(Icon, { name: segment.locked ? 'unlock' : 'lock', size: 11 }),
+              segment.locked ? t('editor.locked') : t('editor.lock'),
+            ),
+            h(
+              'button',
+              {
+                className: 'cait-linkbtn cait-notelink',
+                onClick: onOpenNotes,
+                title: t('notes.hint'),
+              },
+              h(Icon, { name: 'message', size: 11 }),
+              t('editor.notes'),
+              noteCount ? h('span', { className: 'cait-notecount' }, String(noteCount)) : null,
+            ),
             qaRisk
               ? h(
                   'span',
@@ -1698,6 +1811,7 @@ window.__ModuleLoader__.load({
               value: draft,
               onChange: (event) => setDraft(event.target.value),
               onKeyDown,
+              readOnly: Boolean(segment.locked),
               placeholder: t('editor.targetPlaceholder'),
               spellCheck: false,
               rows: 8,
@@ -1709,14 +1823,14 @@ window.__ModuleLoader__.load({
           { className: 'cait-actionbar' },
           h(
             'button',
-            { className: 'cait-btn cait-btn-primary', onClick: onConfirm, disabled: Boolean(busy) || !draft.trim() },
+            { className: 'cait-btn cait-btn-primary', onClick: onConfirm, disabled: Boolean(busy) || Boolean(segment.locked) || !draft.trim() },
             busy === 'confirm' ? h(Spinner) : h(Icon, { name: 'check', size: 14 }),
             segment.status === 'confirmed' ? t('editor.update') : t('editor.confirm'),
           ),
           segment.status === 'confirmed'
             ? h(
                 'button',
-                { className: 'cait-btn cait-btn-ghost', onClick: onUnconfirm, disabled: Boolean(busy), title: t('editor.unconfirmHint') },
+                { className: 'cait-btn cait-btn-ghost', onClick: onUnconfirm, disabled: Boolean(busy) || Boolean(segment.locked), title: t('editor.unconfirmHint') },
                 h(Icon, { name: 'refresh', size: 13 }),
                 t('editor.unconfirm'),
               )
@@ -1735,7 +1849,27 @@ window.__ModuleLoader__.load({
           ),
           h(
             'button',
-            { className: 'cait-iconbtn cait-savebtn', onClick: onSave, disabled: Boolean(busy) || !dirty, title: t('editor.save') },
+            { className: 'cait-btn cait-btn-ghost', onClick: onMerge, disabled: Boolean(busy) || !canMerge, title: t('editor.mergeHint') },
+            t('editor.merge'),
+          ),
+          h(
+            'button',
+            { className: 'cait-btn cait-btn-ghost', onClick: splitAtCursor, disabled: Boolean(busy) || !canSplit, title: t('editor.splitHint') },
+            t('editor.split'),
+          ),
+          h(
+            'button',
+            { className: 'cait-iconbtn', onClick: onUndo, disabled: Boolean(busy) || !canUndo, title: t('editor.undo'), 'aria-label': t('editor.undo') },
+            '↶',
+          ),
+          h(
+            'button',
+            { className: 'cait-iconbtn', onClick: onRedo, disabled: Boolean(busy) || !canRedo, title: t('editor.redo'), 'aria-label': t('editor.redo') },
+            '↷',
+          ),
+          h(
+            'button',
+            { className: 'cait-iconbtn cait-savebtn', onClick: onSave, disabled: Boolean(busy) || Boolean(segment.locked) || !dirty, title: t('editor.save') },
             h(Icon, { name: 'save', size: 14 }),
           ),
           h('span', { className: 'cait-hint' }, t('editor.hint')),
@@ -1862,6 +1996,10 @@ window.__ModuleLoader__.load({
       onRefreshQa,
       onJumpQa,
       onFixQa,
+      review,
+      reviewBusy,
+      onReview,
+      onApplyReview,
       concordance,
       concordanceQuery,
       setConcordanceQuery,
@@ -2161,10 +2299,25 @@ window.__ModuleLoader__.load({
                   { className: 'cait-subhead' },
                   h('span', null, t('qa.title')),
                   h(
-                    'button',
-                    { className: 'cait-linkbtn', onClick: onRefreshQa, disabled: Boolean(busy) },
-                    h(Icon, { name: 'refresh', size: 12 }),
-                    t('qa.refresh'),
+                    'div',
+                    { className: 'cait-subhead-actions' },
+                    h(
+                      'button',
+                      {
+                        className: 'cait-linkbtn',
+                        onClick: onReview,
+                        disabled: Boolean(busy) || Boolean(reviewBusy),
+                        title: t('qa.review'),
+                      },
+                      h(Icon, { name: 'sparkles', size: 12 }),
+                      reviewBusy ? t('qa.reviewing') : t('qa.review'),
+                    ),
+                    h(
+                      'button',
+                      { className: 'cait-linkbtn', onClick: onRefreshQa, disabled: Boolean(busy) },
+                      h(Icon, { name: 'refresh', size: 12 }),
+                      t('qa.refresh'),
+                    ),
                   ),
                 ),
                 qa
@@ -2259,6 +2412,59 @@ window.__ModuleLoader__.load({
                         : h('p', { className: 'cait-empty-note' }, t('qa.empty')),
                     )
                   : h('p', { className: 'cait-empty-note' }, t('qa.loading')),
+                review
+                  ? h(
+                      'div',
+                      { className: 'cait-review' },
+                      h('div', { className: 'cait-listhead' }, t('qa.reviewTitle')),
+                      (review.issues || []).length
+                        ? review.issues.map((issue, issueIndex) => {
+                            const severity = ['high', 'medium', 'low'].includes(issue.severity)
+                              ? issue.severity
+                              : 'medium'
+                            return h(
+                              'div',
+                              {
+                                key: `${issue.index}-${issueIndex}`,
+                                className: 'cait-reviewrow',
+                                role: 'button',
+                                tabIndex: 0,
+                                onClick: () => onJumpQa(issue.index),
+                                onKeyDown: (event) => {
+                                  if (event.key === 'Enter' || event.key === ' ') {
+                                    event.preventDefault()
+                                    onJumpQa(issue.index)
+                                  }
+                                },
+                              },
+                              h('span', { className: 'cait-reviewrow-index' }, `${issue.index + 1}`),
+                              h(
+                                'div',
+                                { className: 'cait-reviewrow-body' },
+                                h(
+                                  'span',
+                                  { className: `cait-reviewrow-msg ${severity}` },
+                                  `[${t(`qa.${severity}`)}] ${issue.message}`,
+                                ),
+                                issue.suggestion
+                                  ? h(
+                                      'button',
+                                      {
+                                        className: 'cait-riskaction',
+                                        onClick: (event) => {
+                                          event.stopPropagation()
+                                          onApplyReview(issue)
+                                        },
+                                      },
+                                      t('qa.reviewApply'),
+                                    )
+                                  : null,
+                              ),
+                            )
+                          })
+                        : h('p', { className: 'cait-empty-note' }, t('qa.reviewEmpty')),
+                    )
+                  : null,
               )
             : null,
           tab === 'concordance'
@@ -3734,6 +3940,7 @@ window.__ModuleLoader__.load({
                           onChange: () => toggleTerm(at),
                         }),
                         h('span', { className: 'cait-termname' }, candidate.term),
+                        candidate.proper ? h('span', { className: 'cait-originchip' }, t('term.proper')) : null,
                         h('span', { className: 'cait-termcount' }, `×${candidate.count}`),
                         candidate.inLibrary ? h('span', { className: 'cait-originchip' }, t('term.inLibrary')) : null,
                         h('input', {
@@ -3853,13 +4060,23 @@ window.__ModuleLoader__.load({
           model: settings.mt.model,
           temperature: settings.mt.temperature,
         },
+        review: {
+          provider: settings.review?.provider || '',
+          model: settings.review?.model || '',
+          temperature: settings.review?.temperature ?? 0,
+        },
       })
       const routes = Array.isArray(mtRoutes?.providers) ? mtRoutes.providers : []
       const route = routes.find((item) => item.id === form.mt.provider)
       const models = Array.isArray(route?.models) ? route.models : []
       const routeMissing = form.mt.provider !== 'mock' && !route
+      const reviewRoute = routes.find((item) => item.id === form.review.provider)
+      const reviewModels = Array.isArray(reviewRoute?.models) ? reviewRoute.models : []
+      const reviewInherited = !form.review.provider
 
       const setMt = (patch) => setForm((current) => ({ ...current, mt: { ...current.mt, ...patch } }))
+      const setReview = (patch) =>
+        setForm((current) => ({ ...current, review: { ...current.review, ...patch } }))
       const setPre = (patch) =>
         setForm((current) => ({ ...current, preprocess: { ...current.preprocess, ...patch } }))
       const selectProvider = (provider) => {
@@ -3873,6 +4090,18 @@ window.__ModuleLoader__.load({
               provider === 'mock'
                 ? 'cait-mock'
                 : nextRoute?.models?.[0]?.id || '',
+          },
+        }))
+      }
+
+      const selectReviewProvider = (provider) => {
+        const nextRoute = routes.find((item) => item.id === provider)
+        setForm((current) => ({
+          ...current,
+          review: {
+            ...current.review,
+            provider,
+            model: nextRoute?.models?.[0]?.id || '',
           },
         }))
       }
@@ -3894,6 +4123,11 @@ window.__ModuleLoader__.load({
             provider: form.mt.provider,
             model: form.mt.model,
             temperature: Number(form.mt.temperature),
+          },
+          review: {
+            provider: form.review.provider,
+            model: form.review.model,
+            temperature: Number(form.review.temperature),
           },
         }
         onSave(patch)
@@ -4104,6 +4338,98 @@ window.__ModuleLoader__.load({
           ),
           h(
             'div',
+            { className: 'cait-settings-section' },
+            h('h4', { className: 'cait-settings-title' }, t('modal.settings.review')),
+            h(
+              'label',
+              { className: 'cait-checkline' },
+              h('input', {
+                type: 'checkbox',
+                checked: reviewInherited,
+                onChange: (event) => {
+                  if (event.target.checked) {
+                    setForm((current) => ({
+                      ...current,
+                      review: { ...current.review, provider: '', model: '' },
+                    }))
+                    return
+                  }
+                  const first = routes.find((item) => item.id !== 'mock' && item.hasModels !== false) || routes[0]
+                  setForm((current) => ({
+                    ...current,
+                    review: {
+                      ...current.review,
+                      provider: first?.id || '',
+                      model: first?.models?.[0]?.id || '',
+                    },
+                  }))
+                },
+              }),
+              t('modal.settings.reviewInherit'),
+            ),
+            h('p', { className: 'cait-mt-hint', style: { marginTop: 0 } }, t('modal.settings.reviewHint')),
+            reviewInherited
+              ? null
+              : h(
+                  'div',
+                  { className: 'cait-grid2' },
+                  h(
+                    'label',
+                    { className: 'cait-field' },
+                    h('span', null, t('modal.settings.reviewProvider')),
+                    h(
+                      'select',
+                      {
+                        className: 'cait-input',
+                        value: form.review.provider,
+                        onChange: (event) => selectReviewProvider(event.target.value),
+                      },
+                      routes.map((item) =>
+                        h(
+                          'option',
+                          { key: item.id, value: item.id, disabled: item.hasModels === false },
+                          item.hasModels === false
+                            ? `${item.name} (${item.id}) - ${t('modal.settings.noModels')}`
+                            : `${item.name} (${item.id})`,
+                        ),
+                      ),
+                      form.review.provider && !reviewRoute
+                        ? h('option', { value: form.review.provider }, t('modal.settings.routeMissing'))
+                        : null,
+                    ),
+                  ),
+                  h(
+                    'label',
+                    { className: 'cait-field' },
+                    h('span', null, t('modal.settings.model')),
+                    reviewModels.length
+                      ? h(
+                          'select',
+                          {
+                            className: 'cait-input',
+                            value: form.review.model,
+                            onChange: (event) => setReview({ model: event.target.value }),
+                          },
+                          reviewModels.map((model) =>
+                            h('option', { key: model.id, value: model.id }, `${model.name} (${model.id})`),
+                          ),
+                        )
+                      : h('input', {
+                          className: 'cait-input',
+                          value: form.review.model,
+                          readOnly: true,
+                          placeholder: t('modal.settings.noModels'),
+                        }),
+                  ),
+                ),
+            h(
+              'p',
+              { className: 'cait-mt-hint', style: { marginTop: 0 } },
+              reviewInherited ? t('modal.settings.reviewInheritedHint') : t('modal.settings.reviewCustomHint'),
+            ),
+          ),
+          h(
+            'div',
             { className: 'cait-modal-actions' },
             h('button', { type: 'button', className: 'cait-btn cait-btn-ghost', onClick: onClose }, t('modal.settings.cancel')),
             h('button', { type: 'submit', className: 'cait-btn cait-btn-primary', disabled: Boolean(busy) }, busy === 'settings' ? h(Spinner) : null, t('modal.settings.save')),
@@ -4208,6 +4534,313 @@ window.__ModuleLoader__.load({
             t('brief.save'),
           ),
         ),
+      )
+    }
+
+    function NoteModal({ t, doc, index, segment, notes, busy, onAdd, onUpdate, onDelete, onClose }) {
+      const [text, setText] = useState('')
+      const [editingId, setEditingId] = useState('')
+      const [editingText, setEditingText] = useState('')
+      const list = Array.isArray(notes) ? notes : []
+      const submit = () => {
+        const value = text.trim()
+        if (!value || busy) return
+        onAdd(value)
+        setText('')
+      }
+      return h(
+        Modal,
+        { title: `${t('notes.title')} · #${index + 1}`, onClose, wide: true },
+        h('p', { className: 'cait-mt-hint', style: { marginTop: 0 } }, t('notes.hint')),
+        h('div', { className: 'cait-notelist' }, segment?.source || ''),
+        list.length
+          ? h(
+              'div',
+              { className: 'cait-notelist' },
+              list.map((note) =>
+                h(
+                  'div',
+                  { className: 'cait-noteitem', key: note.id },
+                  h(
+                    'div',
+                    { className: 'cait-notehead' },
+                    h('span', { className: 'cait-noteauthor' }, note.author === 'agent' ? 'Agent' : t('notes.user')),
+                    h('span', { className: 'cait-notetime' }, String(note.createdAt || '').replace('T', ' ').slice(0, 16)),
+                  ),
+                  editingId === note.id
+                    ? h(
+                        'div',
+                        null,
+                        h('textarea', {
+                          className: 'cait-input cait-textarea',
+                          value: editingText,
+                          rows: 3,
+                          onChange: (event) => setEditingText(event.target.value),
+                        }),
+                        h(
+                          'div',
+                          { className: 'cait-noteactions' },
+                          h('button', { className: 'cait-btn cait-btn-ghost', onClick: () => setEditingId('') }, t('notes.cancel')),
+                          h(
+                            'button',
+                            {
+                              className: 'cait-btn cait-btn-primary',
+                              disabled: Boolean(busy) || !editingText.trim(),
+                              onClick: () => {
+                                onUpdate(note.id, editingText)
+                                setEditingId('')
+                              },
+                            },
+                            t('notes.save'),
+                          ),
+                        ),
+                      )
+                    : h(
+                        'div',
+                        null,
+                        h('div', { className: 'cait-notetext' }, note.text),
+                        h(
+                          'div',
+                          { className: 'cait-noteactions' },
+                          h(
+                            'button',
+                            {
+                              className: 'cait-minibtn',
+                              onClick: () => {
+                                setEditingId(note.id)
+                                setEditingText(note.text)
+                              },
+                            },
+                            t('notes.edit'),
+                          ),
+                          h(
+                            'button',
+                            { className: 'cait-minibtn cait-danger', onClick: () => onDelete(note.id) },
+                            t('notes.delete'),
+                          ),
+                        ),
+                      ),
+                ),
+              ),
+            )
+          : h('p', { className: 'cait-mt-hint' }, t('notes.empty')),
+        h(
+          'div',
+          { className: 'cait-noteadd' },
+          h('textarea', {
+            className: 'cait-input cait-textarea',
+            value: text,
+            rows: 3,
+            placeholder: t('notes.placeholder'),
+            onChange: (event) => setText(event.target.value),
+          }),
+          h(
+            'div',
+            { className: 'cait-noteactions' },
+            h('button', { className: 'cait-btn cait-btn-primary', disabled: Boolean(busy) || !text.trim(), onClick: submit }, busy ? h(Spinner) : null, t('notes.add')),
+          ),
+        ),
+      )
+    }
+
+    function ReplaceModal({ t, doc, busy, preview, undoCount, onPreview, onApply, onUndo, onClose }) {
+      const queryRef = useRef(null)
+      const [form, setForm] = useState({
+        query: '',
+        replacement: '',
+        scope: 'target',
+        matchCase: false,
+        regex: false,
+      })
+      useEffect(() => {
+        if (queryRef.current) queryRef.current.focus()
+      }, [])
+      const set = (key, value) => setForm((current) => ({ ...current, [key]: value }))
+      return h(
+        Modal,
+        { title: t('replace.title'), onClose, wide: true },
+        h('p', { className: 'cait-mt-hint', style: { marginTop: 0 } }, t('replace.hint')),
+        h(
+          'div',
+          { className: 'cait-replaceform' },
+          h(
+            'label',
+            { className: 'cait-field' },
+            h('span', null, t('replace.query')),
+            h('input', {
+              ref: queryRef,
+              className: 'cait-input',
+              value: form.query,
+              placeholder: t('replace.queryPlaceholder'),
+              onChange: (event) => set('query', event.target.value),
+            }),
+          ),
+          h(
+            'label',
+            { className: 'cait-field' },
+            h('span', null, t('replace.replacement')),
+            h('input', {
+              className: 'cait-input',
+              value: form.replacement,
+              placeholder: t('replace.replacementPlaceholder'),
+              onChange: (event) => set('replacement', event.target.value),
+            }),
+          ),
+          h(
+            'div',
+            { className: 'cait-replaceoptions' },
+            h(
+              'label',
+              { className: 'cait-field' },
+              h('span', null, t('replace.scope')),
+              h(
+                'select',
+                {
+                  className: 'cait-input',
+                  value: form.scope,
+                  onChange: (event) => set('scope', event.target.value),
+                },
+                h('option', { value: 'target' }, t('replace.scope.target')),
+                h('option', { value: 'source' }, t('replace.scope.source')),
+                h('option', { value: 'both' }, t('replace.scope.both')),
+              ),
+            ),
+            h(
+              'label',
+              { className: 'cait-check' },
+              h('input', {
+                type: 'checkbox',
+                checked: form.matchCase,
+                onChange: (event) => set('matchCase', event.target.checked),
+              }),
+              t('replace.matchCase'),
+            ),
+            h(
+              'label',
+              { className: 'cait-check' },
+              h('input', {
+                type: 'checkbox',
+                checked: form.regex,
+                onChange: (event) => set('regex', event.target.checked),
+              }),
+              t('replace.regex'),
+            ),
+          ),
+        ),
+        preview
+          ? h(
+              'div',
+              { className: 'cait-replaceresults' },
+              h(
+                'div',
+                { className: 'cait-replacecounts' },
+                t('replace.results')
+                  .replace('{count}', String(preview.total))
+                  .replace('{segments}', String(preview.matchedSegments || 0)),
+              ),
+              preview.truncated ? h('p', { className: 'cait-mt-hint' }, t('replace.truncated')) : null,
+              preview.matches?.length
+                ? h(
+                    'div',
+                    { className: 'cait-replacelist' },
+                    preview.matches.slice(0, 50).map((match, index) =>
+                      h(
+                        'div',
+                        { className: 'cait-replaceitem', key: `${match.uid}-${match.field}-${index}` },
+                        h(
+                          'div',
+                          { className: 'cait-replacehead' },
+                          h('span', null, `#${match.index + 1}`),
+                          h('span', { className: 'cait-replacefield' }, t(`replace.field.${match.field}`)),
+                          h('span', { className: 'cait-replacecount' }, `×${match.count}`),
+                        ),
+                        h('div', { className: 'cait-replacebefore' }, match.before),
+                        h('div', { className: 'cait-replaceafter' }, match.after),
+                      ),
+                    ),
+                  )
+                : h('p', { className: 'cait-mt-hint' }, t('replace.noResults')),
+            )
+          : null,
+        h(
+          'div',
+          { className: 'cait-modal-actions' },
+          h('button', { className: 'cait-btn cait-btn-ghost', onClick: onClose, disabled: Boolean(busy) }, t('modal.confirm.cancel')),
+          undoCount
+            ? h('button', { className: 'cait-btn', onClick: onUndo, disabled: Boolean(busy) }, t('replace.undo'))
+            : null,
+          h('button', { className: 'cait-btn', onClick: () => onPreview(form), disabled: Boolean(busy) || !form.query }, t('replace.preview')),
+          h(
+            'button',
+            { className: 'cait-btn cait-btn-primary', onClick: () => onApply(form), disabled: Boolean(busy) || !form.query || !preview?.total },
+            busy ? h(Spinner) : null,
+            t('replace.apply'),
+          ),
+        ),
+      )
+    }
+
+    function CommandPalette({ t, items, onClose, onRun }) {
+      const [query, setQuery] = useState('')
+      const [active, setActive] = useState(0)
+      const inputRef = useRef(null)
+      useEffect(() => {
+        if (inputRef.current) inputRef.current.focus()
+      }, [])
+      const needle = query.trim().toLowerCase()
+      const filtered = items.filter((item) => {
+        if (!needle) return true
+        return `${item.title} ${item.hint || ''}`.toLowerCase().includes(needle)
+      })
+      useEffect(() => {
+        setActive(0)
+      }, [query])
+      const choose = (item) => {
+        if (item) onRun(item)
+      }
+      return h(
+        Modal,
+        { title: t('palette.title'), onClose, wide: true },
+        h('input', {
+          ref: inputRef,
+          className: 'cait-input cait-palette-input',
+          value: query,
+          placeholder: t('palette.placeholder'),
+          onChange: (event) => setQuery(event.target.value),
+          onKeyDown: (event) => {
+            if (event.key === 'ArrowDown') {
+              event.preventDefault()
+              setActive((value) => Math.min(value + 1, Math.max(0, filtered.length - 1)))
+            } else if (event.key === 'ArrowUp') {
+              event.preventDefault()
+              setActive((value) => Math.max(value - 1, 0))
+            } else if (event.key === 'Enter') {
+              event.preventDefault()
+              choose(filtered[active])
+            }
+          },
+        }),
+        h(
+          'div',
+          { className: 'cait-palette-list' },
+          filtered.length
+            ? filtered.map((item, index) =>
+                h(
+                  'button',
+                  {
+                    type: 'button',
+                    key: item.id,
+                    className: `cait-palette-item${index === active ? ' active' : ''}`,
+                    onMouseEnter: () => setActive(index),
+                    onClick: () => choose(item),
+                  },
+                  h('span', { className: 'cait-palette-label' }, item.title),
+                  item.hint ? h('span', { className: 'cait-palette-hint' }, item.hint) : null,
+                ),
+              )
+            : h('p', { className: 'cait-mt-hint' }, t('palette.empty')),
+        ),
+        h('p', { className: 'cait-palette-foot' }, t('palette.footer')),
       )
     }
 
@@ -4478,8 +5111,15 @@ window.__ModuleLoader__.load({
       }
       const [pre, setPre] = useState({ running: false, done: 0, total: 0, filled: 0, failed: 0 })
       const [qa, setQa] = useState(null)
+      const [review, setReview] = useState(null)
+      const [reviewBusy, setReviewBusy] = useState(false)
       const [analysis, setAnalysis] = useState(null)
       const [analysisBusy, setAnalysisBusy] = useState(false)
+      const [replacePreview, setReplacePreview] = useState(null)
+      const [replaceUndo, setReplaceUndo] = useState(null)
+      const [replaceBusy, setReplaceBusy] = useState(false)
+      const [notes, setNotes] = useState(null)
+      const [notesBusy, setNotesBusy] = useState(false)
       const [concordance, setConcordance] = useState(null)
       const [concordanceQuery, setConcordanceQuery] = useState('')
       const [concordanceBusy, setConcordanceBusy] = useState(false)
@@ -4499,12 +5139,16 @@ window.__ModuleLoader__.load({
       const busyRef = useRef(false)
       const rootRef = useRef(null)
       const unitRef = useRef(0)
+      const draftHistoryRef = useRef({ index: -1, stack: [], cursor: 0, lastAt: 0 })
 
       const doc = data?.activeDocument || null
       const segments = doc?.segments || []
       const index = doc ? Math.min(selected, Math.max(0, segments.length - 1)) : 0
       const segment = segments[index] || null
       const detail = doc?.current?.index === index ? doc.current : null
+      useEffect(() => {
+        draftHistoryRef.current = { index, stack: [draft], cursor: 0, lastAt: 0 }
+      }, [doc?.id, index])
       const settings = data?.settings || {
         sourceLang: 'en',
         targetLang: 'zh-CN',
@@ -4732,6 +5376,10 @@ window.__ModuleLoader__.load({
       }, [data?.activeDocument?.id, data?.revision])
 
       useEffect(() => {
+        setReview(null)
+      }, [data?.activeDocument?.id])
+
+      useEffect(() => {
         let alive = true
         rpc('listMtRoutes')
           .then((routes) => {
@@ -4758,6 +5406,9 @@ window.__ModuleLoader__.load({
         setTmError('')
         setConcordance(null)
         setConcordanceQuery('')
+        setReplacePreview(null)
+        setReplaceUndo(null)
+        setNotes(null)
       }, [doc?.id])
 
       useEffect(() => {
@@ -4821,6 +5472,49 @@ window.__ModuleLoader__.load({
         } finally {
           setBusy('')
         }
+      }
+
+      const changeDraft = (value) => {
+        const history = draftHistoryRef.current
+        if (history.index !== index) {
+          history.index = index
+          history.stack = [draft]
+          history.cursor = 0
+        }
+        if (history.stack[history.cursor] !== value) {
+          const now = Date.now()
+          if (now - history.lastAt < 650 && history.cursor > 0) {
+            history.stack[history.cursor] = value
+          } else {
+            history.stack = history.stack.slice(0, history.cursor + 1)
+            history.stack.push(value)
+            if (history.stack.length > 200) history.stack.shift()
+            history.cursor = history.stack.length - 1
+          }
+          history.lastAt = now
+        }
+        setDraft(value)
+        setDirty(true)
+      }
+
+      const undoDraft = () => {
+        const history = draftHistoryRef.current
+        if (history.cursor <= 0) return
+        history.cursor -= 1
+        history.lastAt = 0
+        const value = history.stack[history.cursor]
+        setDraft(value)
+        setDirty(value !== (segment?.target || ''))
+      }
+
+      const redoDraft = () => {
+        const history = draftHistoryRef.current
+        if (history.cursor >= history.stack.length - 1) return
+        history.cursor += 1
+        history.lastAt = 0
+        const value = history.stack[history.cursor]
+        setDraft(value)
+        setDirty(value !== (segment?.target || ''))
       }
 
       const confirmSegment = async () => {
@@ -5011,6 +5705,49 @@ window.__ModuleLoader__.load({
         }
       }
 
+      const toggleLock = async () => {
+        if (!doc || busy || !segment) return
+        setBusy('lock')
+        try {
+          await rpc('setSegmentLocked', { documentId: doc.id, index: selected, locked: !segment.locked })
+          const next = await rpc('bootstrap')
+          adoptState(next, selected)
+          notify(t(segment.locked ? 'toast.unlocked' : 'toast.locked'))
+        } catch (error) {
+          report(error)
+        } finally {
+          setBusy('')
+        }
+      }
+
+      const mergeCurrent = () => {
+        if (!doc || !segment || busy) return
+        openConfirm({
+          title: t('modal.confirm.mergeTitle'),
+          message: t('modal.confirm.merge'),
+          confirmLabel: t('editor.merge'),
+          action: async () => {
+            const result = await rpc('mergeSegments', { documentId: doc.id, index: selected, count: 2 })
+            adoptState(result.state, result.index)
+            notify(t('toast.merged'))
+          },
+        })
+      }
+
+      const splitCurrent = (at) => {
+        if (!doc || !segment || busy) return
+        openConfirm({
+          title: t('modal.confirm.splitTitle'),
+          message: t('modal.confirm.split'),
+          confirmLabel: t('editor.split'),
+          action: async () => {
+            const result = await rpc('splitSegment', { documentId: doc.id, index: selected, at })
+            adoptState(result.state, result.index)
+            notify(t('toast.split'))
+          },
+        })
+      }
+
       const saveBrief = async (brief) => {
         if (!doc || busy) return false
         setBusy('brief')
@@ -5059,6 +5796,116 @@ window.__ModuleLoader__.load({
         }
       }
 
+      const openReplace = () => {
+        if (!doc) return
+        setReplacePreview(null)
+        setModal({ type: 'replace' })
+      }
+
+      const previewReplace = async (form) => {
+        if (!doc || replaceBusy) return
+        setReplaceBusy(true)
+        try {
+          setReplacePreview(await rpc('replaceInDocument', { documentId: doc.id, ...form }))
+        } catch (error) {
+          report(error)
+        } finally {
+          setReplaceBusy(false)
+        }
+      }
+
+      const applyReplace = async (form) => {
+        if (!doc || replaceBusy) return
+        setReplaceBusy(true)
+        try {
+          const result = await rpc('replaceInDocument', { documentId: doc.id, ...form, apply: true })
+          setReplaceUndo(Array.isArray(result.undo) && result.undo.length ? result.undo : null)
+          setReplacePreview(null)
+          adoptState(result.state, result.undo?.[0]?.index)
+          notify(t('toast.replaced').replace('{count}', String(result.applied ?? 0)))
+        } catch (error) {
+          report(error)
+        } finally {
+          setReplaceBusy(false)
+        }
+      }
+
+      const undoReplace = async () => {
+        if (!doc || !replaceUndo || replaceBusy) return
+        setReplaceBusy(true)
+        try {
+          const result = await rpc('undoReplace', { documentId: doc.id, undo: replaceUndo })
+          adoptState(result.state, replaceUndo[0]?.index)
+          setReplaceUndo(null)
+          setReplacePreview(null)
+          notify(t('toast.replaceUndone'))
+        } catch (error) {
+          report(error)
+        } finally {
+          setReplaceBusy(false)
+        }
+      }
+
+      const openNotes = async () => {
+        if (!doc) return
+        setNotes(null)
+        setNotesBusy(true)
+        setModal({ type: 'notes' })
+        try {
+          const result = await rpc('notesForSegment', { documentId: doc.id, index })
+          setNotes(result.notes)
+        } catch (error) {
+          report(error)
+        } finally {
+          setNotesBusy(false)
+        }
+      }
+
+      const addNote = async (text) => {
+        if (!doc || notesBusy) return
+        setNotesBusy(true)
+        try {
+          const result = await rpc('addSegmentNote', { documentId: doc.id, index, text })
+          setNotes(result.notes)
+          adoptState(result.state, index)
+          notify(t('toast.noteSaved'))
+        } catch (error) {
+          report(error)
+        } finally {
+          setNotesBusy(false)
+        }
+      }
+
+      const updateNote = async (noteId, text) => {
+        if (!doc || notesBusy) return
+        setNotesBusy(true)
+        try {
+          const result = await rpc('updateSegmentNote', { documentId: doc.id, index, noteId, text })
+          setNotes(result.notes)
+          adoptState(result.state, index)
+          notify(t('toast.noteSaved'))
+        } catch (error) {
+          report(error)
+        } finally {
+          setNotesBusy(false)
+        }
+      }
+
+      const deleteNote = async (noteId) => {
+        if (!doc || notesBusy) return
+        setNotesBusy(true)
+        try {
+          const result = await rpc('deleteSegmentNote', { documentId: doc.id, index, noteId })
+          setNotes(result.notes)
+          adoptState(result.state, index)
+          notify(t('toast.noteDeleted'))
+        } catch (error) {
+          report(error)
+        } finally {
+          setNotesBusy(false)
+        }
+      }
+
       const refreshQa = async () => {        if (!doc) return
         setQa(null)
         try {
@@ -5070,6 +5917,33 @@ window.__ModuleLoader__.load({
 
       const jumpQa = (nextIndex) => {
         if (Number.isInteger(nextIndex)) chooseSegment(nextIndex)
+      }
+
+      const runReview = async () => {
+        if (!doc || reviewBusy) return
+        setReviewBusy(true)
+        try {
+          const result = await rpc('reviewDocument', {
+            documentId: doc.id,
+            from: 0,
+            count: 20,
+          })
+          setReview(result || { issues: [] })
+        } catch (error) {
+          setReview(null)
+          report(error)
+        } finally {
+          setReviewBusy(false)
+        }
+      }
+
+      const applyReview = (issue) => {
+        if (!doc || !issue || !Number.isInteger(issue.index)) return
+        chooseSegment(issue.index)
+        if (issue.suggestion) {
+          setDraft(issue.suggestion)
+          setDirty(true)
+        }
       }
 
       const applyQaFix = async (item, action) => {
@@ -5578,6 +6452,23 @@ window.__ModuleLoader__.load({
         }
       }, [])
 
+      useEffect(() => {
+        const onKey = (event) => {
+          const mod = event.metaKey || event.ctrlKey
+          if (!mod) return
+          const key = event.key.toLowerCase()
+          if (key === 'k') {
+            event.preventDefault()
+            setModal((current) => (current?.type === 'palette' ? null : { type: 'palette' }))
+          } else if (key === 'f' && doc && !modal) {
+            event.preventDefault()
+            openReplace()
+          }
+        }
+        window.addEventListener('keydown', onKey)
+        return () => window.removeEventListener('keydown', onKey)
+      }, [doc?.id, modal])
+
       if (loading) {
         return h(
           'div',
@@ -5605,6 +6496,44 @@ window.__ModuleLoader__.load({
         )
       }
 
+      const commands = [
+        { id: 'new', title: t('cmd.new'), hint: t('cmd.newHint'), run: () => setModal({ type: 'new', defaultMode: 'text' }) },
+        { id: 'import', title: t('cmd.import'), hint: '', run: () => setModal({ type: 'new', defaultMode: 'file' }) },
+        { id: 'export', title: t('cmd.export'), hint: '', docOnly: true, run: () => setModal({ type: 'export' }) },
+        { id: 'pretranslate', title: t('cmd.pretranslate'), hint: '', docOnly: true, run: () => runPreTranslate() },
+        { id: 'replace', title: t('cmd.replace'), hint: 'Ctrl+F', docOnly: true, run: () => openReplace() },
+        { id: 'brief', title: t('cmd.brief'), hint: '', docOnly: true, run: () => setModal({ type: 'brief' }) },
+        { id: 'resources', title: t('cmd.resources'), hint: '', docOnly: true, run: () => setModal({ type: 'resources' }) },
+        { id: 'analysis', title: t('cmd.analysis'), hint: '', docOnly: true, run: () => openAnalysis() },
+        { id: 'notes', title: t('cmd.notes'), hint: '', docOnly: true, run: () => openNotes() },
+        {
+          id: 'review',
+          title: t('cmd.review'),
+          hint: '',
+          docOnly: true,
+          run: () => {
+            setTab('qa')
+            runReview()
+          },
+        },
+        {
+          id: 'clear-pretranslated',
+          title: t('cmd.clearPretranslated'),
+          hint: '',
+          docOnly: true,
+          run: () => clearPretranslated(),
+        },
+        { id: 'documents', title: t('cmd.documents'), hint: '', run: () => setView('documents') },
+        { id: 'libraries', title: t('cmd.libraries'), hint: '', run: () => setView('libraries') },
+        { id: 'align', title: t('cmd.align'), hint: '', run: () => setView('align') },
+        { id: 'settings', title: t('cmd.settings'), hint: '', run: () => setModal({ type: 'settings' }) },
+      ].filter((item) => !item.docOnly || doc)
+
+      const runCommand = (item) => {
+        setModal(null)
+        setTimeout(() => item.run(), 0)
+      }
+
       return h(
         'div',
         { className: 'cait-root', ref: rootRef },
@@ -5625,6 +6554,7 @@ window.__ModuleLoader__.load({
           pre,
           onPreTranslate: runPreTranslate,
           onCancelPreTranslate: cancelPreTranslate,
+          onReplace: openReplace,
           view,
           onView: setView,
         }),
@@ -5673,14 +6603,18 @@ window.__ModuleLoader__.load({
                   segment,
                   detail,
                   draft,
-                  setDraft: (value) => {
-                    setDraft(value)
-                    setDirty(true)
-                  },
+                  setDraft: changeDraft,
                   dirty,
                   busy,
+                  canUndo: draftHistoryRef.current.cursor > 0,
+                  canRedo: draftHistoryRef.current.cursor < draftHistoryRef.current.stack.length - 1,
+                  onUndo: undoDraft,
+                  onRedo: redoDraft,
                   onConfirm: confirmSegment,
                   onUnconfirm: unconfirmCurrent,
+                  onToggleLock: toggleLock,
+                  onMerge: mergeCurrent,
+                  onSplit: splitCurrent,
                   onNext: () => moveSegment(1),
                   onPrev: () => moveSegment(-1),
                   onSave: () => saveDraft(false),
@@ -5689,6 +6623,8 @@ window.__ModuleLoader__.load({
                   onOpenBrief: () => setModal({ type: 'brief' }),
                   onOpenResources: () => setModal({ type: 'resources' }),
                   onOpenAnalysis: openAnalysis,
+                  onOpenNotes: openNotes,
+                  noteCount: segment?.notes?.length || 0,
                   qaRisk,
                   textareaRef,
                 })
@@ -5734,6 +6670,10 @@ window.__ModuleLoader__.load({
                   onRefreshQa: refreshQa,
                   onJumpQa: jumpQa,
                   onFixQa: applyQaFix,
+                  review,
+                  reviewBusy,
+                  onReview: runReview,
+                  onApplyReview: applyReview,
                   concordance,
                   concordanceQuery,
                   setConcordanceQuery,
@@ -5780,6 +6720,36 @@ window.__ModuleLoader__.load({
               busy: analysisBusy,
               onClose: () => setModal(null),
             })
+          : null,
+        modal?.type === 'replace'
+          ? h(ReplaceModal, {
+              t,
+              doc,
+              busy: replaceBusy,
+              preview: replacePreview,
+              undoCount: replaceUndo ? replaceUndo.length : 0,
+              onPreview: previewReplace,
+              onApply: applyReplace,
+              onUndo: undoReplace,
+              onClose: () => setModal(null),
+            })
+          : null,
+        modal?.type === 'notes'
+          ? h(NoteModal, {
+              t,
+              doc,
+              index,
+              segment,
+              notes,
+              busy: notesBusy,
+              onAdd: addNote,
+              onUpdate: updateNote,
+              onDelete: deleteNote,
+              onClose: () => setModal(null),
+            })
+          : null,
+        modal?.type === 'palette'
+          ? h(CommandPalette, { t, items: commands, onClose: () => setModal(null), onRun: runCommand })
           : null,
         modal?.type === 'settings'
           ? h(SettingsModal, { t, settings, mtRoutes, busy, onClose: () => setModal(null), onSave: saveSettings })
@@ -6053,6 +7023,12 @@ window.__ModuleLoader__.load({
       'modal.settings.resetDefault': '恢复默认',
       'modal.settings.limit': '返回匹配数',
       'modal.settings.mt': '机器翻译',
+      'modal.settings.review': 'AI 审校模型',
+      'modal.settings.reviewInherit': '跟随翻译模型（默认）',
+      'modal.settings.reviewHint': '取消勾选后，AI 审校使用独立路由；预翻译仍使用上面的机器翻译路由。',
+      'modal.settings.reviewProvider': '审校 provider 路由',
+      'modal.settings.reviewInheritedHint': '当前与预翻译共用同一个 provider 和模型。',
+      'modal.settings.reviewCustomHint': 'AI 审校使用独立路由，预翻译不受影响。',
       'modal.settings.provider': 'MT provider 路由',
       'modal.settings.routeHint': 'CAIT 只保存路由名和模型；API Key 由 DSH 凭据服务解析，CAIT 不接触。',
       'modal.settings.routeMissing': '已失效的路由',
@@ -6179,13 +7155,14 @@ window.__ModuleLoader__.load({
       'rail.propagateMessage': '把已有译文填到本文档中其它相同原文的句段（已确认的不会动）。',
       'toast.propagated': '已铺满 {count} 个句段。',
       'term.title': '术语候选',
-      'term.hint': '按出现次数与长度排序，点选后填入译文即可入库。',
+      'term.hint': '候选包含重复出现的术语和只出现一次的专名；专名需人工确认后才入库。',
       'term.extract': '从文档提取术语',
-      'term.empty': '没有找到重复出现的候选术语。',
+      'term.empty': '没有找到候选术语。',
       'term.add': '加入术语库',
       'term.added': '已加入 {added} 条术语。',
       'term.noDoc': '先打开一个文档再提取术语。',
       'term.inLibrary': '已有',
+      'term.proper': '专名',
     }
 
     const EN = {
@@ -6441,6 +7418,12 @@ window.__ModuleLoader__.load({
       'modal.settings.resetDefault': 'Reset',
       'modal.settings.limit': 'Matches returned',
       'modal.settings.mt': 'Machine translation',
+      'modal.settings.review': 'AI review model',
+      'modal.settings.reviewInherit': 'Follow the translation model (default)',
+      'modal.settings.reviewHint': 'Uncheck to give AI review its own route. Pre-translation keeps using the MT route above.',
+      'modal.settings.reviewProvider': 'Review provider route',
+      'modal.settings.reviewInheritedHint': 'Review currently shares the same provider and model as pre-translation.',
+      'modal.settings.reviewCustomHint': 'AI review uses a separate route; pre-translation is unaffected.',
       'modal.settings.provider': 'MT provider route',
       'modal.settings.routeHint': 'CAIT stores only the route and model name; DSH resolves the API key, which CAIT never sees.',
       'modal.settings.routeMissing': 'Route no longer available',
@@ -6567,13 +7550,14 @@ window.__ModuleLoader__.load({
       'rail.propagateMessage': 'Copy the existing translation to other segments with the same source. Confirmed segments are left alone.',
       'toast.propagated': 'Filled {count} segment(s).',
       'term.title': 'Terminology candidates',
-      'term.hint': 'Ranked by occurrences and length. Pick the real terms, type a translation, and add them.',
+      'term.hint': 'Candidates include repeated terms and one-off proper names; names need a human decision before they enter the glossary.',
       'term.extract': 'Mine terms from the document',
-      'term.empty': 'No repeated candidate found.',
+      'term.empty': 'No candidate found.',
       'term.add': 'Add to glossary',
       'term.added': 'Added {added} term(s).',
       'term.noDoc': 'Open a document before mining terms.',
       'term.inLibrary': 'in library',
+      'term.proper': 'proper name',
     }
 
     const JA = {
@@ -6829,6 +7813,12 @@ window.__ModuleLoader__.load({
       'modal.settings.resetDefault': '既定に戻す',
       'modal.settings.limit': '返す一致件数',
       'modal.settings.mt': '機械翻訳',
+      'modal.settings.review': 'AI レビューモデル',
+      'modal.settings.reviewInherit': '翻訳モデルに従う（デフォルト）',
+      'modal.settings.reviewHint': 'チェックを外すと AI レビューが独立したルートを使います。事前翻訳は上の MT ルートのままです。',
+      'modal.settings.reviewProvider': 'レビュー用プロバイダーのルート',
+      'modal.settings.reviewInheritedHint': '現在、レビューは事前翻訳と同じプロバイダーとモデルを共有しています。',
+      'modal.settings.reviewCustomHint': 'AI レビューは独立したルートを使います。事前翻訳には影響しません。',
       'modal.settings.provider': 'MT プロバイダーのルート',
       'modal.settings.routeHint': 'CAIT はルート名とモデル名だけを保存します。API キーは DSH の認証情報サービスが解決し、CAIT は触れません。',
       'modal.settings.routeMissing': '利用できないルート',
@@ -6955,13 +7945,14 @@ window.__ModuleLoader__.load({
       'rail.propagateMessage': '同じ原文の他のセグメントに既存の訳文をコピーします。確定済みは変更しません。',
       'toast.propagated': '{count} 件のセグメントを埋めました。',
       'term.title': '用語候補',
-      'term.hint': '出現回数と長さで並んでいます。実際の用語だけを選び、訳語を入れて登録してください。',
+      'term.hint': '繰り返し用語と一度だけ現れる固有名詞を候補にします。固有名詞は確認してから登録してください。',
       'term.extract': '文書から用語を抽出',
-      'term.empty': '繰り返し現れる候補はありませんでした。',
+      'term.empty': '候補が見つかりませんでした。',
       'term.add': '用語集に追加',
       'term.added': '{added} 件の用語を追加しました。',
       'term.noDoc': '先に文書を開いてください。',
       'term.inLibrary': '登録済み',
+      'term.proper': '固有名詞',
     }
 
     // 1.1.4: brief, risk-aware QA, unconfirm and concordance. Kept in one place
@@ -6996,12 +7987,24 @@ window.__ModuleLoader__.load({
       'brief.placeholder.styleSample': '粘贴一段期望风格的译文…',
       'editor.unconfirm': '撤销确认',
       'editor.unconfirmHint': '回到待审状态，不改动翻译记忆',
+      'editor.undo': '撤销编辑',
+      'editor.redo': '重做编辑',
+      'editor.lock': '锁定',
+      'editor.unlock': '解锁',
+      'editor.locked': '已锁定',
+      'toast.locked': '已锁定句段',
+      'toast.unlocked': '已解锁句段',
       'editor.brief': 'Brief',
       'editor.risk': '风险',
       'qa.title': '检查',
       'qa.refresh': '重新检查',
       'qa.empty': '没有发现问题。',
       'qa.loading': '正在检查…',
+      'qa.review': 'AI 审校',
+      'qa.reviewing': '审校中…',
+      'qa.reviewTitle': 'AI 审校建议',
+      'qa.reviewEmpty': 'AI 没有发现需要改的句子。',
+      'qa.reviewApply': '填入建议',
       'qa.high': '高',
       'qa.medium': '中',
       'qa.low': '低',
@@ -7049,6 +8052,62 @@ window.__ModuleLoader__.load({
       'analysis.exportCsv': '导出 CSV',
       'analysis.exportJson': '导出 JSON',
       'analysis.close': '关闭',
+      'replace.open': '查找替换',
+      'replace.title': '查找替换',
+      'replace.hint': '在原文或译文中查找并替换；应用前先预览影响范围。',
+      'replace.query': '查找',
+      'replace.queryPlaceholder': '要查找的文本',
+      'replace.replacement': '替换为',
+      'replace.replacementPlaceholder': '留空表示删除',
+      'replace.scope': '范围',
+      'replace.scope.target': '仅译文',
+      'replace.scope.source': '仅原文',
+      'replace.scope.both': '原文和译文',
+      'replace.matchCase': '区分大小写',
+      'replace.regex': '正则表达式',
+      'replace.preview': '预览',
+      'replace.apply': '应用替换',
+      'replace.undo': '撤销上次替换',
+      'replace.results': '命中 {count} 处，涉及 {segments} 个句段',
+      'replace.truncated': '结果较多，仅显示前 200 条。',
+      'replace.noResults': '没有命中。',
+      'replace.field.source': '原文',
+      'replace.field.target': '译文',
+      'toast.replaced': '已替换 {count} 处',
+      'toast.replaceUndone': '已撤销替换',
+      'palette.title': '命令面板',
+      'palette.placeholder': '输入命令…',
+      'palette.empty': '没有匹配的命令。',
+      'palette.footer': '↑↓ 选择 · Enter 执行 · Esc 关闭 · Ctrl+K 打开',
+      'cmd.new': '新建文档',
+      'cmd.newHint': '从文本或文件开始',
+      'cmd.import': '导入文件',
+      'cmd.export': '导出',
+      'cmd.pretranslate': '预翻译',
+      'cmd.replace': '查找替换',
+      'cmd.brief': '文档 brief',
+      'cmd.resources': '文档资源',
+      'cmd.analysis': '文档分析',
+      'cmd.clearPretranslated': '清理预翻译',
+      'cmd.notes': '句段备注',
+      'cmd.review': 'AI 审校当前文档',
+      'editor.notes': '备注',
+      'notes.title': '句段备注',
+      'notes.hint': '备注只保存在本文档，不会写入 TM。',
+      'notes.empty': '还没有备注。',
+      'notes.placeholder': '写下审校说明、术语疑问或给 agent 的提示…',
+      'notes.add': '添加备注',
+      'notes.save': '保存',
+      'notes.cancel': '取消',
+      'notes.edit': '编辑',
+      'notes.delete': '删除',
+      'notes.user': '你',
+      'toast.noteSaved': '备注已保存',
+      'toast.noteDeleted': '备注已删除',
+      'cmd.documents': '文档工作区',
+      'cmd.libraries': '库管理',
+      'cmd.align': '对齐',
+      'cmd.settings': '设置',
     })
     Object.assign(EN, {
       'panel.qa': 'Checks',
@@ -7080,12 +8139,24 @@ window.__ModuleLoader__.load({
       'brief.placeholder.styleSample': 'Paste a sample of the desired style…',
       'editor.unconfirm': 'Unconfirm',
       'editor.unconfirmHint': 'Return to review without changing translation memory',
+      'editor.undo': 'Undo edit',
+      'editor.redo': 'Redo edit',
+      'editor.lock': 'Lock',
+      'editor.unlock': 'Unlock',
+      'editor.locked': 'Locked',
+      'toast.locked': 'Segment locked',
+      'toast.unlocked': 'Segment unlocked',
       'editor.brief': 'Brief',
       'editor.risk': 'Risk',
       'qa.title': 'Checks',
       'qa.refresh': 'Re-run checks',
       'qa.empty': 'No issues found.',
       'qa.loading': 'Running checks…',
+      'qa.review': 'AI review',
+      'qa.reviewing': 'Reviewing…',
+      'qa.reviewTitle': 'AI review suggestions',
+      'qa.reviewEmpty': 'The model found no sentence worth changing.',
+      'qa.reviewApply': 'Use suggestion',
       'qa.high': 'High',
       'qa.medium': 'Medium',
       'qa.low': 'Low',
@@ -7133,6 +8204,62 @@ window.__ModuleLoader__.load({
       'analysis.exportCsv': 'Export CSV',
       'analysis.exportJson': 'Export JSON',
       'analysis.close': 'Close',
+      'replace.open': 'Find & replace',
+      'replace.title': 'Find & replace',
+      'replace.hint': 'Find and replace in source or target. Preview the impact before applying.',
+      'replace.query': 'Find',
+      'replace.queryPlaceholder': 'Text to find',
+      'replace.replacement': 'Replace with',
+      'replace.replacementPlaceholder': 'Leave empty to delete',
+      'replace.scope': 'Scope',
+      'replace.scope.target': 'Target only',
+      'replace.scope.source': 'Source only',
+      'replace.scope.both': 'Source and target',
+      'replace.matchCase': 'Match case',
+      'replace.regex': 'Regular expression',
+      'replace.preview': 'Preview',
+      'replace.apply': 'Apply replacement',
+      'replace.undo': 'Undo last replacement',
+      'replace.results': '{count} matches across {segments} segments',
+      'replace.truncated': 'Too many matches; showing the first 200.',
+      'replace.noResults': 'No matches.',
+      'replace.field.source': 'Source',
+      'replace.field.target': 'Target',
+      'toast.replaced': 'Replaced {count} occurrences',
+      'toast.replaceUndone': 'Replacement undone',
+      'palette.title': 'Command palette',
+      'palette.placeholder': 'Type a command…',
+      'palette.empty': 'No matching commands.',
+      'palette.footer': '↑↓ select · Enter run · Esc close · Ctrl+K open',
+      'cmd.new': 'New document',
+      'cmd.newHint': 'Start from text or a file',
+      'cmd.import': 'Import file',
+      'cmd.export': 'Export',
+      'cmd.pretranslate': 'Pre-translate',
+      'cmd.replace': 'Find & replace',
+      'cmd.brief': 'Document brief',
+      'cmd.resources': 'Document resources',
+      'cmd.analysis': 'Document analysis',
+      'cmd.clearPretranslated': 'Clear pre-translated targets',
+      'cmd.notes': 'Segment notes',
+      'cmd.review': 'AI review this document',
+      'editor.notes': 'Notes',
+      'notes.title': 'Segment notes',
+      'notes.hint': 'Notes stay in this document and are never written to TM.',
+      'notes.empty': 'No notes yet.',
+      'notes.placeholder': 'Review comments, terminology questions, or hints for the agent…',
+      'notes.add': 'Add note',
+      'notes.save': 'Save',
+      'notes.cancel': 'Cancel',
+      'notes.edit': 'Edit',
+      'notes.delete': 'Delete',
+      'notes.user': 'You',
+      'toast.noteSaved': 'Note saved',
+      'toast.noteDeleted': 'Note deleted',
+      'cmd.documents': 'Document workspace',
+      'cmd.libraries': 'Library manager',
+      'cmd.align': 'Alignment',
+      'cmd.settings': 'Settings',
     })
     Object.assign(JA, {
       'panel.qa': 'チェック',
@@ -7164,12 +8291,24 @@ window.__ModuleLoader__.load({
       'brief.placeholder.styleSample': '希望するスタイルの訳文を貼り付け…',
       'editor.unconfirm': '確認を取り消す',
       'editor.unconfirmHint': '確認だけを解除し、TM は変更しません',
+      'editor.undo': '編集を元に戻す',
+      'editor.redo': '編集をやり直す',
+      'editor.lock': 'ロック',
+      'editor.unlock': 'ロック解除',
+      'editor.locked': 'ロック中',
+      'toast.locked': 'セグメントをロックしました',
+      'toast.unlocked': 'セグメントのロックを解除しました',
       'editor.brief': 'ブリーフ',
       'editor.risk': 'リスク',
       'qa.title': 'チェック',
       'qa.refresh': '再チェック',
       'qa.empty': '問題はありません。',
       'qa.loading': 'チェック中…',
+      'qa.review': 'AI 校閲',
+      'qa.reviewing': '校閲中…',
+      'qa.reviewTitle': 'AI 校閲の提案',
+      'qa.reviewEmpty': 'モデルが修正すべき文を見つけませんでした。',
+      'qa.reviewApply': '提案を反映',
       'qa.high': '高',
       'qa.medium': '中',
       'qa.low': '低',
@@ -7217,11 +8356,103 @@ window.__ModuleLoader__.load({
       'analysis.exportCsv': 'CSV を書き出す',
       'analysis.exportJson': 'JSON を書き出す',
       'analysis.close': '閉じる',
+      'replace.open': '検索と置換',
+      'replace.title': '検索と置換',
+      'replace.hint': '原文または訳文を検索して置換します。適用前に影響範囲をプレビューしてください。',
+      'replace.query': '検索',
+      'replace.queryPlaceholder': '検索するテキスト',
+      'replace.replacement': '置換後',
+      'replace.replacementPlaceholder': '空欄なら削除',
+      'replace.scope': '範囲',
+      'replace.scope.target': '訳文のみ',
+      'replace.scope.source': '原文のみ',
+      'replace.scope.both': '原文と訳文',
+      'replace.matchCase': '大文字と小文字を区別',
+      'replace.regex': '正規表現',
+      'replace.preview': 'プレビュー',
+      'replace.apply': '置換を適用',
+      'replace.undo': '直前の置換を元に戻す',
+      'replace.results': '{count} 件、{segments} セグメント',
+      'replace.truncated': '件数が多いため先頭 200 件のみ表示します。',
+      'replace.noResults': '一致なし。',
+      'replace.field.source': '原文',
+      'replace.field.target': '訳文',
+      'toast.replaced': '{count} 件置換しました',
+      'toast.replaceUndone': '置換を元に戻しました',
+      'palette.title': 'コマンドパレット',
+      'palette.placeholder': 'コマンドを入力…',
+      'palette.empty': '一致するコマンドがありません。',
+      'palette.footer': '↑↓ 選択 · Enter 実行 · Esc 閉じる · Ctrl+K 開く',
+      'cmd.new': '新規文書',
+      'cmd.newHint': 'テキストまたはファイルから開始',
+      'cmd.import': 'ファイルをインポート',
+      'cmd.export': 'エクスポート',
+      'cmd.pretranslate': '事前翻訳',
+      'cmd.replace': '検索と置換',
+      'cmd.brief': '文書ブリーフ',
+      'cmd.resources': '文書リソース',
+      'cmd.analysis': '文書分析',
+      'cmd.clearPretranslated': '事前翻訳をクリア',
+      'cmd.notes': 'セグメントメモ',
+      'cmd.review': 'この文書を AI 校閲',
+      'editor.notes': 'メモ',
+      'notes.title': 'セグメントメモ',
+      'notes.hint': 'メモはこの文書にのみ保存され、TM には書き込まれません。',
+      'notes.empty': 'メモはまだありません。',
+      'notes.placeholder': 'レビューコメント、用語の疑問、agent へのヒント…',
+      'notes.add': 'メモを追加',
+      'notes.save': '保存',
+      'notes.cancel': 'キャンセル',
+      'notes.edit': '編集',
+      'notes.delete': '削除',
+      'notes.user': 'あなた',
+      'toast.noteSaved': 'メモを保存しました',
+      'toast.noteDeleted': 'メモを削除しました',
+      'cmd.documents': '文書ワークスペース',
+      'cmd.libraries': 'ライブラリ管理',
+      'cmd.align': 'アラインメント',
+      'cmd.settings': '設定',
     })
 
     // UI languages offered by the in-app switch. 'auto' follows the DSH locale
     // through the bound DSH translator; the other entries use the dictionaries
     // above. Labels are native names, except 'auto', which is localized.
+    Object.assign(ZH, {
+      'editor.merge': '合并下一段',
+      'editor.split': '拆分',
+      'editor.mergeHint': '把当前句段和同一段落的下一句合并；合并后确认状态会重置。',
+      'editor.splitHint': '按译文光标位置大致拆分当前句段；拆分后两侧都需要重新确认。',
+      'toast.merged': '已合并句段',
+      'toast.split': '已拆分句段',
+      'modal.confirm.mergeTitle': '合并句段',
+      'modal.confirm.merge': '合并会新建一个句段，并丢失两条原文各自的确认状态。确定继续？',
+      'modal.confirm.splitTitle': '拆分句段',
+      'modal.confirm.split': '拆分后两侧都会变成未确认状态，译文按比例切开。确定继续？',
+    })
+    Object.assign(EN, {
+      'editor.merge': 'Merge next',
+      'editor.split': 'Split',
+      'editor.mergeHint': 'Merge this segment with the next one in the same paragraph; confirmation resets.',
+      'editor.splitHint': 'Split at the target cursor position; both halves need confirmation again.',
+      'toast.merged': 'Segment merged',
+      'toast.split': 'Segment split',
+      'modal.confirm.mergeTitle': 'Merge segments',
+      'modal.confirm.merge': 'Merging creates a new segment and discards the confirmation state of both originals. Continue?',
+      'modal.confirm.splitTitle': 'Split segment',
+      'modal.confirm.split': 'Both halves become unconfirmed and the target is split proportionally. Continue?',
+    })
+    Object.assign(JA, {
+      'editor.merge': '次を結合',
+      'editor.split': '分割',
+      'editor.mergeHint': '同じ段落の次のセグメントと結合します。確認状態はリセットされます。',
+      'editor.splitHint': '訳文のカーソル位置を目安に分割します。両側とも再確認が必要です。',
+      'toast.merged': 'セグメントを結合しました',
+      'toast.split': 'セグメントを分割しました',
+      'modal.confirm.mergeTitle': 'セグメントを結合',
+      'modal.confirm.merge': '結合すると新しいセグメントになり、元の確認状態は失われます。続行しますか？',
+      'modal.confirm.splitTitle': 'セグメントを分割',
+      'modal.confirm.split': '分割後は両側とも未確認になり、訳文は比率で分割されます。続行しますか？',
+    })
     const UI_LANGS = [
       ['auto', ''],
       ['zh', '简体中文'],

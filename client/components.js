@@ -38,6 +38,9 @@
         align: ['M2 5h8', 'M2 11h5', 'M12 3v10', 'M10 11l2 2 2-2'],
         folder: ['M2 4h4l1.5 2H14v6.5H2z'],
         chart: ['M3 13V8', 'M8 13V3', 'M13 13V6', 'M2 14h12'],
+        message: ['M2 3h12v8H8l-3 3v-3H2z'],
+        lock: ['M4 7h8v6H4z', 'M6 7V5a2 2 0 0 1 4 0v2'],
+        unlock: ['M4 7h8v6H4z', 'M6 7V5a2 2 0 0 1 3.8-1'],
       }
       const shape = paths[name] || paths.file
       return h(
@@ -303,6 +306,7 @@
       pre,
       onPreTranslate,
       onCancelPreTranslate,
+      onReplace,
       view,
       onView,
     }) {
@@ -406,6 +410,19 @@
                 },
                 h(Icon, { name: 'sparkles', size: 14 }),
                 h('span', { className: 'cait-btn-label' }, t('pretranslate.start')),
+              )
+            : null,
+          documentsView
+            ? h(
+                'button',
+                {
+                  className: 'cait-btn',
+                  onClick: onReplace,
+                  disabled: Boolean(busy) || !doc,
+                  title: t('replace.open'),
+                },
+                h(Icon, { name: 'search', size: 14 }),
+                h('span', { className: 'cait-btn-label' }, t('replace.open')),
               )
             : null,
           documentsView
@@ -744,7 +761,7 @@
       )
     }
 
-    function EditorPane({ t, doc, index, segment, detail, draft, setDraft, dirty, busy, onConfirm, onUnconfirm, onNext, onPrev, onSave, onAdopt, onApplyTerm, onOpenBrief, onOpenResources, onOpenAnalysis, qaRisk, textareaRef }) {
+    function EditorPane({ t, doc, index, segment, detail, draft, setDraft, dirty, busy, onConfirm, onUnconfirm, onNext, onPrev, onSave, onUndo, onRedo, canUndo, canRedo, onToggleLock, onMerge, onSplit, onAdopt, onApplyTerm, onOpenBrief, onOpenResources, onOpenAnalysis, onOpenNotes, noteCount, qaRisk, textareaRef }) {
       const hits = detail?.index === index ? detail.glossaryHits : []
       const charCount = Array.from(draft || '').length
       const progress = doc.progress
@@ -761,9 +778,31 @@
       // against. It is stored in `suggestion`, which adoption already preserves.
       const baselineText = segment.suggestion || ''
       const baselineOrigin = segment.origin || 'agent'
+      const canMerge = !segment.locked && index < doc.segments.length - 1
+      const canSplit = !segment.locked && String(segment.source || '').length > 1
+      const splitAtCursor = () => {
+        const sourceLength = String(segment.source || '').length
+        const targetLength = String(draft || '').length
+        const cursor = textareaRef?.current?.selectionStart
+        const ratio = targetLength > 0 && Number.isInteger(cursor) ? cursor / targetLength : 0.5
+        const at = Math.max(1, Math.min(sourceLength - 1, Math.round(sourceLength * ratio)))
+        onSplit(at)
+      }
 
-      const onKeyDown = (event) => {        const mod = event.metaKey || event.ctrlKey
-        if (mod && event.key === 'Enter') {
+      const onKeyDown = (event) => {
+        const mod = event.metaKey || event.ctrlKey
+        if (mod && event.key.toLowerCase() === 'z') {
+          if (canUndo || canRedo) {
+            event.preventDefault()
+            if (event.shiftKey) onRedo()
+            else onUndo()
+          }
+        } else if (mod && event.key.toLowerCase() === 'y') {
+          if (canRedo) {
+            event.preventDefault()
+            onRedo()
+          }
+        } else if (mod && event.key === 'Enter') {
           event.preventDefault()
           onConfirm()
         } else if (mod && event.key.toLowerCase() === 's') {
@@ -843,6 +882,28 @@
           h(
             'span',
             { className: 'cait-seg-flags' },
+            h(
+              'button',
+              {
+                className: `cait-linkbtn ${segment.locked ? 'active' : ''}`,
+                onClick: onToggleLock,
+                title: segment.locked ? t('editor.unlock') : t('editor.lock'),
+                'aria-pressed': Boolean(segment.locked),
+              },
+              h(Icon, { name: segment.locked ? 'unlock' : 'lock', size: 11 }),
+              segment.locked ? t('editor.locked') : t('editor.lock'),
+            ),
+            h(
+              'button',
+              {
+                className: 'cait-linkbtn cait-notelink',
+                onClick: onOpenNotes,
+                title: t('notes.hint'),
+              },
+              h(Icon, { name: 'message', size: 11 }),
+              t('editor.notes'),
+              noteCount ? h('span', { className: 'cait-notecount' }, String(noteCount)) : null,
+            ),
             qaRisk
               ? h(
                   'span',
@@ -934,6 +995,7 @@
               value: draft,
               onChange: (event) => setDraft(event.target.value),
               onKeyDown,
+              readOnly: Boolean(segment.locked),
               placeholder: t('editor.targetPlaceholder'),
               spellCheck: false,
               rows: 8,
@@ -945,14 +1007,14 @@
           { className: 'cait-actionbar' },
           h(
             'button',
-            { className: 'cait-btn cait-btn-primary', onClick: onConfirm, disabled: Boolean(busy) || !draft.trim() },
+            { className: 'cait-btn cait-btn-primary', onClick: onConfirm, disabled: Boolean(busy) || Boolean(segment.locked) || !draft.trim() },
             busy === 'confirm' ? h(Spinner) : h(Icon, { name: 'check', size: 14 }),
             segment.status === 'confirmed' ? t('editor.update') : t('editor.confirm'),
           ),
           segment.status === 'confirmed'
             ? h(
                 'button',
-                { className: 'cait-btn cait-btn-ghost', onClick: onUnconfirm, disabled: Boolean(busy), title: t('editor.unconfirmHint') },
+                { className: 'cait-btn cait-btn-ghost', onClick: onUnconfirm, disabled: Boolean(busy) || Boolean(segment.locked), title: t('editor.unconfirmHint') },
                 h(Icon, { name: 'refresh', size: 13 }),
                 t('editor.unconfirm'),
               )
@@ -971,7 +1033,27 @@
           ),
           h(
             'button',
-            { className: 'cait-iconbtn cait-savebtn', onClick: onSave, disabled: Boolean(busy) || !dirty, title: t('editor.save') },
+            { className: 'cait-btn cait-btn-ghost', onClick: onMerge, disabled: Boolean(busy) || !canMerge, title: t('editor.mergeHint') },
+            t('editor.merge'),
+          ),
+          h(
+            'button',
+            { className: 'cait-btn cait-btn-ghost', onClick: splitAtCursor, disabled: Boolean(busy) || !canSplit, title: t('editor.splitHint') },
+            t('editor.split'),
+          ),
+          h(
+            'button',
+            { className: 'cait-iconbtn', onClick: onUndo, disabled: Boolean(busy) || !canUndo, title: t('editor.undo'), 'aria-label': t('editor.undo') },
+            '↶',
+          ),
+          h(
+            'button',
+            { className: 'cait-iconbtn', onClick: onRedo, disabled: Boolean(busy) || !canRedo, title: t('editor.redo'), 'aria-label': t('editor.redo') },
+            '↷',
+          ),
+          h(
+            'button',
+            { className: 'cait-iconbtn cait-savebtn', onClick: onSave, disabled: Boolean(busy) || Boolean(segment.locked) || !dirty, title: t('editor.save') },
             h(Icon, { name: 'save', size: 14 }),
           ),
           h('span', { className: 'cait-hint' }, t('editor.hint')),
@@ -1098,6 +1180,10 @@
       onRefreshQa,
       onJumpQa,
       onFixQa,
+      review,
+      reviewBusy,
+      onReview,
+      onApplyReview,
       concordance,
       concordanceQuery,
       setConcordanceQuery,
@@ -1397,10 +1483,25 @@
                   { className: 'cait-subhead' },
                   h('span', null, t('qa.title')),
                   h(
-                    'button',
-                    { className: 'cait-linkbtn', onClick: onRefreshQa, disabled: Boolean(busy) },
-                    h(Icon, { name: 'refresh', size: 12 }),
-                    t('qa.refresh'),
+                    'div',
+                    { className: 'cait-subhead-actions' },
+                    h(
+                      'button',
+                      {
+                        className: 'cait-linkbtn',
+                        onClick: onReview,
+                        disabled: Boolean(busy) || Boolean(reviewBusy),
+                        title: t('qa.review'),
+                      },
+                      h(Icon, { name: 'sparkles', size: 12 }),
+                      reviewBusy ? t('qa.reviewing') : t('qa.review'),
+                    ),
+                    h(
+                      'button',
+                      { className: 'cait-linkbtn', onClick: onRefreshQa, disabled: Boolean(busy) },
+                      h(Icon, { name: 'refresh', size: 12 }),
+                      t('qa.refresh'),
+                    ),
                   ),
                 ),
                 qa
@@ -1495,6 +1596,59 @@
                         : h('p', { className: 'cait-empty-note' }, t('qa.empty')),
                     )
                   : h('p', { className: 'cait-empty-note' }, t('qa.loading')),
+                review
+                  ? h(
+                      'div',
+                      { className: 'cait-review' },
+                      h('div', { className: 'cait-listhead' }, t('qa.reviewTitle')),
+                      (review.issues || []).length
+                        ? review.issues.map((issue, issueIndex) => {
+                            const severity = ['high', 'medium', 'low'].includes(issue.severity)
+                              ? issue.severity
+                              : 'medium'
+                            return h(
+                              'div',
+                              {
+                                key: `${issue.index}-${issueIndex}`,
+                                className: 'cait-reviewrow',
+                                role: 'button',
+                                tabIndex: 0,
+                                onClick: () => onJumpQa(issue.index),
+                                onKeyDown: (event) => {
+                                  if (event.key === 'Enter' || event.key === ' ') {
+                                    event.preventDefault()
+                                    onJumpQa(issue.index)
+                                  }
+                                },
+                              },
+                              h('span', { className: 'cait-reviewrow-index' }, `${issue.index + 1}`),
+                              h(
+                                'div',
+                                { className: 'cait-reviewrow-body' },
+                                h(
+                                  'span',
+                                  { className: `cait-reviewrow-msg ${severity}` },
+                                  `[${t(`qa.${severity}`)}] ${issue.message}`,
+                                ),
+                                issue.suggestion
+                                  ? h(
+                                      'button',
+                                      {
+                                        className: 'cait-riskaction',
+                                        onClick: (event) => {
+                                          event.stopPropagation()
+                                          onApplyReview(issue)
+                                        },
+                                      },
+                                      t('qa.reviewApply'),
+                                    )
+                                  : null,
+                              ),
+                            )
+                          })
+                        : h('p', { className: 'cait-empty-note' }, t('qa.reviewEmpty')),
+                    )
+                  : null,
               )
             : null,
           tab === 'concordance'
@@ -2970,6 +3124,7 @@
                           onChange: () => toggleTerm(at),
                         }),
                         h('span', { className: 'cait-termname' }, candidate.term),
+                        candidate.proper ? h('span', { className: 'cait-originchip' }, t('term.proper')) : null,
                         h('span', { className: 'cait-termcount' }, `×${candidate.count}`),
                         candidate.inLibrary ? h('span', { className: 'cait-originchip' }, t('term.inLibrary')) : null,
                         h('input', {
@@ -3089,13 +3244,23 @@
           model: settings.mt.model,
           temperature: settings.mt.temperature,
         },
+        review: {
+          provider: settings.review?.provider || '',
+          model: settings.review?.model || '',
+          temperature: settings.review?.temperature ?? 0,
+        },
       })
       const routes = Array.isArray(mtRoutes?.providers) ? mtRoutes.providers : []
       const route = routes.find((item) => item.id === form.mt.provider)
       const models = Array.isArray(route?.models) ? route.models : []
       const routeMissing = form.mt.provider !== 'mock' && !route
+      const reviewRoute = routes.find((item) => item.id === form.review.provider)
+      const reviewModels = Array.isArray(reviewRoute?.models) ? reviewRoute.models : []
+      const reviewInherited = !form.review.provider
 
       const setMt = (patch) => setForm((current) => ({ ...current, mt: { ...current.mt, ...patch } }))
+      const setReview = (patch) =>
+        setForm((current) => ({ ...current, review: { ...current.review, ...patch } }))
       const setPre = (patch) =>
         setForm((current) => ({ ...current, preprocess: { ...current.preprocess, ...patch } }))
       const selectProvider = (provider) => {
@@ -3109,6 +3274,18 @@
               provider === 'mock'
                 ? 'cait-mock'
                 : nextRoute?.models?.[0]?.id || '',
+          },
+        }))
+      }
+
+      const selectReviewProvider = (provider) => {
+        const nextRoute = routes.find((item) => item.id === provider)
+        setForm((current) => ({
+          ...current,
+          review: {
+            ...current.review,
+            provider,
+            model: nextRoute?.models?.[0]?.id || '',
           },
         }))
       }
@@ -3130,6 +3307,11 @@
             provider: form.mt.provider,
             model: form.mt.model,
             temperature: Number(form.mt.temperature),
+          },
+          review: {
+            provider: form.review.provider,
+            model: form.review.model,
+            temperature: Number(form.review.temperature),
           },
         }
         onSave(patch)
@@ -3340,6 +3522,98 @@
           ),
           h(
             'div',
+            { className: 'cait-settings-section' },
+            h('h4', { className: 'cait-settings-title' }, t('modal.settings.review')),
+            h(
+              'label',
+              { className: 'cait-checkline' },
+              h('input', {
+                type: 'checkbox',
+                checked: reviewInherited,
+                onChange: (event) => {
+                  if (event.target.checked) {
+                    setForm((current) => ({
+                      ...current,
+                      review: { ...current.review, provider: '', model: '' },
+                    }))
+                    return
+                  }
+                  const first = routes.find((item) => item.id !== 'mock' && item.hasModels !== false) || routes[0]
+                  setForm((current) => ({
+                    ...current,
+                    review: {
+                      ...current.review,
+                      provider: first?.id || '',
+                      model: first?.models?.[0]?.id || '',
+                    },
+                  }))
+                },
+              }),
+              t('modal.settings.reviewInherit'),
+            ),
+            h('p', { className: 'cait-mt-hint', style: { marginTop: 0 } }, t('modal.settings.reviewHint')),
+            reviewInherited
+              ? null
+              : h(
+                  'div',
+                  { className: 'cait-grid2' },
+                  h(
+                    'label',
+                    { className: 'cait-field' },
+                    h('span', null, t('modal.settings.reviewProvider')),
+                    h(
+                      'select',
+                      {
+                        className: 'cait-input',
+                        value: form.review.provider,
+                        onChange: (event) => selectReviewProvider(event.target.value),
+                      },
+                      routes.map((item) =>
+                        h(
+                          'option',
+                          { key: item.id, value: item.id, disabled: item.hasModels === false },
+                          item.hasModels === false
+                            ? `${item.name} (${item.id}) - ${t('modal.settings.noModels')}`
+                            : `${item.name} (${item.id})`,
+                        ),
+                      ),
+                      form.review.provider && !reviewRoute
+                        ? h('option', { value: form.review.provider }, t('modal.settings.routeMissing'))
+                        : null,
+                    ),
+                  ),
+                  h(
+                    'label',
+                    { className: 'cait-field' },
+                    h('span', null, t('modal.settings.model')),
+                    reviewModels.length
+                      ? h(
+                          'select',
+                          {
+                            className: 'cait-input',
+                            value: form.review.model,
+                            onChange: (event) => setReview({ model: event.target.value }),
+                          },
+                          reviewModels.map((model) =>
+                            h('option', { key: model.id, value: model.id }, `${model.name} (${model.id})`),
+                          ),
+                        )
+                      : h('input', {
+                          className: 'cait-input',
+                          value: form.review.model,
+                          readOnly: true,
+                          placeholder: t('modal.settings.noModels'),
+                        }),
+                  ),
+                ),
+            h(
+              'p',
+              { className: 'cait-mt-hint', style: { marginTop: 0 } },
+              reviewInherited ? t('modal.settings.reviewInheritedHint') : t('modal.settings.reviewCustomHint'),
+            ),
+          ),
+          h(
+            'div',
             { className: 'cait-modal-actions' },
             h('button', { type: 'button', className: 'cait-btn cait-btn-ghost', onClick: onClose }, t('modal.settings.cancel')),
             h('button', { type: 'submit', className: 'cait-btn cait-btn-primary', disabled: Boolean(busy) }, busy === 'settings' ? h(Spinner) : null, t('modal.settings.save')),
@@ -3444,6 +3718,313 @@
             t('brief.save'),
           ),
         ),
+      )
+    }
+
+    function NoteModal({ t, doc, index, segment, notes, busy, onAdd, onUpdate, onDelete, onClose }) {
+      const [text, setText] = useState('')
+      const [editingId, setEditingId] = useState('')
+      const [editingText, setEditingText] = useState('')
+      const list = Array.isArray(notes) ? notes : []
+      const submit = () => {
+        const value = text.trim()
+        if (!value || busy) return
+        onAdd(value)
+        setText('')
+      }
+      return h(
+        Modal,
+        { title: `${t('notes.title')} · #${index + 1}`, onClose, wide: true },
+        h('p', { className: 'cait-mt-hint', style: { marginTop: 0 } }, t('notes.hint')),
+        h('div', { className: 'cait-notelist' }, segment?.source || ''),
+        list.length
+          ? h(
+              'div',
+              { className: 'cait-notelist' },
+              list.map((note) =>
+                h(
+                  'div',
+                  { className: 'cait-noteitem', key: note.id },
+                  h(
+                    'div',
+                    { className: 'cait-notehead' },
+                    h('span', { className: 'cait-noteauthor' }, note.author === 'agent' ? 'Agent' : t('notes.user')),
+                    h('span', { className: 'cait-notetime' }, String(note.createdAt || '').replace('T', ' ').slice(0, 16)),
+                  ),
+                  editingId === note.id
+                    ? h(
+                        'div',
+                        null,
+                        h('textarea', {
+                          className: 'cait-input cait-textarea',
+                          value: editingText,
+                          rows: 3,
+                          onChange: (event) => setEditingText(event.target.value),
+                        }),
+                        h(
+                          'div',
+                          { className: 'cait-noteactions' },
+                          h('button', { className: 'cait-btn cait-btn-ghost', onClick: () => setEditingId('') }, t('notes.cancel')),
+                          h(
+                            'button',
+                            {
+                              className: 'cait-btn cait-btn-primary',
+                              disabled: Boolean(busy) || !editingText.trim(),
+                              onClick: () => {
+                                onUpdate(note.id, editingText)
+                                setEditingId('')
+                              },
+                            },
+                            t('notes.save'),
+                          ),
+                        ),
+                      )
+                    : h(
+                        'div',
+                        null,
+                        h('div', { className: 'cait-notetext' }, note.text),
+                        h(
+                          'div',
+                          { className: 'cait-noteactions' },
+                          h(
+                            'button',
+                            {
+                              className: 'cait-minibtn',
+                              onClick: () => {
+                                setEditingId(note.id)
+                                setEditingText(note.text)
+                              },
+                            },
+                            t('notes.edit'),
+                          ),
+                          h(
+                            'button',
+                            { className: 'cait-minibtn cait-danger', onClick: () => onDelete(note.id) },
+                            t('notes.delete'),
+                          ),
+                        ),
+                      ),
+                ),
+              ),
+            )
+          : h('p', { className: 'cait-mt-hint' }, t('notes.empty')),
+        h(
+          'div',
+          { className: 'cait-noteadd' },
+          h('textarea', {
+            className: 'cait-input cait-textarea',
+            value: text,
+            rows: 3,
+            placeholder: t('notes.placeholder'),
+            onChange: (event) => setText(event.target.value),
+          }),
+          h(
+            'div',
+            { className: 'cait-noteactions' },
+            h('button', { className: 'cait-btn cait-btn-primary', disabled: Boolean(busy) || !text.trim(), onClick: submit }, busy ? h(Spinner) : null, t('notes.add')),
+          ),
+        ),
+      )
+    }
+
+    function ReplaceModal({ t, doc, busy, preview, undoCount, onPreview, onApply, onUndo, onClose }) {
+      const queryRef = useRef(null)
+      const [form, setForm] = useState({
+        query: '',
+        replacement: '',
+        scope: 'target',
+        matchCase: false,
+        regex: false,
+      })
+      useEffect(() => {
+        if (queryRef.current) queryRef.current.focus()
+      }, [])
+      const set = (key, value) => setForm((current) => ({ ...current, [key]: value }))
+      return h(
+        Modal,
+        { title: t('replace.title'), onClose, wide: true },
+        h('p', { className: 'cait-mt-hint', style: { marginTop: 0 } }, t('replace.hint')),
+        h(
+          'div',
+          { className: 'cait-replaceform' },
+          h(
+            'label',
+            { className: 'cait-field' },
+            h('span', null, t('replace.query')),
+            h('input', {
+              ref: queryRef,
+              className: 'cait-input',
+              value: form.query,
+              placeholder: t('replace.queryPlaceholder'),
+              onChange: (event) => set('query', event.target.value),
+            }),
+          ),
+          h(
+            'label',
+            { className: 'cait-field' },
+            h('span', null, t('replace.replacement')),
+            h('input', {
+              className: 'cait-input',
+              value: form.replacement,
+              placeholder: t('replace.replacementPlaceholder'),
+              onChange: (event) => set('replacement', event.target.value),
+            }),
+          ),
+          h(
+            'div',
+            { className: 'cait-replaceoptions' },
+            h(
+              'label',
+              { className: 'cait-field' },
+              h('span', null, t('replace.scope')),
+              h(
+                'select',
+                {
+                  className: 'cait-input',
+                  value: form.scope,
+                  onChange: (event) => set('scope', event.target.value),
+                },
+                h('option', { value: 'target' }, t('replace.scope.target')),
+                h('option', { value: 'source' }, t('replace.scope.source')),
+                h('option', { value: 'both' }, t('replace.scope.both')),
+              ),
+            ),
+            h(
+              'label',
+              { className: 'cait-check' },
+              h('input', {
+                type: 'checkbox',
+                checked: form.matchCase,
+                onChange: (event) => set('matchCase', event.target.checked),
+              }),
+              t('replace.matchCase'),
+            ),
+            h(
+              'label',
+              { className: 'cait-check' },
+              h('input', {
+                type: 'checkbox',
+                checked: form.regex,
+                onChange: (event) => set('regex', event.target.checked),
+              }),
+              t('replace.regex'),
+            ),
+          ),
+        ),
+        preview
+          ? h(
+              'div',
+              { className: 'cait-replaceresults' },
+              h(
+                'div',
+                { className: 'cait-replacecounts' },
+                t('replace.results')
+                  .replace('{count}', String(preview.total))
+                  .replace('{segments}', String(preview.matchedSegments || 0)),
+              ),
+              preview.truncated ? h('p', { className: 'cait-mt-hint' }, t('replace.truncated')) : null,
+              preview.matches?.length
+                ? h(
+                    'div',
+                    { className: 'cait-replacelist' },
+                    preview.matches.slice(0, 50).map((match, index) =>
+                      h(
+                        'div',
+                        { className: 'cait-replaceitem', key: `${match.uid}-${match.field}-${index}` },
+                        h(
+                          'div',
+                          { className: 'cait-replacehead' },
+                          h('span', null, `#${match.index + 1}`),
+                          h('span', { className: 'cait-replacefield' }, t(`replace.field.${match.field}`)),
+                          h('span', { className: 'cait-replacecount' }, `×${match.count}`),
+                        ),
+                        h('div', { className: 'cait-replacebefore' }, match.before),
+                        h('div', { className: 'cait-replaceafter' }, match.after),
+                      ),
+                    ),
+                  )
+                : h('p', { className: 'cait-mt-hint' }, t('replace.noResults')),
+            )
+          : null,
+        h(
+          'div',
+          { className: 'cait-modal-actions' },
+          h('button', { className: 'cait-btn cait-btn-ghost', onClick: onClose, disabled: Boolean(busy) }, t('modal.confirm.cancel')),
+          undoCount
+            ? h('button', { className: 'cait-btn', onClick: onUndo, disabled: Boolean(busy) }, t('replace.undo'))
+            : null,
+          h('button', { className: 'cait-btn', onClick: () => onPreview(form), disabled: Boolean(busy) || !form.query }, t('replace.preview')),
+          h(
+            'button',
+            { className: 'cait-btn cait-btn-primary', onClick: () => onApply(form), disabled: Boolean(busy) || !form.query || !preview?.total },
+            busy ? h(Spinner) : null,
+            t('replace.apply'),
+          ),
+        ),
+      )
+    }
+
+    function CommandPalette({ t, items, onClose, onRun }) {
+      const [query, setQuery] = useState('')
+      const [active, setActive] = useState(0)
+      const inputRef = useRef(null)
+      useEffect(() => {
+        if (inputRef.current) inputRef.current.focus()
+      }, [])
+      const needle = query.trim().toLowerCase()
+      const filtered = items.filter((item) => {
+        if (!needle) return true
+        return `${item.title} ${item.hint || ''}`.toLowerCase().includes(needle)
+      })
+      useEffect(() => {
+        setActive(0)
+      }, [query])
+      const choose = (item) => {
+        if (item) onRun(item)
+      }
+      return h(
+        Modal,
+        { title: t('palette.title'), onClose, wide: true },
+        h('input', {
+          ref: inputRef,
+          className: 'cait-input cait-palette-input',
+          value: query,
+          placeholder: t('palette.placeholder'),
+          onChange: (event) => setQuery(event.target.value),
+          onKeyDown: (event) => {
+            if (event.key === 'ArrowDown') {
+              event.preventDefault()
+              setActive((value) => Math.min(value + 1, Math.max(0, filtered.length - 1)))
+            } else if (event.key === 'ArrowUp') {
+              event.preventDefault()
+              setActive((value) => Math.max(value - 1, 0))
+            } else if (event.key === 'Enter') {
+              event.preventDefault()
+              choose(filtered[active])
+            }
+          },
+        }),
+        h(
+          'div',
+          { className: 'cait-palette-list' },
+          filtered.length
+            ? filtered.map((item, index) =>
+                h(
+                  'button',
+                  {
+                    type: 'button',
+                    key: item.id,
+                    className: `cait-palette-item${index === active ? ' active' : ''}`,
+                    onMouseEnter: () => setActive(index),
+                    onClick: () => choose(item),
+                  },
+                  h('span', { className: 'cait-palette-label' }, item.title),
+                  item.hint ? h('span', { className: 'cait-palette-hint' }, item.hint) : null,
+                ),
+              )
+            : h('p', { className: 'cait-mt-hint' }, t('palette.empty')),
+        ),
+        h('p', { className: 'cait-palette-foot' }, t('palette.footer')),
       )
     }
 
@@ -3714,8 +4295,15 @@
       }
       const [pre, setPre] = useState({ running: false, done: 0, total: 0, filled: 0, failed: 0 })
       const [qa, setQa] = useState(null)
+      const [review, setReview] = useState(null)
+      const [reviewBusy, setReviewBusy] = useState(false)
       const [analysis, setAnalysis] = useState(null)
       const [analysisBusy, setAnalysisBusy] = useState(false)
+      const [replacePreview, setReplacePreview] = useState(null)
+      const [replaceUndo, setReplaceUndo] = useState(null)
+      const [replaceBusy, setReplaceBusy] = useState(false)
+      const [notes, setNotes] = useState(null)
+      const [notesBusy, setNotesBusy] = useState(false)
       const [concordance, setConcordance] = useState(null)
       const [concordanceQuery, setConcordanceQuery] = useState('')
       const [concordanceBusy, setConcordanceBusy] = useState(false)
@@ -3735,12 +4323,16 @@
       const busyRef = useRef(false)
       const rootRef = useRef(null)
       const unitRef = useRef(0)
+      const draftHistoryRef = useRef({ index: -1, stack: [], cursor: 0, lastAt: 0 })
 
       const doc = data?.activeDocument || null
       const segments = doc?.segments || []
       const index = doc ? Math.min(selected, Math.max(0, segments.length - 1)) : 0
       const segment = segments[index] || null
       const detail = doc?.current?.index === index ? doc.current : null
+      useEffect(() => {
+        draftHistoryRef.current = { index, stack: [draft], cursor: 0, lastAt: 0 }
+      }, [doc?.id, index])
       const settings = data?.settings || {
         sourceLang: 'en',
         targetLang: 'zh-CN',
@@ -3968,6 +4560,10 @@
       }, [data?.activeDocument?.id, data?.revision])
 
       useEffect(() => {
+        setReview(null)
+      }, [data?.activeDocument?.id])
+
+      useEffect(() => {
         let alive = true
         rpc('listMtRoutes')
           .then((routes) => {
@@ -3994,6 +4590,9 @@
         setTmError('')
         setConcordance(null)
         setConcordanceQuery('')
+        setReplacePreview(null)
+        setReplaceUndo(null)
+        setNotes(null)
       }, [doc?.id])
 
       useEffect(() => {
@@ -4057,6 +4656,49 @@
         } finally {
           setBusy('')
         }
+      }
+
+      const changeDraft = (value) => {
+        const history = draftHistoryRef.current
+        if (history.index !== index) {
+          history.index = index
+          history.stack = [draft]
+          history.cursor = 0
+        }
+        if (history.stack[history.cursor] !== value) {
+          const now = Date.now()
+          if (now - history.lastAt < 650 && history.cursor > 0) {
+            history.stack[history.cursor] = value
+          } else {
+            history.stack = history.stack.slice(0, history.cursor + 1)
+            history.stack.push(value)
+            if (history.stack.length > 200) history.stack.shift()
+            history.cursor = history.stack.length - 1
+          }
+          history.lastAt = now
+        }
+        setDraft(value)
+        setDirty(true)
+      }
+
+      const undoDraft = () => {
+        const history = draftHistoryRef.current
+        if (history.cursor <= 0) return
+        history.cursor -= 1
+        history.lastAt = 0
+        const value = history.stack[history.cursor]
+        setDraft(value)
+        setDirty(value !== (segment?.target || ''))
+      }
+
+      const redoDraft = () => {
+        const history = draftHistoryRef.current
+        if (history.cursor >= history.stack.length - 1) return
+        history.cursor += 1
+        history.lastAt = 0
+        const value = history.stack[history.cursor]
+        setDraft(value)
+        setDirty(value !== (segment?.target || ''))
       }
 
       const confirmSegment = async () => {
@@ -4247,6 +4889,49 @@
         }
       }
 
+      const toggleLock = async () => {
+        if (!doc || busy || !segment) return
+        setBusy('lock')
+        try {
+          await rpc('setSegmentLocked', { documentId: doc.id, index: selected, locked: !segment.locked })
+          const next = await rpc('bootstrap')
+          adoptState(next, selected)
+          notify(t(segment.locked ? 'toast.unlocked' : 'toast.locked'))
+        } catch (error) {
+          report(error)
+        } finally {
+          setBusy('')
+        }
+      }
+
+      const mergeCurrent = () => {
+        if (!doc || !segment || busy) return
+        openConfirm({
+          title: t('modal.confirm.mergeTitle'),
+          message: t('modal.confirm.merge'),
+          confirmLabel: t('editor.merge'),
+          action: async () => {
+            const result = await rpc('mergeSegments', { documentId: doc.id, index: selected, count: 2 })
+            adoptState(result.state, result.index)
+            notify(t('toast.merged'))
+          },
+        })
+      }
+
+      const splitCurrent = (at) => {
+        if (!doc || !segment || busy) return
+        openConfirm({
+          title: t('modal.confirm.splitTitle'),
+          message: t('modal.confirm.split'),
+          confirmLabel: t('editor.split'),
+          action: async () => {
+            const result = await rpc('splitSegment', { documentId: doc.id, index: selected, at })
+            adoptState(result.state, result.index)
+            notify(t('toast.split'))
+          },
+        })
+      }
+
       const saveBrief = async (brief) => {
         if (!doc || busy) return false
         setBusy('brief')
@@ -4295,6 +4980,116 @@
         }
       }
 
+      const openReplace = () => {
+        if (!doc) return
+        setReplacePreview(null)
+        setModal({ type: 'replace' })
+      }
+
+      const previewReplace = async (form) => {
+        if (!doc || replaceBusy) return
+        setReplaceBusy(true)
+        try {
+          setReplacePreview(await rpc('replaceInDocument', { documentId: doc.id, ...form }))
+        } catch (error) {
+          report(error)
+        } finally {
+          setReplaceBusy(false)
+        }
+      }
+
+      const applyReplace = async (form) => {
+        if (!doc || replaceBusy) return
+        setReplaceBusy(true)
+        try {
+          const result = await rpc('replaceInDocument', { documentId: doc.id, ...form, apply: true })
+          setReplaceUndo(Array.isArray(result.undo) && result.undo.length ? result.undo : null)
+          setReplacePreview(null)
+          adoptState(result.state, result.undo?.[0]?.index)
+          notify(t('toast.replaced').replace('{count}', String(result.applied ?? 0)))
+        } catch (error) {
+          report(error)
+        } finally {
+          setReplaceBusy(false)
+        }
+      }
+
+      const undoReplace = async () => {
+        if (!doc || !replaceUndo || replaceBusy) return
+        setReplaceBusy(true)
+        try {
+          const result = await rpc('undoReplace', { documentId: doc.id, undo: replaceUndo })
+          adoptState(result.state, replaceUndo[0]?.index)
+          setReplaceUndo(null)
+          setReplacePreview(null)
+          notify(t('toast.replaceUndone'))
+        } catch (error) {
+          report(error)
+        } finally {
+          setReplaceBusy(false)
+        }
+      }
+
+      const openNotes = async () => {
+        if (!doc) return
+        setNotes(null)
+        setNotesBusy(true)
+        setModal({ type: 'notes' })
+        try {
+          const result = await rpc('notesForSegment', { documentId: doc.id, index })
+          setNotes(result.notes)
+        } catch (error) {
+          report(error)
+        } finally {
+          setNotesBusy(false)
+        }
+      }
+
+      const addNote = async (text) => {
+        if (!doc || notesBusy) return
+        setNotesBusy(true)
+        try {
+          const result = await rpc('addSegmentNote', { documentId: doc.id, index, text })
+          setNotes(result.notes)
+          adoptState(result.state, index)
+          notify(t('toast.noteSaved'))
+        } catch (error) {
+          report(error)
+        } finally {
+          setNotesBusy(false)
+        }
+      }
+
+      const updateNote = async (noteId, text) => {
+        if (!doc || notesBusy) return
+        setNotesBusy(true)
+        try {
+          const result = await rpc('updateSegmentNote', { documentId: doc.id, index, noteId, text })
+          setNotes(result.notes)
+          adoptState(result.state, index)
+          notify(t('toast.noteSaved'))
+        } catch (error) {
+          report(error)
+        } finally {
+          setNotesBusy(false)
+        }
+      }
+
+      const deleteNote = async (noteId) => {
+        if (!doc || notesBusy) return
+        setNotesBusy(true)
+        try {
+          const result = await rpc('deleteSegmentNote', { documentId: doc.id, index, noteId })
+          setNotes(result.notes)
+          adoptState(result.state, index)
+          notify(t('toast.noteDeleted'))
+        } catch (error) {
+          report(error)
+        } finally {
+          setNotesBusy(false)
+        }
+      }
+
       const refreshQa = async () => {        if (!doc) return
         setQa(null)
         try {
@@ -4306,6 +5101,33 @@
 
       const jumpQa = (nextIndex) => {
         if (Number.isInteger(nextIndex)) chooseSegment(nextIndex)
+      }
+
+      const runReview = async () => {
+        if (!doc || reviewBusy) return
+        setReviewBusy(true)
+        try {
+          const result = await rpc('reviewDocument', {
+            documentId: doc.id,
+            from: 0,
+            count: 20,
+          })
+          setReview(result || { issues: [] })
+        } catch (error) {
+          setReview(null)
+          report(error)
+        } finally {
+          setReviewBusy(false)
+        }
+      }
+
+      const applyReview = (issue) => {
+        if (!doc || !issue || !Number.isInteger(issue.index)) return
+        chooseSegment(issue.index)
+        if (issue.suggestion) {
+          setDraft(issue.suggestion)
+          setDirty(true)
+        }
       }
 
       const applyQaFix = async (item, action) => {
@@ -4814,6 +5636,23 @@
         }
       }, [])
 
+      useEffect(() => {
+        const onKey = (event) => {
+          const mod = event.metaKey || event.ctrlKey
+          if (!mod) return
+          const key = event.key.toLowerCase()
+          if (key === 'k') {
+            event.preventDefault()
+            setModal((current) => (current?.type === 'palette' ? null : { type: 'palette' }))
+          } else if (key === 'f' && doc && !modal) {
+            event.preventDefault()
+            openReplace()
+          }
+        }
+        window.addEventListener('keydown', onKey)
+        return () => window.removeEventListener('keydown', onKey)
+      }, [doc?.id, modal])
+
       if (loading) {
         return h(
           'div',
@@ -4841,6 +5680,44 @@
         )
       }
 
+      const commands = [
+        { id: 'new', title: t('cmd.new'), hint: t('cmd.newHint'), run: () => setModal({ type: 'new', defaultMode: 'text' }) },
+        { id: 'import', title: t('cmd.import'), hint: '', run: () => setModal({ type: 'new', defaultMode: 'file' }) },
+        { id: 'export', title: t('cmd.export'), hint: '', docOnly: true, run: () => setModal({ type: 'export' }) },
+        { id: 'pretranslate', title: t('cmd.pretranslate'), hint: '', docOnly: true, run: () => runPreTranslate() },
+        { id: 'replace', title: t('cmd.replace'), hint: 'Ctrl+F', docOnly: true, run: () => openReplace() },
+        { id: 'brief', title: t('cmd.brief'), hint: '', docOnly: true, run: () => setModal({ type: 'brief' }) },
+        { id: 'resources', title: t('cmd.resources'), hint: '', docOnly: true, run: () => setModal({ type: 'resources' }) },
+        { id: 'analysis', title: t('cmd.analysis'), hint: '', docOnly: true, run: () => openAnalysis() },
+        { id: 'notes', title: t('cmd.notes'), hint: '', docOnly: true, run: () => openNotes() },
+        {
+          id: 'review',
+          title: t('cmd.review'),
+          hint: '',
+          docOnly: true,
+          run: () => {
+            setTab('qa')
+            runReview()
+          },
+        },
+        {
+          id: 'clear-pretranslated',
+          title: t('cmd.clearPretranslated'),
+          hint: '',
+          docOnly: true,
+          run: () => clearPretranslated(),
+        },
+        { id: 'documents', title: t('cmd.documents'), hint: '', run: () => setView('documents') },
+        { id: 'libraries', title: t('cmd.libraries'), hint: '', run: () => setView('libraries') },
+        { id: 'align', title: t('cmd.align'), hint: '', run: () => setView('align') },
+        { id: 'settings', title: t('cmd.settings'), hint: '', run: () => setModal({ type: 'settings' }) },
+      ].filter((item) => !item.docOnly || doc)
+
+      const runCommand = (item) => {
+        setModal(null)
+        setTimeout(() => item.run(), 0)
+      }
+
       return h(
         'div',
         { className: 'cait-root', ref: rootRef },
@@ -4861,6 +5738,7 @@
           pre,
           onPreTranslate: runPreTranslate,
           onCancelPreTranslate: cancelPreTranslate,
+          onReplace: openReplace,
           view,
           onView: setView,
         }),
@@ -4909,14 +5787,18 @@
                   segment,
                   detail,
                   draft,
-                  setDraft: (value) => {
-                    setDraft(value)
-                    setDirty(true)
-                  },
+                  setDraft: changeDraft,
                   dirty,
                   busy,
+                  canUndo: draftHistoryRef.current.cursor > 0,
+                  canRedo: draftHistoryRef.current.cursor < draftHistoryRef.current.stack.length - 1,
+                  onUndo: undoDraft,
+                  onRedo: redoDraft,
                   onConfirm: confirmSegment,
                   onUnconfirm: unconfirmCurrent,
+                  onToggleLock: toggleLock,
+                  onMerge: mergeCurrent,
+                  onSplit: splitCurrent,
                   onNext: () => moveSegment(1),
                   onPrev: () => moveSegment(-1),
                   onSave: () => saveDraft(false),
@@ -4925,6 +5807,8 @@
                   onOpenBrief: () => setModal({ type: 'brief' }),
                   onOpenResources: () => setModal({ type: 'resources' }),
                   onOpenAnalysis: openAnalysis,
+                  onOpenNotes: openNotes,
+                  noteCount: segment?.notes?.length || 0,
                   qaRisk,
                   textareaRef,
                 })
@@ -4970,6 +5854,10 @@
                   onRefreshQa: refreshQa,
                   onJumpQa: jumpQa,
                   onFixQa: applyQaFix,
+                  review,
+                  reviewBusy,
+                  onReview: runReview,
+                  onApplyReview: applyReview,
                   concordance,
                   concordanceQuery,
                   setConcordanceQuery,
@@ -5016,6 +5904,36 @@
               busy: analysisBusy,
               onClose: () => setModal(null),
             })
+          : null,
+        modal?.type === 'replace'
+          ? h(ReplaceModal, {
+              t,
+              doc,
+              busy: replaceBusy,
+              preview: replacePreview,
+              undoCount: replaceUndo ? replaceUndo.length : 0,
+              onPreview: previewReplace,
+              onApply: applyReplace,
+              onUndo: undoReplace,
+              onClose: () => setModal(null),
+            })
+          : null,
+        modal?.type === 'notes'
+          ? h(NoteModal, {
+              t,
+              doc,
+              index,
+              segment,
+              notes,
+              busy: notesBusy,
+              onAdd: addNote,
+              onUpdate: updateNote,
+              onDelete: deleteNote,
+              onClose: () => setModal(null),
+            })
+          : null,
+        modal?.type === 'palette'
+          ? h(CommandPalette, { t, items: commands, onClose: () => setModal(null), onRun: runCommand })
           : null,
         modal?.type === 'settings'
           ? h(SettingsModal, { t, settings, mtRoutes, busy, onClose: () => setModal(null), onSave: saveSettings })

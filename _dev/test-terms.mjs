@@ -66,6 +66,32 @@ try {
     assert.ok(candidates[0].count >= 4)
   }
 
+  section('single-occurrence proper names are candidates')
+  {
+    const text =
+      'Lyra met Pan at the Citadel. Mara said the gate was closed. Vex laughed. Oriel watched from the tower. The system works.'
+    const candidates = extractTerms(text, { minCount: 1, limit: 20 })
+    const terms = candidates.map((candidate) => candidate.term.toLowerCase())
+    for (const name of ['mara', 'vex', 'oriel', 'citadel']) {
+      assert.ok(terms.includes(name), `${name} should be a candidate`)
+    }
+    assert.ok(!terms.includes('the'))
+    const mara = candidates.find((candidate) => candidate.term === 'Mara')
+    assert.equal(mara.proper, true)
+    assert.equal(mara.type, 'person')
+    assert.ok(mara.confidence > 0)
+    assert.ok(Number.isInteger(mara.evidenceIndex))
+  }
+
+  section('single-occurrence CJK names before speech verbs are candidates')
+  {
+    const text = '李明说，门开了。王五笑了。'
+    const candidates = extractTerms(text, { minCount: 1, limit: 20 })
+    const terms = candidates.map((candidate) => candidate.term)
+    assert.ok(terms.includes('李明'))
+    assert.ok(terms.includes('王五'))
+  }
+
   section('single occurrences and stopword phrases are never candidates')
   {
     const candidates = extractTerms('The system works and the system is fast.', { limit: 20 })

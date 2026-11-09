@@ -3,6 +3,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CatStore } from '../lib/store.js'
+import { STORE_VERSION } from '../lib/store-utils.js'
 
 function section(title) {
   console.log(`\n== ${title} ==`)
@@ -194,7 +195,7 @@ section('v4 migration and reload')
     assert.equal(again.segments[0].status, 'confirmed')
     assert.equal(reloaded.tm.length, 1)
     const snapshot = JSON.parse(readFileSync(file, 'utf8'))
-    assert.equal(snapshot.version, 6)
+    assert.equal(snapshot.version, STORE_VERSION)
     assert.equal(snapshot.documents[0].segments[0].uid, doc.segments[0].uid)
     assert.equal(snapshot.documents[0].tmIds, null)
     assert.equal(snapshot.documents[0].glossaryIds, null)

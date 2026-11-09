@@ -17,12 +17,12 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm バージョン" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
-  <img alt="テスト 36 スイート" src="https://img.shields.io/badge/tests-36%20suites-brightgreen.svg" />
+  <img alt="テスト 41 スイート" src="https://img.shields.io/badge/tests-41%20suites-brightgreen.svg" />
   <img alt="API キー不要" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
 </p>
 
 CAIT は DSH Web UI と DSH デスクトップに CAT ワークベンチを追加します。左サイドバーの
-エントリから開き、ワークベンチと 15 のエージェントツールが 1 つのストアを共有するため、
+エントリから開き、ワークベンチと 21 のエージェントツールが 1 つのストアを共有するため、
 ソースファイルのインポートから訳文のエクスポートまでを一通りこなせます。
 
 > **DSH `0.2.2-rc.1` で動作確認済み。** CAIT は DSH 自身のモデルルートと認証情報を
@@ -38,7 +38,7 @@ CAIT は DSH Web UI と DSH デスクトップに CAT ワークベンチを追�
 | **用語を意識した編集** | 複数の用語集、ソース言語による絞り込み、インライン強調、用語のクリック挿入、用語ごとの大文字小文字の区別。 |
 | **文書ワークフロー** | タブ、閉じる / 開き直し、最近の文書の整理、同一内容の再インポート再利用、文書ごとの進捗。 |
 | **実用的な形式対応** | TXT、Markdown、DOCX、EPUB、TMX、CSV、SRT/VTT、PO、XLIFF 1.2/2.0/SDLXLIFF、HTML、JSON、XLSX、PPTX、RTF。 |
-| **エージェント対応** | 10 のツールが開いている文書とストアを共有するので、エージェントと並行して翻訳できます。 |
+| **エージェント対応** | 21 のツールが開いている文書とストアを共有するので、エージェントと並行して翻訳できます。 |
 
 ## クイックスタート
 
@@ -55,6 +55,15 @@ CAIT は DSH Web UI と DSH デスクトップに CAT ワークベンチを追�
 Host のリビジョンをポーリングするため、エージェントによる変更も手動リロードなしで反映されます。
 
 ## 機能
+
+### 1.1.6 の新機能
+
+- **検索と置換**：原文/訳文のプレビュー、一括適用、直前の置換の取り消し。確定済みセグメントの訳文を変更すると校閲待ちに戻ります。
+- **コマンドパレット**（`Ctrl/Cmd+K`）と `Ctrl/Cmd+F` の検索置換。
+- **セグメントメモ**と、セグメント内の**ドラフト undo/redo**（`Ctrl/Cmd+Z`、`Ctrl/Cmd+Shift+Z`、`Ctrl/Cmd+Y`）。
+- テキストセグメントの**マージ・分割・ロック**。マージ/分割は当面 TXT と Markdown のみで、Office の段落マッピングは安全に書き戻せません。
+- **一度しか出ない固有名詞の用語発見**：引用符内の用語、文中の大文字名、中国語の人名/地名/造物名を候補に含め、種類・信頼度・原文の根拠を付けます。用語集への自動追加はしません。
+- **AI 校閲**：QA タブから現在の DSH モデルに構造化された提案を求め、該当セグメントへ移動したり訳文へ反映したりできます。Agent は `cat_review` を呼べますが、どちらも文書を直接書き換えません。校閲は既定で翻訳モデルに従い、設定で専用のプロバイダーとモデルを指定できます。
 
 ### 1.1.5 の新機能
 
@@ -264,7 +273,7 @@ DSH デスクトップ（または `plugin_manager` ツールがある任意の�
 plugin_manager install_bundle target: dsh-cait
 ```
 
-バージョンを固定するときは `dsh-cait@1.1.5`、最新版は `dsh-cait@latest` を指定します。
+バージョンを固定するときは `dsh-cait@1.1.6`、最新版は `dsh-cait@latest` を指定します。
 マネージャが registry のパッケージを解決し、bundle patch を適用してプラグインを有効化します。
 
 CLI 管理のプロファイル:
@@ -366,6 +375,7 @@ dsh web --patch C:\absolute\path\to\dsh-CAIT\_dev\cait.patch.yml
 | `cat_consistency_report` | 訳文が揺れている同一原文をグループ化して一覧 |
 | `cat_term_candidates` | 用語候補の短いリスト: 頻度、例文、メモリにある既存の訳語 |
 | `cat_add_terms` | 選んだ用語を用語集へまとめて登録 |
+| `cat_review` | モデルに構造化された校閲提案を求める。文書は書き換えない |
 
 そのためエージェントは UI を操作せずに文書全体を下書きできます: `cat_pre_translate` を
 `from: next` で `next` が `null` になるまで繰り返し、`cat_get_segments` で確認し、
@@ -381,7 +391,7 @@ dsh web --patch C:\absolute\path\to\dsh-CAIT\_dev\cait.patch.yml
 flowchart LR
   UI["DSH Web UI<br/>(sidebar + workbench)"] --> Client["client.js<br/>generated Web bundle"]
   Client --> API["/cait/api/rpc<br/>same-origin JSON"]
-  Tools["15 agent tools"] --> Store["CatStore"]
+  Tools["21 agent tools"] --> Store["CatStore"]
   API --> Store
   Store --> Snapshot[("store.json<br/>+ sources/")]
 ```
@@ -468,7 +478,7 @@ node _dev/test-mt.mjs
 
 インポート / エクスポートのフィクスチャは `_dev/sample.docx`、`_dev/sample-table.docx`、
 `_dev/sample-format.docx` です。対応する `python _dev/make-*.py` スクリプトで再生成
-できます。36 スイートすべてが通るはずです。
+できます。41 スイートすべてが通るはずです。
 
 ### リリース
 

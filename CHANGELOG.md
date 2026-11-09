@@ -4,6 +4,50 @@ All notable changes to CAIT are documented here. The project follows
 [Semantic Versioning](https://semver.org/) and the format is based on
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.1.6] - 2026-11-09
+
+Review-workbench release: find and replace, a command palette, segment notes,
+draft undo/redo, segment merge/split/lock, proper-name term discovery, and an
+optional AI review pass that suggests fixes without writing to the document.
+
+### Added
+
+- **Find and replace.** Preview every match in source/target, apply in one step,
+  and undo the last replacement. Confirmed segments are downgraded to review when
+  their target changes; TM entries are left untouched.
+- **Command palette and shortcuts.** `Ctrl/Cmd+K` opens a command palette;
+  `Ctrl/Cmd+F` opens find and replace.
+- **Segment notes.** Per-segment review comments with add, edit, and delete,
+  persisted in the document JSON.
+- **Draft undo/redo.** Per-segment editing history with `Ctrl/Cmd+Z`,
+  `Ctrl/Cmd+Shift+Z`, and `Ctrl/Cmd+Y`.
+- **Merge, split, and lock.** Merge adjacent text segments, split a segment at a
+  source offset, and lock segments against edits, confirmation, replacement,
+  pre-translation, propagation, and clearing.
+- **Term discovery for one-off names.** Candidates now include quoted terms,
+  capitalized names, and Chinese proper names that occur once, in addition to
+  repeated n-grams. Candidates carry a type, confidence, and evidence; they are
+  never added to the glossary automatically.
+- **AI review.** `reviewDocument` asks the configured DSH route for structured
+  issues (`severity`, `code`, `message`, `suggestion`) and the QA tab can jump to
+  a segment or fill a suggestion into the draft. `cat_review` exposes the same
+  pass to agents; it never writes the document.
+- **Separate review route.** Settings can give AI review its own provider and
+  model instead of following the pre-translation route. The default still
+  inherits the MT route, so existing configurations keep working.
+
+### Changed
+
+- Store schema v7 adds `segment.notes` and `segment.locked`; v6 data migrates in
+  place.
+- The QA tab now separates mechanical checks (placeholders, numbers, terms,
+  length, residue) from model review suggestions.
+
+### Fixed
+
+- Batch MT maps responses by stable segment id and rejects partial or renumbered
+  output instead of shifting later translations by one segment.
+
 ## [1.1.5] - 2026-11-08
 
 Project resources, delivery output, and TM upkeep: each document can bind its own
