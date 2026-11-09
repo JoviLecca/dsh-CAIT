@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>Computer-aided translation, inside DeepSeek Harness.</strong><br/>
-  Translation memory 路 glossary 路 segment editor 路 MT assistance 路 document tabs 路 Office / subtitle / localization formats
+  Translation memory · glossary · segment editor · MT assistance · document tabs · Office / subtitle / localization formats
 </p>
 <p align="center">
   <a href="README.zh-CN.md">简体中文</a> · <a href="README.ja.md">日本語</a> · <a href="README.md">English</a>
