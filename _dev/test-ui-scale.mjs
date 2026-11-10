@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import vm from 'node:vm'
+import { readAuthoredClient } from './lib/client-source.mjs'
 
 // The workbench scales as one piece: every fixed length in styles.js is
 // rewritten to `calc(<n>px * var(--cait-u))` and the unit follows the panel
@@ -208,13 +209,7 @@ assert.deepEqual(
 // asserted on the authored modules and only behaviour is asserted on the bundle.
 const wiring = [
   fs.readFileSync(new URL('../client/styles.js', import.meta.url), 'utf8'),
-  ...fs
-    .readdirSync(new URL('../client/components/', import.meta.url))
-    .filter((name) => name.endsWith('.js'))
-    .sort()
-    .map((name) =>
-      fs.readFileSync(new URL(`../client/components/${name}`, import.meta.url), 'utf8'),
-    ),
+  readAuthoredClient(),
 ].join('\n')
 assert.ok(wiring.includes('const CSS_SCALED = scaleCssLengths(CSS, CAIT_UNIT_VAR)'))
 assert.equal(wiring.includes("h('style', null, CSS)"), false, 'renders must use CSS_SCALED')

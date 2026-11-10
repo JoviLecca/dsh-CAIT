@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
 import vm from 'node:vm'
+import { readAuthoredClient } from './lib/client-source.mjs'
 
 // Theme adaptation is a token discipline, not a colour pass: DSH already maps
 // `--dsw-alias-label-primary` (dark text on light, light text on dark) and
@@ -12,12 +13,7 @@ const root = new URL('..', import.meta.url)
 const read = (name) => fs.readFileSync(new URL(name, root), 'utf8')
 
 const styles = read('client/styles.js')
-const components = fs
-  .readdirSync(new URL('client/components/', root))
-  .filter((name) => name.endsWith('.js'))
-  .sort()
-  .map((name) => read(`client/components/${name}`))
-  .join('\n')
+const components = readAuthoredClient()
 const helpers = read('client/helpers.js')
 
 function section(name) {
