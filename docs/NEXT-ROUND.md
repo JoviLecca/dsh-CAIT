@@ -88,9 +88,34 @@
 真要做增量下发，等于为 4.5 ms 的构建成本改协议（`api.js` 响应形状 + `adoptState` + 变更追踪），
 不划算。
 
-P2.1 的做法（下一轮）：exact-key `Map` 快路径、长度带预筛（先按字符数排掉不可能达标的 entry）、
-query 的 bigram/token 只算一次（`similarity.js` 暴露 prepared 变体），目标是 10k TM 下
-`lookupTM` < 10 ms，且结果与现在逐条等价——用随机用例把新旧实现跑对照。
+P2.1 已完成。做法不是「长度带预筛」，而是**按计数算上界**：
+
+- `similarity.js` 暴露 `prepare(text)`（query 的 bigram 与 token 只算一次）、`textStats(key)`
+  （一条 TM 的 bigram 数与 token 数，缓存在 entry 上）、`scoreCeiling()`；
+- 上界是两个数学事实的合成：`dice <= 2*min(g1,g2)/(g1+g2)`、`jaccard <= min(t1,t2)/max(t1,t2)`，
+  所以 `0.72*dice + 0.28*jaccard` 一定不超过这个 ceiling。低于阈值的 entry 直接跳过，
+  **不参与打分**，也不改变结果；
+- 计数只在 `entry.updatedAt` 变化时重算（`WeakMap` 挂在 store 上），所以一次查询里每个 entry 只付一次。
+
+20k 句段 / 10k TM 复测：
+
+| 路径 | 改前 | 改后 |
+| --- | --- | --- |
+| `bootstrap()` | 113.5 ms | **5.2 ms** |
+| `selectSegment()`（点一下） | 109.8 ms | **1.3 ms** |
+| `segmentDetail()` | 111.1 ms | **1.1 ms** |
+| `confirmSegment()` | 206 ms | 92.9 ms |
+| `API confirmSegment` 含回传 state | 309 ms / 6.0 MB | **115 ms / 6.0 MB** |
+
+最坏情况（10k 条 TM 全都和查询近似，ceiling 拦不住）仍有 75 ms——这是「每条都要真算一次」的下限，
+没有 gram 缓存就降不下去，而 gram 缓存要多占约 25 MB 内存，不值。
+
+**结论：`bootstrap({ since })` 不做。** 现在一次写操作 115 ms（目标 < 200 ms），唯一超标的是
+6 MB 载荷；那是极端的 20k 句段文档才会碰到，典型 500 句段只有 0.16 MB。真有大文档抱怨再单独做。
+
+`_dev/test-tm-index.mjs`（第 51 个套件）把这次替换钉住：它内嵌一份改动前的暴力实现，
+对 1152 组（query × threshold × limit）逐字段比对 `lookupTM` 的结果，并单独校验 ICE 等级。
+
 
 ### P3 顺手做，不单独开轮
 

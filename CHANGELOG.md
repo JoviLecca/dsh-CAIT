@@ -6,6 +6,14 @@ All notable changes to CAIT are documented here. The project follows
 
 ## [Unreleased]
 
+### Changed
+
+- Selecting a segment no longer rescans the whole translation memory. `lookupTM`
+  computes the query's bigrams and tokens once and skips entries whose bigram and
+  token counts prove they cannot reach the threshold (`lib/similarity.js`). At
+  20,000 segments with 10,000 TM entries a click went from 110 ms to 1 ms, and
+  `bootstrap()` from 113 ms to 5 ms, with identical results.
+
 ### Fixed
 
 - Error messages now follow the interface language. The server keeps sending a

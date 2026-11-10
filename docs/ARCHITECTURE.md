@@ -55,7 +55,14 @@ index.js  apply(ctx)
 
 `bootstrap()` 返回给客户端的是快照：文档列表 + 活动文档的全部句段，仍然是全量的。
 客户端每 2 秒先调 `currentRevision()`（几十字节），只有 `revision` 变了才拉一次 `bootstrap()`；
-写操作的响应仍然附带整份 `state`，增量下发是 Batch 3 的剩余部分。
+写操作的响应仍然附带整份 `state`。20k 句段下一次写约 115 ms / 6 MB（`npm run bench`），
+所以「增量下发」留到真有大文档抱怨时再做。
+
+TM 检索（`lookupTM`）对每条记忆算一次相似度，但先用**可证明的上界**把不可能的条目筛掉：
+bigram 数与 token 数决定 `0.72*dice + 0.28*jaccard` 的上限（`lib/similarity.js` 的
+`prepare` / `textStats` / `scoreCeiling`），计数按 `updatedAt` 缓存在 entry 上。
+筛掉只影响速度、不影响结果——`_dev/test-tm-index.mjs` 用一份暴力实现逐字段对照。
+
 
 ## 4. 接口契约
 
