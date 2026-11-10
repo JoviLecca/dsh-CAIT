@@ -203,9 +203,7 @@ try {
         target: '无法保存的译文。',
       }),
     (error) =>
-      error?.code === 'PERSISTENCE_FAILED' &&
-      error.status === 503 &&
-      /回滚/.test(error.message),
+      error?.code === 'PERSISTENCE_FAILED' && error.status === 503 && /回滚/.test(error.message),
   )
   assert.equal(blocked.docs.get(blockedId).segments[0].status, 'pending')
   assert.equal(blocked.docs.get(blockedId).segments[0].target, '')
@@ -232,7 +230,11 @@ try {
 
   const resumed = new CatStore({ dataDir: draftDir, logger: silent })
   assert.equal(resumed.docs.get(draftId).cursor, 2, 'the cursor survives a restart')
-  assert.equal(resumed.docs.get(draftId).segments[2].target, '第三句草稿。', 'the draft survives a restart')
+  assert.equal(
+    resumed.docs.get(draftId).segments[2].target,
+    '第三句草稿。',
+    'the draft survives a restart',
+  )
   assert.equal(resumed.docs.get(draftId).segments[2].status, 'translated')
 
   console.log('test-persistence: all assertions passed')

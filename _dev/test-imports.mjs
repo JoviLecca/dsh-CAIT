@@ -12,11 +12,19 @@ assert.ok(parsed.includes('translation memory'))
 
 const store = new CatStore()
 const base64 = buffer.toString('base64')
-const imported = await store.importFile({ name: 'sample.docx', kind: 'docx', base64, sourceLang: 'en', targetLang: 'zh-CN' })
+const imported = await store.importFile({
+  name: 'sample.docx',
+  kind: 'docx',
+  base64,
+  sourceLang: 'en',
+  targetLang: 'zh-CN',
+})
 console.log(imported)
 const state = store.bootstrap()
 assert.equal(state.activeDocument.segments.length >= 3, true)
-assert.ok(state.activeDocument.segments.some((segment) => segment.source.includes('CAIT import test')))
+assert.ok(
+  state.activeDocument.segments.some((segment) => segment.source.includes('CAIT import test')),
+)
 
 const tableBuffer = fs.readFileSync(new URL('./sample-table.docx', import.meta.url))
 const tableText = parseDocx(tableBuffer)
@@ -26,19 +34,30 @@ assert.ok(tableText.includes('Table cell A'))
 assert.ok(tableText.includes('Table cell D'))
 assert.ok(tableText.includes('After table paragraph.'))
 
-const glossary = store.importGlossary({ text: 'translation memory,翻译记忆库,TM\nCAT,计算机辅助翻译,computer-aided translation' })
+const glossary = store.importGlossary({
+  text: 'translation memory,翻译记忆库,TM\nCAT,计算机辅助翻译,computer-aided translation',
+})
 console.log(glossary)
 assert.ok(store.bootstrap().glossary.length >= 2)
 
 const tmxSource = `<?xml version="1.0"?><tmx version="1.4"><header srclang="en"/><body><tu><tuv xml:lang="en"><seg>Hello.</seg></tuv><tuv xml:lang="zh-CN"><seg>你好。</seg></tuv></tu></body></tmx>`
-const tmxDoc = await store.importTmx({ text: tmxSource, name: 'pairs.tmx', importAs: 'document', targetLang: 'zh-CN' })
+const tmxDoc = await store.importTmx({
+  text: tmxSource,
+  name: 'pairs.tmx',
+  importAs: 'document',
+  targetLang: 'zh-CN',
+})
 console.log(tmxDoc)
 const tmxState = store.bootstrap()
 assert.equal(tmxState.activeDocument.segments.length, 1)
 assert.equal(tmxState.activeDocument.segments[0].target, '你好。')
 
 const tmxMarkup = `<?xml version="1.0"?><tmx version="1.4"><header srclang="en"/><body><tu><tuv xml:lang="en"><seg>Hello <bpt i="1">&lt;b&gt;</bpt>world<ept i="1">&lt;/b&gt;</ept></seg></tuv></tu></body></tmx>`
-const markupDoc = await store.importTmx({ text: tmxMarkup, name: 'markup.tmx', importAs: 'document' })
+const markupDoc = await store.importTmx({
+  text: tmxMarkup,
+  name: 'markup.tmx',
+  importAs: 'document',
+})
 console.log(markupDoc.warnings)
 assert.equal(markupDoc.warnings.length, 1)
 assert.equal(markupDoc.warnings[0].code, 'TMX_INLINE_MARKUP_LOST')

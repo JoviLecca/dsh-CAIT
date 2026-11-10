@@ -7,3 +7,7 @@ node_modules/
 # Local scratch
 .git-commit-msg.txt
 npm-debug.log*
+baseline-tests.log
+
+# Reused npm cache when the sandbox blocks the default one
+.npm-cache/

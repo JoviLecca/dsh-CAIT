@@ -105,7 +105,7 @@ section('native widgets follow the host theme through color-scheme')
 section('the client mirrors the DSH theme marker')
 {
   assert.ok(helpers.includes("const CAIT_THEME_ATTR = 'data-cait-theme'"))
-  assert.ok(helpers.includes('body?.hasAttribute?.(\'data-ds-dark-theme\')'))
+  assert.ok(helpers.includes("body?.hasAttribute?.('data-ds-dark-theme')"))
   assert.ok(components.includes('detectThemeKind(document)'))
   assert.ok(components.includes('element.setAttribute(CAIT_THEME_ATTR, kind)'))
   assert.ok(
@@ -121,7 +121,13 @@ section('detectThemeKind reads the host marker')
   const source = fs.readFileSync(new URL('client.js', root), 'utf8')
   let definition
   const sandbox = {
-    window: { __ModuleLoader__: { load: (value) => { definition = value } } },
+    window: {
+      __ModuleLoader__: {
+        load: (value) => {
+          definition = value
+        },
+      },
+    },
     document: { createElement: () => ({}), body: { appendChild() {} } },
     console,
   }
@@ -139,12 +145,24 @@ section('detectThemeKind reads the host marker')
   })
   const { detectThemeKind, caitThemeAttr } = mod.__test
   assert.equal(caitThemeAttr, 'data-cait-theme')
-  const darkBody = { hasAttribute: (name) => name === 'data-ds-dark-theme', getAttribute: () => null }
+  const darkBody = {
+    hasAttribute: (name) => name === 'data-ds-dark-theme',
+    getAttribute: () => null,
+  }
   const lightBody = { hasAttribute: () => false, getAttribute: () => null }
-  assert.equal(detectThemeKind({ body: darkBody, documentElement: { getAttribute: () => null } }), 'dark')
-  assert.equal(detectThemeKind({ body: lightBody, documentElement: { getAttribute: () => null } }), 'light')
   assert.equal(
-    detectThemeKind({ body: lightBody, documentElement: { getAttribute: (name) => (name === 'data-theme' ? 'dark' : null) } }),
+    detectThemeKind({ body: darkBody, documentElement: { getAttribute: () => null } }),
+    'dark',
+  )
+  assert.equal(
+    detectThemeKind({ body: lightBody, documentElement: { getAttribute: () => null } }),
+    'light',
+  )
+  assert.equal(
+    detectThemeKind({
+      body: lightBody,
+      documentElement: { getAttribute: (name) => (name === 'data-theme' ? 'dark' : null) },
+    }),
     'dark',
   )
   assert.equal(detectThemeKind({}), 'light')

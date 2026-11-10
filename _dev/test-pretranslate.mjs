@@ -22,7 +22,8 @@ function section(name) {
 function stubMt(store, map = {}) {
   const calls = []
   const translate = (text) => {
-    if (map[text] === 'THROW') throw Object.assign(new Error('route exploded'), { code: 'MT_PROVIDER_FAILED' })
+    if (map[text] === 'THROW')
+      throw Object.assign(new Error('route exploded'), { code: 'MT_PROVIDER_FAILED' })
     return map[text] ?? `MT(${text})`
   }
   store.mtSuggest = async ({ text }) => {
@@ -62,9 +63,21 @@ try {
     assert.deepEqual(calls, ['Beta.', 'Gamma.'])
     assert.equal(result.filled, 2)
     assert.deepEqual(result.skipped, [{ index: 0, reason: 'confirmed' }])
-    assert.deepEqual(result.segments.map((item) => item.origin), ['mt', 'mt'])
-    assert.deepEqual(doc.segments.map((segment) => segment.status), ['confirmed', 'translated', 'translated'])
-    assert.deepEqual(store.progress(doc), { total: 3, confirmed: 1, translated: 2, pending: 0, percent: 33 })
+    assert.deepEqual(
+      result.segments.map((item) => item.origin),
+      ['mt', 'mt'],
+    )
+    assert.deepEqual(
+      doc.segments.map((segment) => segment.status),
+      ['confirmed', 'translated', 'translated'],
+    )
+    assert.deepEqual(store.progress(doc), {
+      total: 3,
+      confirmed: 1,
+      translated: 2,
+      pending: 0,
+      percent: 33,
+    })
     assert.equal(result.next, null)
 
     const again = await store.preTranslate({ documentId: doc.id, from: 0, count: 3 })
@@ -134,14 +147,22 @@ try {
     assert.equal(result.failed.length, 1)
     assert.equal(result.failed[0].index, 1)
     assert.equal(result.failed[0].code, 'MT_PROVIDER_FAILED')
-    assert.deepEqual(doc.segments.map((segment) => segment.status), ['translated', 'pending', 'translated'])
+    assert.deepEqual(
+      doc.segments.map((segment) => segment.status),
+      ['translated', 'pending', 'translated'],
+    )
   }
 
   section('block window is clamped and next points at the following block')
   {
     const store = new CatStore({ logger: silent })
     const text = Array.from({ length: 40 }, (_, i) => `Line ${i + 1}.`).join(' ')
-    const { document } = store.createDocument({ name: 'Pre window', text, sourceLang: 'en', targetLang: 'zh-CN' })
+    const { document } = store.createDocument({
+      name: 'Pre window',
+      text,
+      sourceLang: 'en',
+      targetLang: 'zh-CN',
+    })
     const doc = store.docs.get(document.id)
     stubMt(store)
 
@@ -150,7 +171,11 @@ try {
     assert.equal(first.filled, PRETRANSLATE_BLOCK_MAX)
     assert.equal(first.next, PRETRANSLATE_BLOCK_MAX)
 
-    const last = await store.preTranslate({ documentId: doc.id, from: doc.segments.length - 3, count: 8 })
+    const last = await store.preTranslate({
+      documentId: doc.id,
+      from: doc.segments.length - 3,
+      count: 8,
+    })
     assert.equal(last.to, doc.segments.length)
     assert.equal(last.next, null)
   }
@@ -159,7 +184,12 @@ try {
   {
     const dataDir = tempDir()
     const store = new CatStore({ dataDir, logger: silent })
-    const { document } = store.createDocument({ name: 'Pre disk', text: 'Disk one. Disk two.', sourceLang: 'en', targetLang: 'zh-CN' })
+    const { document } = store.createDocument({
+      name: 'Pre disk',
+      text: 'Disk one. Disk two.',
+      sourceLang: 'en',
+      targetLang: 'zh-CN',
+    })
     stubMt(store)
     await store.preTranslate({ documentId: document.id, from: 0, count: 2 })
 
@@ -179,7 +209,12 @@ try {
   section('segmentsForTool filters by status and stays bounded')
   {
     const store = new CatStore({ logger: silent })
-    const { document } = store.createDocument({ name: 'List', text: 'A. B. C.', sourceLang: 'en', targetLang: 'zh-CN' })
+    const { document } = store.createDocument({
+      name: 'List',
+      text: 'A. B. C.',
+      sourceLang: 'en',
+      targetLang: 'zh-CN',
+    })
     const doc = store.docs.get(document.id)
     stubMt(store)
     await store.preTranslate({ documentId: doc.id, from: 0, count: 2 })
@@ -190,7 +225,10 @@ try {
     assert.equal(all.next, null)
 
     const pending = store.segmentsForTool({ documentId: doc.id, status: 'pending' })
-    assert.deepEqual(pending.segments.map((segment) => segment.index), [2])
+    assert.deepEqual(
+      pending.segments.map((segment) => segment.index),
+      [2],
+    )
 
     const bounded = store.segmentsForTool({ documentId: doc.id, from: 0, count: 2 })
     assert.equal(bounded.segments.length, 2)
@@ -200,7 +238,12 @@ try {
   section('confirmSegmentsForTool confirms only segments that have text')
   {
     const store = new CatStore({ logger: silent })
-    const { document } = store.createDocument({ name: 'Batch', text: 'One. Two. Three.', sourceLang: 'en', targetLang: 'zh-CN' })
+    const { document } = store.createDocument({
+      name: 'Batch',
+      text: 'One. Two. Three.',
+      sourceLang: 'en',
+      targetLang: 'zh-CN',
+    })
     const doc = store.docs.get(document.id)
     stubMt(store)
     await store.preTranslate({ documentId: doc.id, from: 0, count: 2 })
@@ -226,14 +269,20 @@ try {
   {
     const store = new CatStore({ logger: silent })
     const text = Array.from({ length: 50 }, (_, i) => `Line ${i}.`).join(' ')
-    const { document } = store.createDocument({ name: 'Batch ids', text, sourceLang: 'en', targetLang: 'zh-CN' })
+    const { document } = store.createDocument({
+      name: 'Batch ids',
+      text,
+      sourceLang: 'en',
+      targetLang: 'zh-CN',
+    })
     const doc = store.docs.get(document.id)
     store.resolveMtRoute = async () => ({ provider: 'stub', model: 'stub-model', mock: false })
 
-    const stream = (payload) => (async function* () {
-      yield { type: 'text-delta', index: 0, text: payload }
-      yield { type: 'finish', reason: { kind: 'stop' } }
-    })()
+    const stream = (payload) =>
+      (async function* () {
+        yield { type: 'text-delta', index: 0, text: payload }
+        yield { type: 'finish', reason: { kind: 'stop' } }
+      })()
 
     store.mtRuntime = {
       stream: () =>
@@ -246,7 +295,10 @@ try {
           ),
         ),
     }
-    const items = Array.from({ length: 8 }, (_, offset) => ({ index: 40 + offset, text: `Line ${40 + offset}.` }))
+    const items = Array.from({ length: 8 }, (_, offset) => ({
+      index: 40 + offset,
+      text: `Line ${40 + offset}.`,
+    }))
     const result = await store.mtSuggestBatch({ documentId: doc.id, items })
     assert.equal(result.items.length, 8)
     assert.deepEqual(
@@ -261,7 +313,10 @@ try {
       stream: () =>
         stream(
           JSON.stringify(
-            Array.from({ length: 7 }, (_, offset) => ({ index: offset + 1, text: `wrong-${offset + 1}` })),
+            Array.from({ length: 7 }, (_, offset) => ({
+              index: offset + 1,
+              text: `wrong-${offset + 1}`,
+            })),
           ),
         ),
     }

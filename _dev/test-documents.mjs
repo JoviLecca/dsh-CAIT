@@ -82,7 +82,11 @@ try {
     sourceLang: 'en',
     targetLang: 'zh-CN',
   })
-  assert.equal(imported.reused, true, 're-importing the same file must reopen the existing document')
+  assert.equal(
+    imported.reused,
+    true,
+    're-importing the same file must reopen the existing document',
+  )
   assert.equal(imported.document.id, firstId)
 
   const deleted = reloadedAgain.deleteDocument({ documentId: firstId })

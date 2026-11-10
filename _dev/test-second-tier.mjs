@@ -4,14 +4,19 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CatStore } from '../lib/store.js'
 import { buildXlsx, parseXlsx } from '../lib/xlsx.js'
-import { buildPptx, parsePptxDetailed } from '../lib/pptx.js'
+import { parsePptxDetailed } from '../lib/pptx.js'
 import { readZipEntries, writeZip } from '../lib/docx.js'
 
 const dir = mkdtempSync(join(tmpdir(), 'cait-second-tier-'))
 try {
   const store = new CatStore({ dataDir: dir })
   const html = '<h1>Title</h1><p>Hello <b>world</b></p>'
-  const importedHtml = store.importFile({ name: 'page.html', text: html, sourceLang: 'en', targetLang: 'zh-CN' })
+  const importedHtml = store.importFile({
+    name: 'page.html',
+    text: html,
+    sourceLang: 'en',
+    targetLang: 'zh-CN',
+  })
   assert.equal(importedHtml.document.name, 'page.html')
   assert.equal(store.activeDocument().format, 'html')
   assert.equal(store.activeDocument().segments[0].source, 'Title')
@@ -34,9 +39,17 @@ try {
   assert.equal(exportedJson.nested.body, '世界')
 
   const rtf = String.raw`{\rtf1\ansi\deff0{\fonttbl{\f0 Arial;}}Hello \b world\b0\par Second paragraph\par}`
-  const importedRtf = store.importFile({ name: 'notes.rtf', text: rtf, sourceLang: 'en', targetLang: 'zh-CN' })
+  const importedRtf = store.importFile({
+    name: 'notes.rtf',
+    text: rtf,
+    sourceLang: 'en',
+    targetLang: 'zh-CN',
+  })
   assert.equal(importedRtf.document.name, 'notes.rtf')
-  assert.deepEqual(store.activeDocument().segments.map((s) => s.source), ['Hello world', 'Second paragraph'])
+  assert.deepEqual(
+    store.activeDocument().segments.map((s) => s.source),
+    ['Hello world', 'Second paragraph'],
+  )
   assert.match(store.exportDocument({ format: 'rtf' }).content, /\\rtf1/)
 
   const xlsxSource = buildXlsx({
@@ -67,9 +80,7 @@ try {
     <a:p><a:r><a:t>Second line</a:t></a:r></a:p>
   </p:txBody></p:sp></p:spTree></p:cSld>
 </p:sld>`
-  const pptx = writeZip([
-    { name: 'ppt/slides/slide1.xml', data: Buffer.from(slideXml, 'utf8') },
-  ])
+  const pptx = writeZip([{ name: 'ppt/slides/slide1.xml', data: Buffer.from(slideXml, 'utf8') }])
   const parsedPptx = parsePptxDetailed(pptx)
   assert.equal(parsedPptx.segments.length, 2)
   assert.equal(parsedPptx.segments[0].source, 'Hello slide')
@@ -91,7 +102,9 @@ try {
   const exportedPptx = store.exportDocument({ format: 'pptx' })
   assert.equal(Buffer.isBuffer(exportedPptx.content), true)
   const pptxEntries = readZipEntries(exportedPptx.content)
-  const patchedSlide = pptxEntries.find((entry) => entry.name === 'ppt/slides/slide1.xml').data.toString('utf8')
+  const patchedSlide = pptxEntries
+    .find((entry) => entry.name === 'ppt/slides/slide1.xml')
+    .data.toString('utf8')
   assert.match(patchedSlide, /幻灯片你好/)
   assert.match(patchedSlide, /<a:rPr b="1"\/>/)
 
@@ -104,7 +117,9 @@ try {
   assert.equal(reloadedPptx.format, 'pptx')
   assert.equal(reloadedPptx.sourcePptx.kind, 'file')
   assert.match(reload.openDocument({ documentId: pptxDoc.id }).document.name, /deck/)
-  const reloadedPptxZip = readZipEntries(reload.exportDocument({ documentId: pptxDoc.id, format: 'pptx' }).content)
+  const reloadedPptxZip = readZipEntries(
+    reload.exportDocument({ documentId: pptxDoc.id, format: 'pptx' }).content,
+  )
   assert.match(
     reloadedPptxZip.find((entry) => entry.name === 'ppt/slides/slide1.xml').data.toString('utf8'),
     /幻灯片你好/,

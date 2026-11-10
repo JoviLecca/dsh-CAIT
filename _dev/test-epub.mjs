@@ -59,15 +59,23 @@ const entries = readZipEntries(patched)
 assert.equal(entries[0].name, 'mimetype')
 assert.equal(entries[0].method, 0)
 assert.equal(entries[0].data.toString('utf8'), 'application/epub+zip')
-const xhtml = entries.find((entry) => entry.name === 'OEBPS/chapter one.xhtml').data.toString('utf8')
+const xhtml = entries
+  .find((entry) => entry.name === 'OEBPS/chapter one.xhtml')
+  .data.toString('utf8')
 assert.match(xhtml, /<h1>Titre<\/h1>/)
 assert.match(xhtml, /Un <em>deux<\/em> trois\./)
 
 // Missing tokens fall back to the source segment instead of corrupting markup.
-const partial = buildEpub({
-  ...translated,
-  segments: [{ ...translated.segments[0], target: '' }, { ...translated.segments[1], target: 'Sans balises.' }],
-}, fixture)
+const partial = buildEpub(
+  {
+    ...translated,
+    segments: [
+      { ...translated.segments[0], target: '' },
+      { ...translated.segments[1], target: 'Sans balises.' },
+    ],
+  },
+  fixture,
+)
 const partialParsed = parseEpub(partial)
 assert.equal(partialParsed.segments[1].source, 'Alpha {1}beta{2} gamma.')
 
@@ -85,7 +93,13 @@ const fresh = buildEpubFromText({
 const freshEntries = readZipEntries(fresh)
 assert.deepEqual(
   freshEntries.map((entry) => entry.name),
-  ['mimetype', 'META-INF/container.xml', 'OEBPS/content.opf', 'OEBPS/nav.xhtml', 'OEBPS/chapter.xhtml'],
+  [
+    'mimetype',
+    'META-INF/container.xml',
+    'OEBPS/content.opf',
+    'OEBPS/nav.xhtml',
+    'OEBPS/chapter.xhtml',
+  ],
 )
 assert.equal(freshEntries[0].method, 0)
 assert.equal(parseEpub(fresh).segments.length, 2)

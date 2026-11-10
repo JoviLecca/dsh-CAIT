@@ -3,13 +3,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CatStore } from '../lib/store.js'
-import {
-  alignBlock,
-  alignTexts,
-  confidenceOf,
-  lengthFit,
-  scorePair,
-} from '../lib/aligner.js'
+import { alignBlock, alignTexts, confidenceOf, lengthFit, scorePair } from '../lib/aligner.js'
 
 const silent = { log() {}, warn() {}, error() {} }
 const roots = []
@@ -37,7 +31,10 @@ try {
     assert.match(result.text, /Title/)
     assert.match(result.text, /Hello world\./)
     assert.equal(store.docs.size, 0)
-    assert.throws(() => store.readUploadText({ name: 'empty.txt', text: '   ' }), /没有可用文本|内容为空/)
+    assert.throws(
+      () => store.readUploadText({ name: 'empty.txt', text: '   ' }),
+      /没有可用文本|内容为空/,
+    )
   }
 
   section('confidence tiers')
@@ -101,15 +98,15 @@ try {
     assert.equal(result.high, 2)
     assert.equal(result.medium, 1)
     assert.equal(result.unpairedSource, 0)
-    assert.deepEqual(result.pairs.map((row) => row.confidence), ['high', 'high', 'medium'])
+    assert.deepEqual(
+      result.pairs.map((row) => row.confidence),
+      ['high', 'high', 'medium'],
+    )
   }
 
   section('alignTexts reports missing translations instead of guessing')
   {
-    const result = alignTexts(
-      'Alpha one. Beta two. Gamma three.',
-      '阿尔法一。伽马三。',
-    )
+    const result = alignTexts('Alpha one. Beta two. Gamma three.', '阿尔法一。伽马三。')
     assert.equal(result.pairs.length, 2)
     assert.equal(result.unpairedSource, 1)
   }

@@ -21,7 +21,13 @@ function plain(value) {
 const source = fs.readFileSync(new URL('client.js', root), 'utf8')
 let definition
 const sandbox = {
-  window: { __ModuleLoader__: { load: (value) => { definition = value } } },
+  window: {
+    __ModuleLoader__: {
+      load: (value) => {
+        definition = value
+      },
+    },
+  },
   document: { createElement: () => ({}), body: { appendChild() {} } },
   console,
 }
@@ -96,7 +102,11 @@ const broken = {
   },
 }
 assert.equal(readPageSize(broken), 50, 'a denied read falls back to the default')
-assert.equal(writePageSize(broken, 200), 200, 'a denied write still returns the size to use in memory')
+assert.equal(
+  writePageSize(broken, 200),
+  200,
+  'a denied write still returns the size to use in memory',
+)
 assert.equal(readPageSize(null), 50)
 
 section('pageCount and clampPage keep the page inside the data')
@@ -112,12 +122,54 @@ assert.equal(clampPage(99, 200, 20), 10)
 assert.equal(clampPage(-3, 0, 50), 1)
 
 section('pageBounds reports a 1-based inclusive window')
-assert.deepEqual(plain(pageBounds(1, 120, 20)), { page: 1, pageSize: 20, start: 1, end: 20, total: 120, pages: 6 })
-assert.deepEqual(plain(pageBounds(2, 120, 20)), { page: 2, pageSize: 20, start: 21, end: 40, total: 120, pages: 6 })
-assert.deepEqual(plain(pageBounds(6, 120, 20)), { page: 6, pageSize: 20, start: 101, end: 120, total: 120, pages: 6 })
-assert.deepEqual(plain(pageBounds(3, 121, 50)), { page: 3, pageSize: 50, start: 101, end: 121, total: 121, pages: 3 })
-assert.deepEqual(plain(pageBounds(9, 120, 20)), { page: 6, pageSize: 20, start: 101, end: 120, total: 120, pages: 6 })
-assert.deepEqual(plain(pageBounds(1, 0, 50)), { page: 1, pageSize: 50, start: 0, end: 0, total: 0, pages: 1 })
+assert.deepEqual(plain(pageBounds(1, 120, 20)), {
+  page: 1,
+  pageSize: 20,
+  start: 1,
+  end: 20,
+  total: 120,
+  pages: 6,
+})
+assert.deepEqual(plain(pageBounds(2, 120, 20)), {
+  page: 2,
+  pageSize: 20,
+  start: 21,
+  end: 40,
+  total: 120,
+  pages: 6,
+})
+assert.deepEqual(plain(pageBounds(6, 120, 20)), {
+  page: 6,
+  pageSize: 20,
+  start: 101,
+  end: 120,
+  total: 120,
+  pages: 6,
+})
+assert.deepEqual(plain(pageBounds(3, 121, 50)), {
+  page: 3,
+  pageSize: 50,
+  start: 101,
+  end: 121,
+  total: 121,
+  pages: 3,
+})
+assert.deepEqual(plain(pageBounds(9, 120, 20)), {
+  page: 6,
+  pageSize: 20,
+  start: 101,
+  end: 120,
+  total: 120,
+  pages: 6,
+})
+assert.deepEqual(plain(pageBounds(1, 0, 50)), {
+  page: 1,
+  pageSize: 50,
+  start: 0,
+  end: 0,
+  total: 0,
+  pages: 1,
+})
 
 section('segmentNumberToIndex converts a typed number to a 0-based index')
 assert.equal(segmentNumberToIndex('1', 10), 0)

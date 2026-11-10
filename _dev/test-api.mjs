@@ -9,7 +9,9 @@ const ctx = {
   webServer: {
     register(value) {
       route = value
-      return () => { route = null }
+      return () => {
+        route = null
+      }
     },
   },
   connection: {
@@ -77,7 +79,10 @@ try {
   assert.equal(duplicate.body.data.reused, true)
   assert.equal(duplicate.body.data.document.id, documentId)
   assert.equal(duplicate.body.data.state.documents.length, 1)
-  assert.deepEqual(duplicate.body.data.state.openDocuments.map((doc) => doc.id), [documentId])
+  assert.deepEqual(
+    duplicate.body.data.state.openDocuments.map((doc) => doc.id),
+    [documentId],
+  )
 
   const closed = await call('closeDocument', { documentId })
   assert.equal(closed.body.data.state.activeDocument, null)
@@ -86,7 +91,10 @@ try {
 
   const reopened = await call('openDocument', { documentId })
   assert.equal(reopened.body.data.state.activeDocument.id, documentId)
-  assert.deepEqual(reopened.body.data.state.openDocuments.map((doc) => doc.id), [documentId])
+  assert.deepEqual(
+    reopened.body.data.state.openDocuments.map((doc) => doc.id),
+    [documentId],
+  )
 
   const selected = await call('selectSegment', { index: 0 })
   assert.equal(selected.body.data.state.activeDocument.current.index, 0)

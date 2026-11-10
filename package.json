@@ -37,7 +37,16 @@
   },
   "scripts": {
     "build:client": "node scripts/build-client.mjs",
-    "prepublishOnly": "node scripts/build-client.mjs && node --check client.js"
+    "check": "npm run lint && npm run format:check && npm run check:locales && npm run check:api && npm run check:client && npm test",
+    "check:api": "node scripts/check-api.mjs",
+    "check:client": "node scripts/check-client.mjs",
+    "check:locales": "node scripts/check-locales.mjs",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint lib index.js scripts _dev",
+    "test": "node scripts/run-tests.mjs",
+    "test:one": "node scripts/run-tests.mjs",
+    "prepublishOnly": "npm run build:client && npm run check"
   },
   "exports": {
     ".": "./index.js",
@@ -66,7 +75,11 @@
     "@deepseek-ai/schemastery": ">=3.18.1 <4.0.0"
   },
   "devDependencies": {
-    "@deepseek-ai/schemastery": "^3.19.0"
+    "@deepseek-ai/schemastery": "^3.19.0",
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.14.0",
+    "globals": "^17.14.0",
+    "prettier": "^3.9.10"
   },
   "dsh": {
     "bundle": {

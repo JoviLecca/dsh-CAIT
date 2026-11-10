@@ -1,13 +1,6 @@
-import { readFileSync, writeFileSync } from 'node:fs'
+import { writeFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { buildClientSource, CLIENT_PARTS, projectRoot } from './lib/client-source.mjs'
 
-const parts = ['helpers.js', 'styles.js', 'rpc.js', 'components.js', 'locales.js', 'entry.js']
-const header = `window.__ModuleLoader__.load({
-  id: 'dsh-cait',
-  factory(require) {
-    const React = require('react')
-    const h = React.createElement
-    const { useState, useEffect, useMemo, useRef } = React
-`
-const body = parts.map((name) => readFileSync(`client/${name}`, 'utf8').replace(/\s+$/, '')).join('\n\n')
-writeFileSync('client.js', `${header}\n${body}\n`)
-console.log(`built client.js from ${parts.length} fragments`)
+writeFileSync(join(projectRoot, 'client.js'), buildClientSource())
+console.log(`built client.js from ${CLIENT_PARTS.length} fragments`)

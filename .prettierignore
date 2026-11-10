@@ -1,0 +1,18 @@
+# 生成物
+client.js
+node_modules/
+.npm-cache/
+
+# client 片段仍是「共享作用域的拼接块」，entry.js 甚至不是合法独立脚本；
+# Batch 1 把它改成 ESM 后再纳入格式化。
+client/
+
+# 文档保留手工排版
+docs/
+*.md
+
+# 测试夹具（docx/xlsx/pptx 等二进制与样例）
+_dev/fixtures/
+
+# 资源文件
+icon.svg

@@ -76,8 +76,14 @@ section('context window')
   assert.equal(context.brief.domain, 'docs')
   assert.equal(context.paragraph.index, 0)
   assert.equal(context.paragraph.count, 1)
-  assert.deepEqual(context.before.map((item) => item.index), [1])
-  assert.deepEqual(context.after.map((item) => item.index), [3])
+  assert.deepEqual(
+    context.before.map((item) => item.index),
+    [1],
+  )
+  assert.deepEqual(
+    context.after.map((item) => item.index),
+    [3],
+  )
   assert.throws(() => store.contextForTool({ index: 99 }), /超出范围/)
 }
 
@@ -122,7 +128,11 @@ section('editing a confirmed segment revokes confirmation')
   const edited = store.docs.values().next().value.segments[0]
   assert.equal(edited.status, 'translated')
   assert.equal(edited.confirmedAt, null)
-  assert.equal(store.tm[0].target, '敏捷的棕色狐狸跳过了懒狗。', 'TM waits for the next confirmation')
+  assert.equal(
+    store.tm[0].target,
+    '敏捷的棕色狐狸跳过了懒狗。',
+    'TM waits for the next confirmation',
+  )
 
   store.confirmSegment({ index: 0, target: edited.target })
   assert.equal(store.tm.length, 1)
@@ -172,7 +182,9 @@ section('v4 migration and reload')
             sourceLang: 'en',
             targetLang: 'zh-CN',
             cursor: 0,
-            segments: [{ id: 's1', source: 'Old source.', target: '', status: 'pending', paragraph: 0 }],
+            segments: [
+              { id: 's1', source: 'Old source.', target: '', status: 'pending', paragraph: 0 },
+            ],
             fingerprint: 'old',
           },
         ],

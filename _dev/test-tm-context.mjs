@@ -154,8 +154,14 @@ try {
 
     // Renaming an entry onto a key that already exists with the *same* context
     // hash is the one real duplicate; a different context stays legitimate.
-    const alpha = store.upsertTM('Alpha.', '甲', 'en', 'zh-CN', undefined, { prev: 'Same.', next: 'Ctx.' })
-    const beta = store.upsertTM('Beta.', '乙', 'en', 'zh-CN', undefined, { prev: 'Same.', next: 'Ctx.' })
+    const alpha = store.upsertTM('Alpha.', '甲', 'en', 'zh-CN', undefined, {
+      prev: 'Same.',
+      next: 'Ctx.',
+    })
+    const beta = store.upsertTM('Beta.', '乙', 'en', 'zh-CN', undefined, {
+      prev: 'Same.',
+      next: 'Ctx.',
+    })
     assert.throws(() => store.updateTM({ id: beta.entry.id, source: 'Alpha.' }), /同一个记忆库/)
     assert.equal(store.updateTM({ id: alpha.entry.id, target: '甲二' }).entry.context.prev, 'same.')
   }

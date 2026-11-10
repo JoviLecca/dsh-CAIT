@@ -49,14 +49,8 @@ const mod = definition.factory((name) => {
   throw new Error(`unexpected require: ${name}`)
 })
 
-const {
-  computeCaitUnit,
-  scaleCssLengths,
-  caitUiBase,
-  caitUiMaxUnit,
-  caitUiDamping,
-  cssScaled,
-} = mod.__test || {}
+const { computeCaitUnit, scaleCssLengths, caitUiBase, caitUiMaxUnit, caitUiDamping, cssScaled } =
+  mod.__test || {}
 
 assert.equal(typeof computeCaitUnit, 'function')
 assert.equal(typeof scaleCssLengths, 'function')
@@ -75,7 +69,11 @@ assert.equal(computeCaitUnit(), 1)
 assert.equal(computeCaitUnit({ width: Number.NaN, height: 800 }), 1)
 assert.equal(computeCaitUnit({ width: 4000, height: 2400 }), caitUiMaxUnit, 'cap')
 assert.equal(computeCaitUnit({ width: 1000, height: 2400 }), 1, 'width guard')
-assert.equal(computeCaitUnit({ width: 4000, height: 700 }), 1.018, 'short/wide windows follow height')
+assert.equal(
+  computeCaitUnit({ width: 4000, height: 700 }),
+  1.018,
+  'short/wide windows follow height',
+)
 
 const mid = computeCaitUnit({ width: 1700, height: 900 })
 assert.equal(mid, 1.194)
@@ -92,13 +90,24 @@ assert.equal(computeCaitUnit({ width: 3840, height: 2160 }), caitUiMaxUnit)
 // Growth is damped rather than linear, so large panels stop outgrowing the
 // surrounding DSH chrome.
 const linear = Math.min(2200 / 1100, 1500 / 680)
-assert.ok(computeCaitUnit({ width: 2200, height: 1500 }) < linear, 'damped growth stays below linear')
+assert.ok(
+  computeCaitUnit({ width: 2200, height: 1500 }) < linear,
+  'damped growth stays below linear',
+)
 
 const wideGrows = [1300, 1500, 1700, 1900].map((width) => computeCaitUnit({ width, height: 1000 }))
-assert.deepEqual(wideGrows, [...wideGrows].sort((a, b) => a - b), 'unit is monotonic in width')
+assert.deepEqual(
+  wideGrows,
+  [...wideGrows].sort((a, b) => a - b),
+  'unit is monotonic in width',
+)
 
 const tallGrows = [700, 800, 900, 1000].map((height) => computeCaitUnit({ width: 2400, height }))
-assert.deepEqual(tallGrows, [...tallGrows].sort((a, b) => a - b), 'unit is monotonic in height')
+assert.deepEqual(
+  tallGrows,
+  [...tallGrows].sort((a, b) => a - b),
+  'unit is monotonic in height',
+)
 
 // --- scaleCssLengths -------------------------------------------------------
 assert.equal(
@@ -107,10 +116,7 @@ assert.equal(
 )
 
 // Hairlines must stay exact so borders keep rendering crisply.
-assert.equal(
-  scaleCssLengths('.a{border:1px solid}', '--cait-u'),
-  '.a{border:1px solid}',
-)
+assert.equal(scaleCssLengths('.a{border:1px solid}', '--cait-u'), '.a{border:1px solid}')
 
 // Decimals and negatives are handled; 1.5px scales because it is not a hairline.
 assert.equal(
@@ -201,12 +207,18 @@ assert.deepEqual(
 assert.ok(source.includes('const CSS_SCALED = scaleCssLengths(CSS, CAIT_UNIT_VAR)'))
 assert.equal(source.includes("h('style', null, CSS)"), false, 'renders must use CSS_SCALED')
 assert.equal((source.match(/h\('style', null, CSS_SCALED\)/g) || []).length, 3)
-assert.equal((source.match(/ref: rootRef/g) || []).length, 3, 'all three root branches share the ref')
+assert.equal(
+  (source.match(/ref: rootRef/g) || []).length,
+  3,
+  'all three root branches share the ref',
+)
 assert.ok(source.includes('new ResizeObserver(measure)'), 'panel resizes must re-measure')
-assert.ok(source.includes("element.style.setProperty(CAIT_UNIT_VAR, String(unit))"))
+assert.ok(source.includes('element.style.setProperty(CAIT_UNIT_VAR, String(unit))'))
 assert.ok(
   source.includes('calc(${value}px * var(${CAIT_UNIT_VAR}, 1))'),
   'inline icon sizes must use the same unit',
 )
 
-console.log(`ui-scale ok: ${calcCount} scaled lengths, unit ${computeCaitUnit({ width: 1700, height: 900 })} at 1700x900`)
+console.log(
+  `ui-scale ok: ${calcCount} scaled lengths, unit ${computeCaitUnit({ width: 1700, height: 900 })} at 1700x900`,
+)

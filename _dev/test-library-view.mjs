@@ -90,10 +90,16 @@ try {
   const before = store.listTmEntries({ tmIds: [store.mounts.defaultTmId] }).total
   store.clearTM({ tmIds: [store.mounts.defaultTmId] })
   assert.equal(store.listTmEntries({ tmIds: [store.mounts.defaultTmId] }).total, 0)
-  const back = store.importTmx({ text: exported.content, importAs: 'tm', tmId: store.mounts.defaultTmId })
+  const back = store.importTmx({
+    text: exported.content,
+    importAs: 'tm',
+    tmId: store.mounts.defaultTmId,
+  })
   assert.equal(back.added, before)
   assert.equal(store.listTmEntries({ tmIds: [store.mounts.defaultTmId] }).total, before)
-  assert.ok(store.tm.some((entry) => entry.source === 'Sentence number 1.' && entry.target === '第一句。'))
+  assert.ok(
+    store.tm.some((entry) => entry.source === 'Sentence number 1.' && entry.target === '第一句。'),
+  )
 
   // 8. Glossary CSV round-trip keeps the note and the case-sensitivity flag.
   const csv = store.exportGlossary({ glossaryId: store.mounts.defaultGlossaryId, format: 'csv' })
@@ -107,7 +113,9 @@ try {
 
   store.clearGlossary({ glossaryIds: [store.mounts.defaultGlossaryId] })
   store.importGlossary({ text: csv.content, glossaryId: store.mounts.defaultGlossaryId })
-  const restored = store.listGlossaryEntries({ glossaryIds: [store.mounts.defaultGlossaryId] }).entries
+  const restored = store.listGlossaryEntries({
+    glossaryIds: [store.mounts.defaultGlossaryId],
+  }).entries
   assert.equal(restored.length, 1)
   assert.equal(restored[0].target, '诺瓦')
   assert.equal(restored[0].caseSensitive, true)
@@ -123,7 +131,15 @@ try {
   const json = store.exportGlossary({ glossaryId: store.mounts.defaultGlossaryId, format: 'json' })
   const parsedJson = JSON.parse(json.content)
   assert.deepEqual(parsedJson, [
-    { source: 'Nova', target: '诺瓦', note: '产品名', sourceLang: '', caseSensitive: true, forbidden: false, preferred: false },
+    {
+      source: 'Nova',
+      target: '诺瓦',
+      note: '产品名',
+      sourceLang: '',
+      caseSensitive: true,
+      forbidden: false,
+      preferred: false,
+    },
   ])
 
   // 10. Unknown formats and libraries fail loudly.

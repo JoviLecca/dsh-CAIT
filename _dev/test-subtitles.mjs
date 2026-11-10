@@ -13,7 +13,13 @@ Second line.
 
 function importedStore(text = SRT) {
   const store = new CatStore()
-  const result = store.importFile({ name: 'sample.srt', kind: 'srt', text, sourceLang: 'en', targetLang: 'zh-CN' })
+  const result = store.importFile({
+    name: 'sample.srt',
+    kind: 'srt',
+    text,
+    sourceLang: 'en',
+    targetLang: 'zh-CN',
+  })
   return { store, result }
 }
 

@@ -31,7 +31,12 @@ try {
     ['pending', 'pending', 'pending'],
   )
 
-  store.mtSuggest = async ({ text }) => ({ text: `译(${text})`, provider: 'stub', model: 'stub', latencyMs: 1 })
+  store.mtSuggest = async ({ text }) => ({
+    text: `译(${text})`,
+    provider: 'stub',
+    model: 'stub',
+    latencyMs: 1,
+  })
   store.mtSuggestBatch = async ({ items }) => ({
     items: items.map(({ index, text }) => ({ index, text: `译(${text})` })),
     provider: 'stub',

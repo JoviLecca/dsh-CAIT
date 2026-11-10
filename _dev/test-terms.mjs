@@ -36,7 +36,9 @@ try {
 
   section('candidates keep their original casing')
   {
-    const candidate = extractTerms(NOVA, { limit: 20 }).find((item) => item.term.toLowerCase() === 'design system')
+    const candidate = extractTerms(NOVA, { limit: 20 }).find(
+      (item) => item.term.toLowerCase() === 'design system',
+    )
     assert.equal(candidate.term, 'Design System')
   }
 
@@ -141,7 +143,10 @@ try {
     assert.equal(second.added, 0)
     assert.equal(second.skipped, 2)
     // The existing wording wins; a duplicate add never overwrites it.
-    assert.equal(store.glossary.find((entry) => entry.source === 'Design System').target, '设计系统')
+    assert.equal(
+      store.glossary.find((entry) => entry.source === 'Design System').target,
+      '设计系统',
+    )
   }
 
   section('bulk terms survive a restart')

@@ -29,7 +29,10 @@ try {
   assert.equal(parsedCsv.segments[0].target, '你好，世界')
   assert.equal(parsedCsv.segments[1].target, '')
 
-  const mapped = parseCsv('Source,Target\nHello,你好\n', { sourceColumn: 'Target', targetColumn: 'Source' })
+  const mapped = parseCsv('Source,Target\nHello,你好\n', {
+    sourceColumn: 'Target',
+    targetColumn: 'Source',
+  })
   assert.equal(mapped.segments[0].source, '你好')
   assert.equal(mapped.segments[0].target, 'Hello')
   const numbered = parseCsv('A,B\nC,D\n', { sourceColumn: 2, targetColumn: 1 })
@@ -41,7 +44,8 @@ try {
   assert.equal(semicolon.segments[0].source, 'Hello')
   assert.equal(semicolon.segments[0].target, '你好')
 
-  const srt = '1\n00:00:01,000 --> 00:00:03,500\nHello <i>there</i>\n\n2\n00:00:04,000 --> 00:00:06,000\nSecond line\n'
+  const srt =
+    '1\n00:00:01,000 --> 00:00:03,500\nHello <i>there</i>\n\n2\n00:00:04,000 --> 00:00:06,000\nSecond line\n'
   const parsedSrt = parseSrt(srt)
   assert.equal(parsedSrt.segments.length, 2)
   assert.equal(parsedSrt.segments[0].source, 'Hello <i>there</i>')
@@ -81,7 +85,8 @@ try {
   assert.match(textOnlyTimeline, /00:00:00\.000 --> 00:00:02\.000\nOne/)
   assert.match(textOnlyTimeline, /00:00:02\.000 --> 00:00:04\.000\nTwo/)
 
-  const vtt = 'WEBVTT\n\nNOTE ignored\n\ncue-1\n00:00:01.000 --> 00:00:02.500 line:90%\nHello <b>there</b>\n\n00:00:03.000 --> 00:00:04.000\nSecond\n'
+  const vtt =
+    'WEBVTT\n\nNOTE ignored\n\ncue-1\n00:00:01.000 --> 00:00:02.500 line:90%\nHello <b>there</b>\n\n00:00:03.000 --> 00:00:04.000\nSecond\n'
   const parsedVtt = parseVtt(vtt)
   assert.equal(parsedVtt.segments.length, 2)
   assert.equal(parsedVtt.segments[0].meta.identifier, 'cue-1')
@@ -91,7 +96,10 @@ try {
   assert.match(buildVtt(parsedVtt), /cue-1\n00:00:01\.000 --> 00:00:02\.500 line:90%/)
 
   const bomJson = parseJson('\uFEFF{"a":"Hi","b":["Two"]}')
-  assert.deepEqual(bomJson.segments.map((segment) => segment.source), ['Hi', 'Two'])
+  assert.deepEqual(
+    bomJson.segments.map((segment) => segment.source),
+    ['Hi', 'Two'],
+  )
 
   const po = [
     'msgid ""',
@@ -122,17 +130,22 @@ try {
   assert.deepEqual(parsedPo.segments[1].meta.plurals, ['文件', '文件（复数）'])
   assert.equal(parsedPo.obsolete.length, 1)
 
-  const xliff = '<?xml version="1.0"?><xliff version="1.2"><file source-language="en" target-language="zh-CN"><body><trans-unit id="a"><source>Hello <g id="1">world</g></source><target>你好世界</target></trans-unit></body></file></xliff>'
+  const xliff =
+    '<?xml version="1.0"?><xliff version="1.2"><file source-language="en" target-language="zh-CN"><body><trans-unit id="a"><source>Hello <g id="1">world</g></source><target>你好世界</target></trans-unit></body></file></xliff>'
   const parsedXliff = parseXliff(xliff)
   assert.equal(parsedXliff.sourceLang, 'en')
   assert.equal(parsedXliff.targetLang, 'zh-CN')
   assert.equal(parsedXliff.segments[0].source, 'Hello {1}world{2}')
   assert.equal(parsedXliff.segments[0].meta.xliffId, 'a')
   assert.equal(parsedXliff.segments[0].meta.inline.length, 2)
-  assert.deepEqual(missingInlineTokens(parsedXliff.segments[0].meta.inline, '你好世界'), ['{1}', '{2}'])
+  assert.deepEqual(missingInlineTokens(parsedXliff.segments[0].meta.inline, '你好世界'), [
+    '{1}',
+    '{2}',
+  ])
   assert.equal(parsedXliff.warnings.length, 0)
 
-  const xliff2 = '<?xml version="1.0"?><xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="zh-CN"><file id="f1"><unit id="u1"><segment><source>Hi <ph id="1"/></source><target>嗨</target></segment></unit></file></xliff>'
+  const xliff2 =
+    '<?xml version="1.0"?><xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="zh-CN"><file id="f1"><unit id="u1"><segment><source>Hi <ph id="1"/></source><target>嗨</target></segment></unit></file></xliff>'
   const parsedXliff2 = parseXliff(xliff2)
   assert.equal(parsedXliff2.format, 'xliff2')
   assert.equal(parsedXliff2.sourceLang, 'en')
@@ -157,13 +170,24 @@ try {
     name: 'Placeholders',
     sourceLang: 'en',
     targetLang: 'zh-CN',
-    segments: [{
-      source: 'Hello {1}world{2}',
-      target: '{1}你好世界{2}',
-      meta: { xliffId: 'a', inline: [{ token: '{1}', xml: '<g id="1">' }, { token: '{2}', xml: '</g>' }] },
-    }],
+    segments: [
+      {
+        source: 'Hello {1}world{2}',
+        target: '{1}你好世界{2}',
+        meta: {
+          xliffId: 'a',
+          inline: [
+            { token: '{1}', xml: '<g id="1">' },
+            { token: '{2}', xml: '</g>' },
+          ],
+        },
+      },
+    ],
   }
-  assert.match(buildXliff(placeholderDoc), /<source xml:lang="en">Hello <g id="1">world<\/g><\/source>/)
+  assert.match(
+    buildXliff(placeholderDoc),
+    /<source xml:lang="en">Hello <g id="1">world<\/g><\/source>/,
+  )
   assert.match(buildXliff2(placeholderDoc), /<unit id="a">/)
   assert.match(buildXliff2(placeholderDoc), /<source>Hello <g id="1">world<\/g><\/source>/)
 
@@ -244,7 +268,10 @@ try {
   assert.throws(() => parseCsv(''), /CSV/)
   assert.throws(() => parseSrt(''), /SRT/)
   assert.throws(() => parsePo(''), /PO/)
-  assert.throws(() => parseXliff('<xliff version="1.2"><file><body></body></file></xliff>'), /XLIFF/)
+  assert.throws(
+    () => parseXliff('<xliff version="1.2"><file><body></body></file></xliff>'),
+    /XLIFF/,
+  )
 
   console.log('ALL FORMAT TESTS PASSED')
 } finally {

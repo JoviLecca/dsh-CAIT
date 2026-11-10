@@ -13,8 +13,14 @@ const workbook = buildXlsx({
 })
 const parsed = parseXlsx(workbook)
 assert.equal(parsed.segments.length, 3)
-assert.deepEqual(parsed.segments.map((segment) => segment.meta.sheetName), ['Terms', 'Terms', 'UI'])
-assert.deepEqual(parsed.segments.map((segment) => segment.target), ['阿尔法', '贝塔', '伽马'])
+assert.deepEqual(
+  parsed.segments.map((segment) => segment.meta.sheetName),
+  ['Terms', 'Terms', 'UI'],
+)
+assert.deepEqual(
+  parsed.segments.map((segment) => segment.target),
+  ['阿尔法', '贝塔', '伽马'],
+)
 assert.equal(parsed.segments[2].meta.sheet, 2)
 
 const styledSheet = `<?xml version="1.0" encoding="UTF-8"?>
@@ -28,26 +34,37 @@ const styledSheet = `<?xml version="1.0" encoding="UTF-8"?>
 const styledWorkbook = writeZip([
   {
     name: 'xl/workbook.xml',
-    data: Buffer.from('<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Sheet1" sheetId="1" r:id="rId1"/></sheets></workbook>'),
+    data: Buffer.from(
+      '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Sheet1" sheetId="1" r:id="rId1"/></sheets></workbook>',
+    ),
   },
   {
     name: 'xl/_rels/workbook.xml.rels',
-    data: Buffer.from('<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>'),
+    data: Buffer.from(
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>',
+    ),
   },
   { name: 'xl/worksheets/sheet1.xml', data: Buffer.from(styledSheet) },
 ])
 const styledParsed = parseXlsx(styledWorkbook)
 assert.equal(styledParsed.segments[0].meta.cell, 'A1')
 assert.equal(styledParsed.segments[0].meta.targetCell, 'B1')
-const patched = patchXlsx({
-  segments: [{
-    source: 'Hello',
-    target: 'Bonjour',
-    meta: { sheetName: 'Sheet1', cell: 'A1', targetCell: 'B1' },
-  }],
-}, styledWorkbook)
+const patched = patchXlsx(
+  {
+    segments: [
+      {
+        source: 'Hello',
+        target: 'Bonjour',
+        meta: { sheetName: 'Sheet1', cell: 'A1', targetCell: 'B1' },
+      },
+    ],
+  },
+  styledWorkbook,
+)
 assert.equal(patched.patched, 1)
-const patchedSheet = readZipEntries(patched.buffer).find((entry) => entry.name === 'xl/worksheets/sheet1.xml').data.toString('utf8')
+const patchedSheet = readZipEntries(patched.buffer)
+  .find((entry) => entry.name === 'xl/worksheets/sheet1.xml')
+  .data.toString('utf8')
 assert.match(patchedSheet, /<c r="B1" s="3" t="inlineStr">/)
 assert.match(patchedSheet, /Bonjour/)
 assert.match(patchedSheet, /<mergeCell ref="B1:C1"\/>/)

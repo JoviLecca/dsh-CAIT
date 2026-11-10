@@ -16,7 +16,9 @@ const result = store.exportDocument({ documentId: doc.id, format: 'bilingual-doc
 assert.equal(result.filename, 'Bilingual-export.bilingual.docx')
 assert.ok(Buffer.isBuffer(result.content))
 const entries = readZipEntries(result.content)
-const documentXml = entries.find((entry) => entry.name === 'word/document.xml').data.toString('utf8')
+const documentXml = entries
+  .find((entry) => entry.name === 'word/document.xml')
+  .data.toString('utf8')
 assert.match(documentXml, /<w:tbl>/)
 assert.match(documentXml, /First source\./)
 assert.match(documentXml, /第一句。/)

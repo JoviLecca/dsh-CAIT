@@ -38,6 +38,9 @@ assert.equal(prunePreview.matched, 1)
 assert.equal(prunePreview.backup.length, 1)
 const pruned = store.pruneTmLibrary({ tmId: b, sourceContains: 'one', confirm: true })
 assert.equal(pruned.removed, 1)
-assert.equal(store.tm.some((entry) => entry.source === 'One'), false)
+assert.equal(
+  store.tm.some((entry) => entry.source === 'One'),
+  false,
+)
 
 console.log('test-tm-maintenance: all assertions passed')

@@ -51,7 +51,10 @@ try {
   assert.equal(store.findGlossaryHits('defaultterm').length, 1)
   assert.equal(store.bootstrap().tm.count, 1)
   assert.equal(store.bootstrap().tm.total, 2)
-  assert.equal(store.bootstrap().libraries.tm.find((item) => item.tmId === legalTmId).mounted, false)
+  assert.equal(
+    store.bootstrap().libraries.tm.find((item) => item.tmId === legalTmId).mounted,
+    false,
+  )
 
   // Re-mount both, then write a confirmed segment into the legal TM explicitly.
   store.setMounts({
@@ -72,7 +75,8 @@ try {
     1,
   )
   assert.equal(
-    store.tm.filter((entry) => entry.source === 'Legal source.' && entry.tmId === 'tm_default').length,
+    store.tm.filter((entry) => entry.source === 'Legal source.' && entry.tmId === 'tm_default')
+      .length,
     0,
   )
 
@@ -98,7 +102,10 @@ try {
   assert.equal(snapshot.tmLibraries.length, 2)
   assert.equal(snapshot.glossaryLibraries.length, 2)
   assert.deepEqual(snapshot.mounts.tmIds, ['tm_default'])
-  assert.equal(snapshot.tm.some((entry) => entry.tmId === legalTmId), true)
+  assert.equal(
+    snapshot.tm.some((entry) => entry.tmId === legalTmId),
+    true,
+  )
 
   // Libraries, mounts and the per-library TM split survive a restart.
   const reloaded = new CatStore({ dataDir, logger: silent })
@@ -107,8 +114,14 @@ try {
   assert.equal(reloaded.mounts.defaultTmId, 'tm_default')
   assert.deepEqual(reloaded.mounts.tmIds, ['tm_default'])
   assert.equal(reloaded.lookupTM({ query: 'Legal only.', threshold: 0.99 }).matches.length, 0)
-  assert.equal(reloaded.lookupTM({ query: 'Default only.', threshold: 0 }).matches[0].tmId, 'tm_default')
-  assert.equal(reloaded.bootstrap().libraries.tm.find((item) => item.tmId === legalTmId).entryCount, 3)
+  assert.equal(
+    reloaded.lookupTM({ query: 'Default only.', threshold: 0 }).matches[0].tmId,
+    'tm_default',
+  )
+  assert.equal(
+    reloaded.bootstrap().libraries.tm.find((item) => item.tmId === legalTmId).entryCount,
+    3,
+  )
 
   // F2: a known but unmounted target cannot receive a confirmed segment.
   const f2Doc = reloaded.createDocument({
@@ -127,7 +140,10 @@ try {
       }),
     /未挂载/,
   )
-  assert.equal(reloaded.tm.some((entry) => entry.source === 'Unmounted target source.'), false)
+  assert.equal(
+    reloaded.tm.some((entry) => entry.source === 'Unmounted target source.'),
+    false,
+  )
   assert.equal(reloaded.docs.get(f2Doc.document.id).segments[0].status, 'pending')
 
   // D2: clear defaults to mounted-only; explicit unmounted IDs are rejected.
@@ -151,10 +167,17 @@ try {
   assert.equal(editedTerm.entry.target, '不应更新的术语。')
   assert.deepEqual(reloaded.mounts.glossaryIds, mountsBefore, 'editing must not mount the library')
   reloaded.deleteGlossary({ id: legalTerm.id })
-  assert.equal(reloaded.glossary.some((entry) => entry.id === legalTerm.id), false)
+  assert.equal(
+    reloaded.glossary.some((entry) => entry.id === legalTerm.id),
+    false,
+  )
   assert.deepEqual(reloaded.mounts.glossaryIds, mountsBefore)
 
-  reloaded.addGlossary({ source: 'Another term', target: '另一个术语', glossaryId: legalGlossaryId })
+  reloaded.addGlossary({
+    source: 'Another term',
+    target: '另一个术语',
+    glossaryId: legalGlossaryId,
+  })
 
   const clearedGlossary = reloaded.clearGlossary({})
   assert.equal(clearedGlossary.scope, 'mounted')
@@ -162,10 +185,7 @@ try {
     reloaded.glossary.filter((entry) => entry.glossaryId === 'glossary_default').length,
     0,
   )
-  assert.equal(
-    reloaded.glossary.filter((entry) => entry.glossaryId === legalGlossaryId).length,
-    1,
-  )
+  assert.equal(reloaded.glossary.filter((entry) => entry.glossaryId === legalGlossaryId).length, 1)
   assert.throws(() => reloaded.clearGlossary({ glossaryIds: [legalGlossaryId] }), /未挂载/)
 
   // Only an explicit all:true clears the unmounted libraries too.

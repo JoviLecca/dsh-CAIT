@@ -46,15 +46,10 @@ jobs:
             exit 1
           fi
 
-      # prepublishOnly rebuilds client.js from client/ and runs node --check.
       - name: Run the test suite
-        run: |
-          set -euo pipefail
-          for file in _dev/test-*.mjs; do
-            echo "== $file"
-            node "$file"
-          done
+        run: npm test
 
-      # prepublishOnly rebuilds client.js from client/ and runs node --check.
+      # prepublishOnly rebuilds client.js and runs the full check: lint,
+      # formatting, interface contracts and the test suite.
       - name: Publish
         run: npm publish --provenance --access public

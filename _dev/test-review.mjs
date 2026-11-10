@@ -15,7 +15,12 @@ function reviewStore(output) {
   })
   store.saveDraft({ documentId: created.document.id, index: 0, target: 'A1' })
   store.saveDraft({ documentId: created.document.id, index: 1, target: 'B1' })
-  store.resolveMtRoute = async () => ({ mock: false, provider: 'test-provider', model: 'test-model', note: '' })
+  store.resolveMtRoute = async () => ({
+    mock: false,
+    provider: 'test-provider',
+    model: 'test-model',
+    note: '',
+  })
   store.mtRuntime = {
     stream: async function* stream() {
       yield { type: 'text-delta', text: output }
@@ -29,7 +34,13 @@ section('review parses structured issues and drops out-of-range rows')
 {
   const { store, id } = reviewStore(
     JSON.stringify([
-      { index: 0, severity: 'high', code: 'MISTRANSLATION', message: 'Meaning changed.', suggestion: 'Better.' },
+      {
+        index: 0,
+        severity: 'high',
+        code: 'MISTRANSLATION',
+        message: 'Meaning changed.',
+        suggestion: 'Better.',
+      },
       { index: 99, severity: 'low', code: 'X', message: 'Out of range.' },
       { index: 1, severity: 'weird', code: 'STYLE', message: '' },
     ]),
@@ -67,7 +78,10 @@ section('review can use its own route and model')
   let seen
   store.mtRuntime.stream = async function* stream(options) {
     seen = options
-    yield { type: 'text-delta', text: JSON.stringify([{ index: 1, severity: 'low', code: 'STYLE', message: 'Tone.' }]) }
+    yield {
+      type: 'text-delta',
+      text: JSON.stringify([{ index: 1, severity: 'low', code: 'STYLE', message: 'Tone.' }]),
+    }
     yield { type: 'finish', reason: { kind: 'stop' } }
   }
   const result = await store.reviewDocument({ documentId: id, from: 0, count: 2 })

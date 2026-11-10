@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install dev dependencies
+        run: npm install --no-package-lock --no-audit --no-fund
+
+      # check:client 必须跑在 build:client 之前，否则「产物已过期」永远查不出来。
+      - name: Verify formatting, interface contracts and tests
+        run: npm run check

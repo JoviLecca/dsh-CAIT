@@ -22,7 +22,10 @@ section('segmenter')
 section('similarity')
 {
   assert.equal(similarity('Hello world.', 'hello world.'), 1)
-  const score = similarity('The quick brown fox jumps over the lazy dog.', 'The quick brown fox jumped over a lazy dog.')
+  const score = similarity(
+    'The quick brown fox jumps over the lazy dog.',
+    'The quick brown fox jumped over a lazy dog.',
+  )
   console.log('fuzzy score', score)
   assert.ok(score > 0.7 && score < 1)
 }
@@ -32,8 +35,14 @@ section('document + TM + glossary')
   const store = new CatStore()
   // The 70% floor is what the settings dialog offers to reset to.
   assert.equal(store.settings.fuzzyThreshold, 0.7)
-  const source = 'Computer-aided translation tools help translators work faster.\n\nA translation memory stores previously translated sentences.'
-  const created = store.createDocument({ name: 'Demo', text: source, sourceLang: 'en', targetLang: 'zh-CN' })
+  const source =
+    'Computer-aided translation tools help translators work faster.\n\nA translation memory stores previously translated sentences.'
+  const created = store.createDocument({
+    name: 'Demo',
+    text: source,
+    sourceLang: 'en',
+    targetLang: 'zh-CN',
+  })
   console.log(created)
   assert.equal(store.bootstrap().activeDocument.segments.length, 2)
 
@@ -48,32 +57,46 @@ section('document + TM + glossary')
   assert.equal(current.segment.index, 0)
   assert.equal(current.segment.status, 'pending')
 
-  store.addGlossary({ source: 'translation memory', target: '翻译记忆库', note: 'TM', sourceLang: 'en' })
+  store.addGlossary({
+    source: 'translation memory',
+    target: '翻译记忆库',
+    note: 'TM',
+    sourceLang: 'en',
+  })
   store.selectSegment({ index: 1 })
   const withTerms = store.getSegmentForTool()
   console.log(withTerms.glossaryHits)
   assert.ok(withTerms.glossaryHits.some((hit) => hit.term === 'translation memory'))
   store.selectSegment({ index: 0 })
 
-  const submitted = store.submitTranslationForTool({ target: '计算机辅助翻译工具帮助译者更快地工作。' })
+  const submitted = store.submitTranslationForTool({
+    target: '计算机辅助翻译工具帮助译者更快地工作。',
+  })
   console.log(submitted)
   assert.equal(submitted.confirmed.status, 'confirmed')
   assert.equal(submitted.progress.confirmed, 1)
   assert.equal(submitted.tm.count, 1)
   assert.equal(submitted.next.index, 1)
 
-  const exact = store.lookupTM({ query: 'Computer-aided translation tools help translators work faster.' })
+  const exact = store.lookupTM({
+    query: 'Computer-aided translation tools help translators work faster.',
+  })
   console.log(exact)
   assert.equal(exact.matches[0].exact, true)
   assert.equal(exact.matches[0].percent, 100)
   assert.equal(Object.hasOwn(exact.matches[0], 'usageCount'), false)
 
-  const fuzzy = store.lookupTM({ query: 'Computer aided translation tools help translators work faster' })
+  const fuzzy = store.lookupTM({
+    query: 'Computer aided translation tools help translators work faster',
+  })
   console.log(fuzzy)
   assert.ok(fuzzy.matches.length >= 1)
   assert.ok(fuzzy.matches[0].percent >= 55)
 
-  const second = store.submitTranslationForTool({ index: 1, target: '翻译记忆库存储以前翻译过的句子。' })
+  const second = store.submitTranslationForTool({
+    index: 1,
+    target: '翻译记忆库存储以前翻译过的句子。',
+  })
   console.log(second)
   assert.equal(second.done, true)
   assert.equal(store.bootstrap().tm.count, 2)
@@ -86,7 +109,13 @@ section('TM match types')
   function tmMatch(source, query) {
     const store = new CatStore()
     store.addTM({ source, target: '译文', sourceLang: 'en', targetLang: 'zh-CN' })
-    const result = store.lookupTM({ query, threshold: 0, limit: 10, sourceLang: 'en', targetLang: 'zh-CN' })
+    const result = store.lookupTM({
+      query,
+      threshold: 0,
+      limit: 10,
+      sourceLang: 'en',
+      targetLang: 'zh-CN',
+    })
     const match = result.matches.find((item) => item.source === source)
     assert.ok(match, `expected a TM match for ${source}`)
     return match
@@ -106,7 +135,10 @@ section('TM match types')
 
   // Digit-only differences score below the medium band, so this proves the
   // near_exact check is independent of any score threshold.
-  const digits = tmMatch('Version 2.0 released on 2024-05-01.', 'Version 3.0 released on 2025-06-02.')
+  const digits = tmMatch(
+    'Version 2.0 released on 2024-05-01.',
+    'Version 3.0 released on 2025-06-02.',
+  )
   console.log('digits:', digits.matchType, digits.score, digits.exact)
   assert.equal(digits.matchType, 'near_exact')
   assert.equal(digits.exact, false)
@@ -137,7 +169,12 @@ section('TM match types')
 section('TMX roundtrip')
 {
   const store = new CatStore()
-  store.createDocument({ name: 'TMX source', text: 'Hello world.\n\nSecond sentence.', sourceLang: 'en', targetLang: 'zh-CN' })
+  store.createDocument({
+    name: 'TMX source',
+    text: 'Hello world.\n\nSecond sentence.',
+    sourceLang: 'en',
+    targetLang: 'zh-CN',
+  })
   store.confirmSegment({ index: 0, target: '你好，世界。' })
   const doc = store.bootstrap().activeDocument
   const tmx = buildTmx({ ...doc, segments: doc.segments })
@@ -148,12 +185,20 @@ section('TMX roundtrip')
   assert.equal(parsed.sourceLang, 'en')
   assert.equal(parsed.targetLang, 'zh-CN')
 
-  const imported = store.importTM({ pairs: [{ source: 'Hello world.', target: '你好，世界。' }], sourceLang: 'en', targetLang: 'zh-CN' })
+  const imported = store.importTM({
+    pairs: [{ source: 'Hello world.', target: '你好，世界。' }],
+    sourceLang: 'en',
+    targetLang: 'zh-CN',
+  })
   // The confirmed entry carries context now, so a context-free import is a
   // separate generic entry instead of an overwrite.
   assert.equal(imported.added, 1)
   assert.equal(imported.updated, 0)
-  const again = store.importTM({ pairs: [{ source: 'Hello world.', target: '你好，世界。' }], sourceLang: 'en', targetLang: 'zh-CN' })
+  const again = store.importTM({
+    pairs: [{ source: 'Hello world.', target: '你好，世界。' }],
+    sourceLang: 'en',
+    targetLang: 'zh-CN',
+  })
   assert.equal(again.added, 0)
   assert.equal(again.updated, 1)
 
@@ -169,7 +214,12 @@ section('TMX roundtrip')
 section('language and glossary case')
 {
   const store = new CatStore()
-  store.createDocument({ name: 'F8', text: 'Use the API and api here.', sourceLang: 'EN', targetLang: 'ZH_cn' })
+  store.createDocument({
+    name: 'F8',
+    text: 'Use the API and api here.',
+    sourceLang: 'EN',
+    targetLang: 'ZH_cn',
+  })
   assert.equal(store.activeDocument().sourceLang, 'en')
   assert.equal(store.activeDocument().targetLang, 'zh-CN')
 
@@ -192,9 +242,21 @@ section('language and glossary case')
 section('exports')
 {
   const store = new CatStore()
-  store.createDocument({ name: 'Export Test', text: 'First sentence.\n\nSecond sentence.', sourceLang: 'en', targetLang: 'zh-CN' })
+  store.createDocument({
+    name: 'Export Test',
+    text: 'First sentence.\n\nSecond sentence.',
+    sourceLang: 'en',
+    targetLang: 'zh-CN',
+  })
   store.confirmSegment({ index: 0, target: '第一句。' })
-  for (const format of ['target-txt', 'target-md', 'bilingual-md', 'bilingual-csv', 'tmx', 'document-json']) {
+  for (const format of [
+    'target-txt',
+    'target-md',
+    'bilingual-md',
+    'bilingual-csv',
+    'tmx',
+    'document-json',
+  ]) {
     const out = store.exportDocument({ format })
     console.log(format, out.filename, out.content.length)
     assert.ok(out.content.length > 0)
@@ -213,7 +275,12 @@ section('exports')
 section('settings + MT mock')
 {
   const store = new CatStore()
-  store.createDocument({ name: 'MT', text: 'The translation memory is useful.', sourceLang: 'en', targetLang: 'zh-CN' })
+  store.createDocument({
+    name: 'MT',
+    text: 'The translation memory is useful.',
+    sourceLang: 'en',
+    targetLang: 'zh-CN',
+  })
   store.addGlossary({ source: 'translation memory', target: '翻译记忆库', sourceLang: 'en' })
   const result = await store.mtSuggest({ text: 'The translation memory is useful.' })
   console.log(result)
@@ -234,7 +301,10 @@ section('settings + MT mock')
   // Interface language: explicit choices persist, unsupported values are rejected.
   assert.equal(store.saveSettings({ uiLang: 'ja' }).settings.uiLang, 'ja')
   assert.equal(store.saveSettings({ uiLang: 'AUTO' }).settings.uiLang, 'auto')
-  assert.throws(() => store.saveSettings({ uiLang: 'fr' }), (error) => error.code === 'INVALID_UI_LANG')
+  assert.throws(
+    () => store.saveSettings({ uiLang: 'fr' }),
+    (error) => error.code === 'INVALID_UI_LANG',
+  )
 }
 
 console.log('\nALL CORE TESTS PASSED')

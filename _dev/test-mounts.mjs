@@ -15,7 +15,11 @@ assert.equal(localesSource.includes('占位示例'), false)
 // by specificity over .cait-btn-primary and the save label becomes black-on-black.
 const buttonReset = stylesSource.match(/\.cait-root button\{([^}]*)\}/)
 assert.ok(buttonReset, 'button reset should exist')
-assert.equal(buttonReset[1].includes('color:'), false, 'button reset must not override button color')
+assert.equal(
+  buttonReset[1].includes('color:'),
+  false,
+  'button reset must not override button color',
+)
 assert.match(
   stylesSource,
   /\.cait-btn-primary\{[^}]*color:var\(--dsw-alias-label-primary-inverted\)/,
@@ -92,10 +96,24 @@ assert.equal(syncPollMs, 2000)
 assert.equal(uiLangCodes.join(','), 'auto,zh,en,ja')
 assert.equal(makeTranslator('ja', null)('nav.new'), '新規')
 assert.equal(makeTranslator('zh', null)('modal.settings.uiLanguage'), '界面语言')
-assert.equal(makeTranslator('en', null)('toast.docsCleared', { count: 3 }), 'Cleared 3 closed documents')
-assert.equal(makeTranslator('auto', (key) => (key === 'nav.new' ? 'DSH-NEW' : key))('nav.new'), 'DSH-NEW')
-assert.equal(makeTranslator('auto', null)('nav.new'), 'New', 'auto without a DSH translator falls back to English')
-assert.equal(makeTranslator('fr', null)('nav.new'), 'New', 'unsupported languages fall back to English')
+assert.equal(
+  makeTranslator('en', null)('toast.docsCleared', { count: 3 }),
+  'Cleared 3 closed documents',
+)
+assert.equal(
+  makeTranslator('auto', (key) => (key === 'nav.new' ? 'DSH-NEW' : key))('nav.new'),
+  'DSH-NEW',
+)
+assert.equal(
+  makeTranslator('auto', null)('nav.new'),
+  'New',
+  'auto without a DSH translator falls back to English',
+)
+assert.equal(
+  makeTranslator('fr', null)('nav.new'),
+  'New',
+  'unsupported languages fall back to English',
+)
 assert.equal(makeTranslator('ja', null)('definitely.missing.key'), 'definitely.missing.key')
 
 // 'auto' has to follow the DSH locale itself: the locale snapshot reports a
@@ -122,9 +140,16 @@ assert.equal(computeCaitUnit({ width: 1600, height: 900 }), 1.194)
 assert.equal(computeCaitUnit({ width: 1280, height: 720 }), 1.035)
 assert.equal(computeCaitUnit({ width: 2560, height: 1440 }), 1.45)
 assert.equal(computeCaitUnit({ width: 3840, height: 2160 }), 1.45)
-assert.equal(computeCaitUnit({ width: 800, height: 600 }), 1, 'tiny windows must not shrink below 1×')
+assert.equal(
+  computeCaitUnit({ width: 800, height: 600 }),
+  1,
+  'tiny windows must not shrink below 1×',
+)
 
-const scaled = scaleCssLengths('.x{font-size:13px;border:1px solid red}@media (max-width:600px){.x{gap:10px}}', '--u')
+const scaled = scaleCssLengths(
+  '.x{font-size:13px;border:1px solid red}@media (max-width:600px){.x{gap:10px}}',
+  '--u',
+)
 assert.match(scaled, /font-size:calc\(13px \* var\(--u, 1\)\)/)
 assert.match(scaled, /border:1px solid red/)
 assert.match(scaled, /@media \(max-width:600px\)/)

@@ -44,8 +44,14 @@ function libraries(store) {
 
   assert.deepEqual(docA.resources.tmIds, [a])
   assert.equal(docA.resources.inheritsTm, false)
-  assert.equal(store.lookupTM({ documentId: docA.id, query: 'Alpha source.', threshold: 0 }).matches[0].tmId, a)
-  assert.equal(store.lookupTM({ documentId: docA.id, query: 'Beta source.', threshold: 1 }).matches.length, 0)
+  assert.equal(
+    store.lookupTM({ documentId: docA.id, query: 'Alpha source.', threshold: 0 }).matches[0].tmId,
+    a,
+  )
+  assert.equal(
+    store.lookupTM({ documentId: docA.id, query: 'Beta source.', threshold: 1 }).matches.length,
+    0,
+  )
   assert.equal(store.findGlossaryHits('alpha_term', 'en', docA.id).length, 1)
   assert.equal(store.findGlossaryHits('beta_term', 'en', docA.id).length, 0)
 
@@ -61,8 +67,14 @@ function libraries(store) {
   store.openDocument({ documentId: docA.id })
   const boot = store.bootstrap()
   assert.equal(boot.documentResources.effectiveDefaultTmId, a)
-  assert.equal(boot.tm.entries.some((entry) => entry.source === 'Beta source.'), false)
-  assert.equal(boot.glossary.some((entry) => entry.source === 'beta_term'), false)
+  assert.equal(
+    boot.tm.entries.some((entry) => entry.source === 'Beta source.'),
+    false,
+  )
+  assert.equal(
+    boot.glossary.some((entry) => entry.source === 'beta_term'),
+    false,
+  )
 
   // Explicit empty binding means "do not read or write this kind at all".
   const none = store.createDocument({
@@ -73,7 +85,10 @@ function libraries(store) {
     tmIds: [],
     glossaryIds: [],
   }).document
-  assert.equal(store.lookupTM({ documentId: none.id, query: 'Alpha source.', threshold: 1 }).matches.length, 0)
+  assert.equal(
+    store.lookupTM({ documentId: none.id, query: 'Alpha source.', threshold: 1 }).matches.length,
+    0,
+  )
   assert.throws(
     () => store.confirmSegment({ documentId: none.id, index: 0, target: '不应写入。' }),
     (error) => error.code === 'NO_TM_BOUND',

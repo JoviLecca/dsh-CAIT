@@ -23,7 +23,11 @@ function translateAll(store, doc, prefix = '译:') {
 try {
   const store = new CatStore({ dataDir: dir })
 
-  const apple = imported(store, 'Localizable.strings', `/* Greeting */\n"hello" = "Hello";\n"bye" = "Goodbye";\n`)
+  const apple = imported(
+    store,
+    'Localizable.strings',
+    `/* Greeting */\n"hello" = "Hello";\n"bye" = "Goodbye";\n`,
+  )
   assert.equal(apple.segments.length, 2)
   assert.equal(apple.segments[0].meta.identifier, 'hello')
   assert.equal(apple.segments[0].meta.comments[0], 'Greeting')
@@ -34,7 +38,10 @@ try {
   assert.match(appleOut.content, /"hello" = "译:Hello";/)
   assert.doesNotMatch(appleOut.content, /"hello" = "Hello";/)
 
-  const android = imported(store, 'strings.xml', `<resources>
+  const android = imported(
+    store,
+    'strings.xml',
+    `<resources>
   <!-- title -->
   <string name="app_name">My App</string>
   <string name="brand" translatable="false">Brand</string>
@@ -42,7 +49,8 @@ try {
     <item quantity="one">%d item</item>
     <item quantity="other">%d items</item>
   </plurals>
-</resources>`)
+</resources>`,
+  )
   assert.equal(android.segments.length, 3)
   assert.equal(android.segments[0].meta.identifier, 'app_name')
   assert.equal(android.segments[1].meta.context, 'one')
@@ -55,11 +63,15 @@ try {
   assert.match(androidOut.content, /<item quantity="one">译:%d item<\/item>/)
   assert.match(androidOut.content, /<item quantity="other">译:%d items<\/item>/)
 
-  const resx = imported(store, 'Resources.resx', `<?xml version="1.0" encoding="utf-8"?>
+  const resx = imported(
+    store,
+    'Resources.resx',
+    `<?xml version="1.0" encoding="utf-8"?>
 <root>
   <data name="Greeting" xml:space="preserve"><value>Hello</value><comment>home</comment></data>
   <data name="Blob" type="System.Byte[]"><value>AA==</value></data>
-</root>`)
+</root>`,
+  )
   assert.equal(resx.segments.length, 1)
   assert.equal(resx.segments[0].meta.comments[0], 'home')
   translateAll(store, resx)
@@ -70,11 +82,19 @@ try {
   assert.match(resxOut.content, /<comment>home<\/comment>/)
   assert.doesNotMatch(resxOut.content, /name="Blob"/)
 
-  const arb = imported(store, 'app_en.arb', JSON.stringify({
-    '@@locale': 'en',
-    hello: 'Hello',
-    '@hello': { description: 'greeting' },
-  }, null, 2))
+  const arb = imported(
+    store,
+    'app_en.arb',
+    JSON.stringify(
+      {
+        '@@locale': 'en',
+        hello: 'Hello',
+        '@hello': { description: 'greeting' },
+      },
+      null,
+      2,
+    ),
+  )
   assert.equal(arb.segments.length, 1)
   assert.equal(arb.segments[0].meta.identifier, 'hello')
   translateAll(store, arb)
@@ -101,7 +121,10 @@ try {
   assert.match(yamlOut.content, /hello: 译:Hello/)
   assert.match(yamlOut.content, /bye: 译:Goodbye/)
 
-  const nestedYaml = imported(store, 'nested.yaml', `# app
+  const nestedYaml = imported(
+    store,
+    'nested.yaml',
+    `# app
 app:
   title: Hello
   count: 2
@@ -112,7 +135,8 @@ app:
       detail: |
         Multi
         line
-`)
+`,
+  )
   assert.equal(nestedYaml.segments.length, 4)
   assert.equal(nestedYaml.segments[0].meta.keyPath, 'app.title')
   assert.equal(nestedYaml.segments[1].meta.keyPath, 'app.features[0]')
@@ -130,10 +154,16 @@ app:
   assert.doesNotMatch(nestedOut.content, /count: 译:2/)
   const reparsed = store.importFile({ name: 'nested-out.yaml', text: nestedOut.content })
   assert.equal(store.docs.get(reparsed.document.id).segments.length, 4)
-  assert.throws(() => store.importFile({ name: 'anchor.yaml', text: 'base: &x hello\ncopy: *x\n' }), /YAML/)
+  assert.throws(
+    () => store.importFile({ name: 'anchor.yaml', text: 'base: &x hello\ncopy: *x\n' }),
+    /YAML/,
+  )
   assert.throws(() => store.importFile({ name: 'flow.yaml', text: 'list: [one, two]\n' }), /YAML/)
 
-  const stringsdict = imported(store, 'Localizable.stringsdict', `<?xml version="1.0" encoding="UTF-8"?>
+  const stringsdict = imported(
+    store,
+    'Localizable.stringsdict',
+    `<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
@@ -154,7 +184,8 @@ app:
     </dict>
   </dict>
 </dict>
-</plist>`)
+</plist>`,
+  )
   assert.equal(stringsdict.segments.length, 2)
   assert.equal(stringsdict.segments[0].meta.context, 'one')
   translateAll(store, stringsdict)
@@ -163,7 +194,7 @@ app:
   assert.match(dictOut.content, /<key>one<\/key>\s*<string>译:%d item<\/string>/)
   assert.match(dictOut.content, /<key>other<\/key>\s*<string>译:%d items<\/string>/)
 
-  const saved = store.persist()
+  store.persist()
   const reloaded = new CatStore({ dataDir: dir })
   const reloadedDoc = reloaded.docs.get(android.id)
   assert.ok(reloadedDoc)

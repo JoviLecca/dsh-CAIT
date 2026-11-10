@@ -18,8 +18,14 @@ assert.equal(preprocessText(tokenized), tokenized)
 assert.equal(preprocessText('A\u00a0B {1} C'), 'A B {1} C')
 
 // Segment preprocessing clones and only touches source text.
-const segments = [{ index: 0, source: '  One  ', target: 'Un', inline: [{ token: '{1}', xml: '<em>' }] }]
-const cleaned = preprocessSegments(segments, { normalizeWhitespace: true, stripInvisible: true, collapseBlankLines: true })
+const segments = [
+  { index: 0, source: '  One  ', target: 'Un', inline: [{ token: '{1}', xml: '<em>' }] },
+]
+const cleaned = preprocessSegments(segments, {
+  normalizeWhitespace: true,
+  stripInvisible: true,
+  collapseBlankLines: true,
+})
 assert.equal(cleaned[0].source, 'One')
 assert.equal(cleaned[0].target, 'Un')
 assert.deepEqual(cleaned[0].inline, segments[0].inline)
@@ -27,7 +33,11 @@ assert.equal(segments[0].source, '  One  ')
 
 // Disabling every step leaves the source as-is.
 assert.equal(
-  preprocessText('  A\u00a0 B  ', { normalizeWhitespace: false, stripInvisible: false, collapseBlankLines: false }),
+  preprocessText('  A\u00a0 B  ', {
+    normalizeWhitespace: false,
+    stripInvisible: false,
+    collapseBlankLines: false,
+  }),
   '  A\u00a0 B  ',
 )
 
@@ -46,9 +56,14 @@ try {
     targetLang: 'zh-CN',
   })
   const doc = store.requireDocument(created.document.id)
-  assert.deepEqual(doc.segments.map((segment) => segment.source), ['Alpha beta', 'Gamma'])
+  assert.deepEqual(
+    doc.segments.map((segment) => segment.source),
+    ['Alpha beta', 'Gamma'],
+  )
 
-  const saved = store.saveSettings({ preprocess: { normalizeWhitespace: false, stripInvisible: true, collapseBlankLines: true } })
+  const saved = store.saveSettings({
+    preprocess: { normalizeWhitespace: false, stripInvisible: true, collapseBlankLines: true },
+  })
   assert.equal(saved.settings.preprocess.normalizeWhitespace, false)
   assert.equal(saved.settings.preprocess.stripInvisible, true)
 

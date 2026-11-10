@@ -1,11 +1,6 @@
 import assert from 'node:assert/strict'
 import { CatStore, CatError } from '../lib/store.js'
-import {
-  MOCK_PROVIDER,
-  NO_ROUTE_MESSAGE,
-  collectStreamText,
-  createMtRuntime,
-} from '../lib/mt.js'
+import { MOCK_PROVIDER, NO_ROUTE_MESSAGE, collectStreamText, createMtRuntime } from '../lib/mt.js'
 
 function section(name) {
   console.log(`\n# ${name}`)
@@ -80,7 +75,11 @@ section('route discovery and provider call')
   const store = new CatStore({ mtRuntime: runtime })
   assert.equal(Object.hasOwn(store.publicSettings().mt, 'hasApiKey'), false)
   store.saveSettings({ mt: { provider: 'route-a', model: 'model-b', temperature: 0.3 } })
-  const result = await store.mtSuggest({ text: 'Hello world', sourceLang: 'en', targetLang: 'zh-CN' })
+  const result = await store.mtSuggest({
+    text: 'Hello world',
+    sourceLang: 'en',
+    targetLang: 'zh-CN',
+  })
   assert.equal(result.provider, 'route-a')
   assert.equal(result.model, 'model-b')
   assert.equal(result.text, '这是真实路由译文')
@@ -100,6 +99,7 @@ section('no-route mock fallback')
   const store = new CatStore({
     mtRuntime: {
       listRoutes: async () => ({ providers: [], fallback: true, message: NO_ROUTE_MESSAGE }),
+      // eslint-disable-next-line require-yield -- 这个 stub 永远不该被调用，不需要真的 yield
       stream: async function* () {
         throw new Error('stream must not be called')
       },
@@ -119,7 +119,9 @@ section('generic error and Host-only detail')
     logger: { warn: (...args) => logs.push(args.join(' ')), error() {} },
     mtRuntime: {
       listRoutes: async () => ({
-        providers: [{ id: 'route-a', name: 'Route A', models: [{ id: 'model-a', name: 'Model A' }] }],
+        providers: [
+          { id: 'route-a', name: 'Route A', models: [{ id: 'model-a', name: 'Model A' }] },
+        ],
         fallback: false,
         message: '',
       }),

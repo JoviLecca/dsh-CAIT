@@ -53,7 +53,12 @@ try {
   section('inline meta tags are checked even without a literal token in the source')
   {
     const { store, doc } = storeWith('Bold words.')
-    doc.segments[0].meta = { inline: [{ token: '{0}', xml: '<b>' }, { token: '{1}', xml: '</b>' }] }
+    doc.segments[0].meta = {
+      inline: [
+        { token: '{0}', xml: '<b>' },
+        { token: '{1}', xml: '</b>' },
+      ],
+    }
     store.saveDraft({ documentId: doc.id, index: 0, target: '加粗{0}的{1}字。' })
     assert.equal(store.getQaReport({ documentId: doc.id }).issueCount, 0)
 

@@ -33,8 +33,14 @@ try {
     store.saveDraft({ documentId: doc.id, index: 0, target: 'Nova 是一个工具。' })
     store.confirmSegment({ documentId: doc.id, index: 0 })
 
-    assert.deepEqual(doc.segments.map((segment) => segment.status), ['confirmed', 'translated', 'translated'])
-    assert.deepEqual(doc.segments.map((segment) => segment.origin), ['manual', 'auto', 'auto'])
+    assert.deepEqual(
+      doc.segments.map((segment) => segment.status),
+      ['confirmed', 'translated', 'translated'],
+    )
+    assert.deepEqual(
+      doc.segments.map((segment) => segment.origin),
+      ['manual', 'auto', 'auto'],
+    )
     assert.deepEqual(
       doc.segments.map((segment) => segment.target),
       ['Nova 是一个工具。', 'Nova 是一个工具。', 'Nova 是一个工具。'],
@@ -99,8 +105,14 @@ try {
 
     const reopened = new CatStore({ dataDir: dir, logger: silent })
     const reloaded = reopened.docs.get(doc.id)
-    assert.deepEqual(reloaded.segments.map((segment) => segment.origin), ['manual', 'auto', 'auto'])
-    assert.deepEqual(reloaded.segments.map((segment) => segment.status), ['confirmed', 'translated', 'translated'])
+    assert.deepEqual(
+      reloaded.segments.map((segment) => segment.origin),
+      ['manual', 'auto', 'auto'],
+    )
+    assert.deepEqual(
+      reloaded.segments.map((segment) => segment.status),
+      ['confirmed', 'translated', 'translated'],
+    )
   }
 } finally {
   for (const root of roots) rmSync(root, { recursive: true, force: true })

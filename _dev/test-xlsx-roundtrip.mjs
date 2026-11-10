@@ -19,11 +19,15 @@ const sheet = `<?xml version="1.0" encoding="UTF-8"?>
 const template = writeZip([
   {
     name: 'xl/workbook.xml',
-    data: Buffer.from('<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Sheet1" sheetId="1" r:id="rId1"/></sheets></workbook>'),
+    data: Buffer.from(
+      '<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Sheet1" sheetId="1" r:id="rId1"/></sheets></workbook>',
+    ),
   },
   {
     name: 'xl/_rels/workbook.xml.rels',
-    data: Buffer.from('<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>'),
+    data: Buffer.from(
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>',
+    ),
   },
   { name: 'xl/worksheets/sheet1.xml', data: Buffer.from(sheet) },
 ])
@@ -39,7 +43,9 @@ try {
 
   const out = store.exportDocument({ format: 'xlsx', documentId: doc.id })
   assert.ok(Buffer.isBuffer(out.content))
-  const patched = readZipEntries(out.content).find((entry) => entry.name === 'xl/worksheets/sheet1.xml').data.toString('utf8')
+  const patched = readZipEntries(out.content)
+    .find((entry) => entry.name === 'xl/worksheets/sheet1.xml')
+    .data.toString('utf8')
   assert.match(patched, /<c r="B1" s="3" t="inlineStr">/)
   assert.match(patched, /Bonjour/)
   assert.match(patched, /<mergeCell ref="B1:C1"\/>/)
@@ -49,7 +55,9 @@ try {
   const reloadedDoc = reloaded.docs.get(doc.id)
   assert.ok(reloadedDoc?.sourceXlsx)
   const reloadedOut = reloaded.exportDocument({ format: 'xlsx', documentId: doc.id })
-  const reloadedSheet = readZipEntries(reloadedOut.content).find((entry) => entry.name === 'xl/worksheets/sheet1.xml').data.toString('utf8')
+  const reloadedSheet = readZipEntries(reloadedOut.content)
+    .find((entry) => entry.name === 'xl/worksheets/sheet1.xml')
+    .data.toString('utf8')
   assert.match(reloadedSheet, /Bonjour/)
 
   console.log('ALL XLSX ROUNDTRIP TESTS PASSED')

@@ -34,7 +34,9 @@ const ctx = {
   webServer: {
     register(value) {
       route = value
-      return () => { route = null }
+      return () => {
+        route = null
+      }
     },
   },
   connection: {
@@ -51,29 +53,32 @@ const ctx = {
 
 plugin.apply(ctx, { dataDir })
 assert.equal(tools.size, 21)
-assert.deepEqual([...tools.keys()], [
-  'cat_get_segment',
-  'cat_submit_translation',
-  'cat_lookup_tm',
-  'cat_lookup_glossary',
-  'cat_list_documents',
-  'cat_switch_document',
-  'cat_suggest_mt',
-  'cat_pre_translate',
-  'cat_get_segments',
-  'cat_confirm_segments',
-  'cat_propose_translation',
-  'cat_align',
-  'cat_consistency_report',
-  'cat_term_candidates',
-  'cat_get_brief',
-  'cat_set_brief',
-  'cat_get_context',
-  'cat_unconfirm_segment',
-  'cat_concordance',
-  'cat_add_terms',
-  'cat_review',
-])
+assert.deepEqual(
+  [...tools.keys()],
+  [
+    'cat_get_segment',
+    'cat_submit_translation',
+    'cat_lookup_tm',
+    'cat_lookup_glossary',
+    'cat_list_documents',
+    'cat_switch_document',
+    'cat_suggest_mt',
+    'cat_pre_translate',
+    'cat_get_segments',
+    'cat_confirm_segments',
+    'cat_propose_translation',
+    'cat_align',
+    'cat_consistency_report',
+    'cat_term_candidates',
+    'cat_get_brief',
+    'cat_set_brief',
+    'cat_get_context',
+    'cat_unconfirm_segment',
+    'cat_concordance',
+    'cat_add_terms',
+    'cat_review',
+  ],
+)
 assert.equal(route.path, '/cait/api')
 
 const get = tools.get('cat_get_segment')
@@ -190,7 +195,12 @@ try {
   assert.equal(limitedTerms.total, 2)
 
   await rpc('addGlossary', { source: 'API', target: '接口', sourceLang: 'EN', caseSensitive: true })
-  await rpc('addGlossary', { source: 'Term', target: '术语', sourceLang: 'en', caseSensitive: false })
+  await rpc('addGlossary', {
+    source: 'Term',
+    target: '术语',
+    sourceLang: 'en',
+    caseSensitive: false,
+  })
   const caseSensitiveMiss = await glossaryLookup.execute({ query: 'api', sourceLang: 'EN' })
   assert.equal(caseSensitiveMiss.count, 0)
   const caseSensitiveHit = await glossaryLookup.execute({ query: 'API', sourceLang: 'en' })
@@ -242,7 +252,10 @@ try {
   const revisionBeforeSwitch = (await rpc('bootstrap')).revision
   const switched = await switchDocument.execute({ documentId: firstId })
   const revisionAfterSwitch = (await rpc('bootstrap')).revision
-  assert.ok(revisionAfterSwitch > revisionBeforeSwitch, 'cat_switch_document must bump the polled revision')
+  assert.ok(
+    revisionAfterSwitch > revisionBeforeSwitch,
+    'cat_switch_document must bump the polled revision',
+  )
   assert.equal(switched.ok, true)
   assert.equal(switched.activeDocumentId, firstId)
   assert.equal(switched.document.progress.confirmed, 1)
@@ -303,7 +316,10 @@ try {
 
   await rpc('setMounts', { tmIds: ['tm_default'], glossaryIds: ['glossary_default'] })
   const hidden = await lookup.execute({ query: 'Mounted extra only.' })
-  assert.equal(hidden.matches.some((item) => item.tmId === extraTmId), false)
+  assert.equal(
+    hidden.matches.some((item) => item.tmId === extraTmId),
+    false,
+  )
 
   const rejectedTarget = await submit.execute({
     target: '不应写入未挂载库。',
@@ -342,7 +358,10 @@ try {
     targetTmId: extraTmId,
   })
   const revisionAfterSubmit = (await rpc('bootstrap')).revision
-  assert.ok(revisionAfterSubmit > revisionBeforeSubmit, 'cat_submit_translation must bump the polled revision')
+  assert.ok(
+    revisionAfterSubmit > revisionBeforeSubmit,
+    'cat_submit_translation must bump the polled revision',
+  )
   assert.equal(targetedResult.ok, true)
   assert.equal(targetedResult.tm.tmId, extraTmId)
 

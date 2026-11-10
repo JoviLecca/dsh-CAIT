@@ -25,18 +25,24 @@ section('lock blocks edits, confirmation and replacement')
   const locked = store.setSegmentLocked({ documentId: id, index: 0, locked: true })
   assert.equal(locked.locked, true)
   assert.equal(store.segmentView(store.docs.get(id).segments[0], 0).locked, true)
-  assert.throws(
-    () => store.saveDraft({ documentId: id, index: 0, target: '改掉' }),
-    /已锁定/,
-  )
-  assert.throws(
-    () => store.confirmSegment({ documentId: id, index: 0 }),
-    /已锁定/,
-  )
+  assert.throws(() => store.saveDraft({ documentId: id, index: 0, target: '改掉' }), /已锁定/)
+  assert.throws(() => store.confirmSegment({ documentId: id, index: 0 }), /已锁定/)
 
-  const preview = store.replaceInDocument({ documentId: id, query: 'term', scope: 'source', replacement: 'TERM', apply: false })
-  assert.equal(preview.matches.some((item) => item.index === 0), false)
-  assert.equal(preview.matches.some((item) => item.index === 1), true)
+  const preview = store.replaceInDocument({
+    documentId: id,
+    query: 'term',
+    scope: 'source',
+    replacement: 'TERM',
+    apply: false,
+  })
+  assert.equal(
+    preview.matches.some((item) => item.index === 0),
+    false,
+  )
+  assert.equal(
+    preview.matches.some((item) => item.index === 1),
+    true,
+  )
 
   const cleared = store.clearUnconfirmedTranslations({ documentId: id, confirm: true })
   assert.equal(cleared.cleared, 1, 'only the unlocked pretranslated segment is cleared')

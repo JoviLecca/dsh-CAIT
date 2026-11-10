@@ -20,12 +20,19 @@ section('add, update and delete notes')
   const id = created.document.id
   assert.deepEqual(store.segmentView(store.docs.get(id).segments[0], 0).notes, [])
 
-  const added = store.addSegmentNote({ documentId: id, index: 0, text: 'Check the character name.' })
+  const added = store.addSegmentNote({
+    documentId: id,
+    index: 0,
+    text: 'Check the character name.',
+  })
   assert.equal(added.notes.length, 1)
   assert.match(added.note.id, /^n_/)
   assert.equal(added.note.author, 'user')
   assert.equal(store.docs.get(id).segments[0].notes.length, 1)
-  assert.equal(store.segmentView(store.docs.get(id).segments[0], 0).notes[0].text, 'Check the character name.')
+  assert.equal(
+    store.segmentView(store.docs.get(id).segments[0], 0).notes[0].text,
+    'Check the character name.',
+  )
 
   store.addSegmentNote({ documentId: id, index: 0, text: 'Agent note.', author: 'agent' })
   assert.equal(store.notesForSegment({ documentId: id, index: 0 }).notes.length, 2)
@@ -50,7 +57,12 @@ section('add, update and delete notes')
 section('empty note is rejected')
 {
   const store = new CatStore()
-  const created = store.createDocument({ name: 'Empty', text: 'One.', sourceLang: 'en', targetLang: 'zh-CN' })
+  const created = store.createDocument({
+    name: 'Empty',
+    text: 'One.',
+    sourceLang: 'en',
+    targetLang: 'zh-CN',
+  })
   assert.throws(
     () => store.addSegmentNote({ documentId: created.document.id, index: 0, text: '   ' }),
     (error) => error.code === 'EMPTY_NOTE',
@@ -74,7 +86,9 @@ section('v6 migration and reload')
             sourceLang: 'en',
             targetLang: 'zh-CN',
             cursor: 0,
-            segments: [{ id: 's1', source: 'Old source.', target: '', status: 'pending', paragraph: 0 }],
+            segments: [
+              { id: 's1', source: 'Old source.', target: '', status: 'pending', paragraph: 0 },
+            ],
             fingerprint: 'old',
           },
         ],

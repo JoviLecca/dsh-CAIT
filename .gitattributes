@@ -1,0 +1,2 @@
+# client.js 由 scripts/build-client.mjs 生成，review 时折叠
+client.js linguist-generated=true -diff

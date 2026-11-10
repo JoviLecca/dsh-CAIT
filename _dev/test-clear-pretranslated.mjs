@@ -29,7 +29,10 @@ section('clear unconfirmed pretranslated targets')
   const doc = store.docs.get(id)
   assert.equal(doc.segments[0].origin, 'manual')
   assert.equal(doc.segments[0].target, '人工草稿')
-  assert.deepEqual(doc.segments.slice(1).map((segment) => segment.origin), ['mt', 'mt', 'mt'])
+  assert.deepEqual(
+    doc.segments.slice(1).map((segment) => segment.origin),
+    ['mt', 'mt', 'mt'],
+  )
 
   // Confirmed work is never part of the cleanup.
   store.confirmSegment({ documentId: id, index: 1 })
@@ -78,7 +81,10 @@ section('preview does not mutate')
   const before = store.docs.get(id).segments.map((segment) => segment.target)
   const preview = store.clearUnconfirmedTranslations({ documentId: id })
   assert.equal(preview.counts.total, 2)
-  assert.deepEqual(store.docs.get(id).segments.map((segment) => segment.target), before)
+  assert.deepEqual(
+    store.docs.get(id).segments.map((segment) => segment.target),
+    before,
+  )
 }
 
 console.log('\nALL CLEAR-PRETRANSLATED TESTS PASSED')
