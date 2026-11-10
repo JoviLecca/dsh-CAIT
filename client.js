@@ -2065,6 +2065,72 @@ Object.assign(JA, {
   "cmd.reviewRisk": "高リスクのセグメントを校閲",
   "cmd.reviewRiskHint": "チェックの高リスク一覧を使用します"
 });
+Object.assign(ZH, {
+  "qa.reviewFilter.all": "全部",
+  "qa.reviewFilter.open": "待处理",
+  "qa.reviewFilter.applied": "已处理",
+  "qa.reviewFilter.ignored": "已忽略",
+  "qa.reviewStatus.open": "待处理",
+  "qa.reviewStatus.applied": "已处理",
+  "qa.reviewStatus.ignored": "已忽略",
+  "qa.reviewMarkApplied": "标为已处理",
+  "qa.reviewMarkIgnored": "忽略",
+  "qa.reviewReopen": "重新打开",
+  "qa.reviewFilterEmpty": "当前筛选下没有条目。",
+  "qa.reviewExportCsv": "CSV",
+  "qa.reviewExportCsvHint": "导出审校报告（CSV）",
+  "qa.reviewExportMarkdown": "Markdown",
+  "qa.reviewExportMarkdownHint": "导出审校报告（Markdown）",
+  "qa.reviewClear": "清空",
+  "qa.reviewClearTitle": "清空审校结果",
+  "qa.reviewClearMessage": "将删除 {count} 条审校记录，无法撤销。",
+  "qa.reviewCleared": "已清空 {count} 条审校记录。",
+  "qa.reviewExported": "已导出 {count} 条审校记录。"
+});
+Object.assign(EN, {
+  "qa.reviewFilter.all": "All",
+  "qa.reviewFilter.open": "Open",
+  "qa.reviewFilter.applied": "Handled",
+  "qa.reviewFilter.ignored": "Ignored",
+  "qa.reviewStatus.open": "Open",
+  "qa.reviewStatus.applied": "Handled",
+  "qa.reviewStatus.ignored": "Ignored",
+  "qa.reviewMarkApplied": "Mark handled",
+  "qa.reviewMarkIgnored": "Ignore",
+  "qa.reviewReopen": "Reopen",
+  "qa.reviewFilterEmpty": "No rows under this filter.",
+  "qa.reviewExportCsv": "CSV",
+  "qa.reviewExportCsvHint": "Export the review report (CSV)",
+  "qa.reviewExportMarkdown": "Markdown",
+  "qa.reviewExportMarkdownHint": "Export the review report (Markdown)",
+  "qa.reviewClear": "Clear",
+  "qa.reviewClearTitle": "Clear review results",
+  "qa.reviewClearMessage": "This deletes {count} review records and cannot be undone.",
+  "qa.reviewCleared": "Cleared {count} review records.",
+  "qa.reviewExported": "Exported {count} review records."
+});
+Object.assign(JA, {
+  "qa.reviewFilter.all": "すべて",
+  "qa.reviewFilter.open": "未対応",
+  "qa.reviewFilter.applied": "対応済み",
+  "qa.reviewFilter.ignored": "無視",
+  "qa.reviewStatus.open": "未対応",
+  "qa.reviewStatus.applied": "対応済み",
+  "qa.reviewStatus.ignored": "無視",
+  "qa.reviewMarkApplied": "対応済みにする",
+  "qa.reviewMarkIgnored": "無視する",
+  "qa.reviewReopen": "未対応に戻す",
+  "qa.reviewFilterEmpty": "このフィルターに項目はありません。",
+  "qa.reviewExportCsv": "CSV",
+  "qa.reviewExportCsvHint": "校閲レポートを書き出す（CSV）",
+  "qa.reviewExportMarkdown": "Markdown",
+  "qa.reviewExportMarkdownHint": "校閲レポートを書き出す（Markdown）",
+  "qa.reviewClear": "クリア",
+  "qa.reviewClearTitle": "校閲結果をクリア",
+  "qa.reviewClearMessage": "{count} 件の校閲記録を削除します。元に戻せません。",
+  "qa.reviewCleared": "{count} 件の校閲記録を削除しました。",
+  "qa.reviewExported": "{count} 件の校閲記録を書き出しました。"
+});
 
 // client/styles.js
 var CSS = `
@@ -2359,7 +2425,15 @@ var CSS = `
 .cait-subhead-actions{display:flex;align-items:center;gap:6px}
 .cait-subhead-actions .cait-btn{height:26px;padding:0 9px;font-size:10.5px}
 .cait-reviewmeta{display:flex;align-items:center;gap:8px;font-weight:500;letter-spacing:0;text-transform:none}
-.cait-review{margin-top:10px;padding-top:8px;border-top:1px solid var(--dsw-alias-border-l1)}
+.cait-reviewlist{margin-top:10px;padding-top:8px;border-top:1px solid var(--dsw-alias-border-l1)}
+.cait-reviewfilters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.cait-filterchip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border:1px solid var(--dsw-alias-border-l1);border-radius:999px;background:transparent;font-size:10.5px;color:var(--dsw-alias-label-secondary);cursor:pointer}
+.cait-filterchip:hover{background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-primary)}
+.cait-filterchip.active{border-color:var(--dsw-alias-state-info-primary);background:color-mix(in srgb,var(--dsw-alias-state-info-primary) 10%,transparent);color:var(--dsw-alias-label-primary)}
+.cait-reviewstatus{display:inline-flex;align-items:center;padding:1px 6px;border-radius:999px;font-size:10px;border:1px solid var(--dsw-alias-border-l1);color:var(--dsw-alias-label-secondary)}
+.cait-reviewstatus.applied{border-color:color-mix(in srgb,var(--dsw-alias-state-success-primary) 40%,var(--dsw-alias-border-l1));color:var(--dsw-alias-state-success-primary)}
+.cait-reviewstatus.ignored{opacity:.65}
+.cait-reviewrow.is-applied,.cait-reviewrow.is-ignored{opacity:.72;border-left-color:var(--dsw-alias-border-l1)}
 .cait-reviewrow{display:flex;align-items:flex-start;gap:7px;width:100%;margin-bottom:6px;padding:7px 8px;border:1px solid var(--dsw-alias-border-l1);border-left:3px solid var(--dsw-alias-state-warn-primary);border-radius:7px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);text-align:left;cursor:pointer}
 .cait-reviewrow:hover{background:var(--dsw-alias-bg-layer-2)}
 .cait-reviewrow-index{min-width:18px;font-size:10px;font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-secondary);padding-top:2px}
@@ -4323,9 +4397,17 @@ function CatPanel({
   onFixQa,
   review,
   reviewBusy,
+  reviewIssues,
+  reviewCounts,
+  visibleReviewIssues,
+  reviewFilter,
+  onSetReviewFilter,
   onReview,
   onCancelReview,
   onApplyReview,
+  onReviewState,
+  onExportReview,
+  onClearReview,
   concordance,
   concordanceQuery,
   setConcordanceQuery,
@@ -4793,9 +4875,9 @@ function CatPanel({
             );
           }) : h("p", { className: "cait-empty-note" }, t("qa.empty"))
         ) : h("p", { className: "cait-empty-note" }, t("qa.loading")),
-        review ? h(
+        review || reviewIssues.length ? h(
           "div",
-          { className: "cait-review" },
+          { className: "cait-reviewlist" },
           h(
             "div",
             { className: "cait-listhead" },
@@ -4803,26 +4885,66 @@ function CatPanel({
             h(
               "span",
               { className: "cait-reviewmeta" },
-              h(
+              review ? h(
                 "span",
                 { className: "cait-muted" },
                 t("qa.reviewProgress", { done: review.done, total: review.total })
-              ),
-              review.running ? h(
+              ) : null,
+              review && review.running ? h(
                 "button",
                 { className: "cait-linkbtn", onClick: onCancelReview },
                 t("qa.reviewCancel")
+              ) : null,
+              reviewIssues.length ? h(
+                "button",
+                {
+                  className: "cait-linkbtn",
+                  onClick: () => onExportReview("csv"),
+                  title: t("qa.reviewExportCsvHint")
+                },
+                h(Icon, { name: "download", size: 12 }),
+                t("qa.reviewExportCsv")
+              ) : null,
+              reviewIssues.length ? h(
+                "button",
+                {
+                  className: "cait-linkbtn",
+                  onClick: () => onExportReview("markdown"),
+                  title: t("qa.reviewExportMarkdownHint")
+                },
+                h(Icon, { name: "download", size: 12 }),
+                t("qa.reviewExportMarkdown")
+              ) : null,
+              reviewIssues.length ? h(
+                "button",
+                { className: "cait-linkbtn", onClick: onClearReview },
+                t("qa.reviewClear")
               ) : null
             )
           ),
-          review.cancelled && !review.running ? h("p", { className: "cait-empty-note" }, t("qa.reviewCancelled")) : null,
-          (review.issues || []).length ? review.issues.map((issue, issueIndex) => {
+          review && review.cancelled && !review.running ? h("p", { className: "cait-empty-note" }, t("qa.reviewCancelled")) : null,
+          reviewIssues.length ? h(
+            "div",
+            { className: "cait-reviewfilters" },
+            ["open", "applied", "ignored", "all"].map(
+              (status) => h(
+                "button",
+                {
+                  key: status,
+                  className: `cait-filterchip${reviewFilter === status ? " active" : ""}`,
+                  onClick: () => onSetReviewFilter(status)
+                },
+                `${t(`qa.reviewFilter.${status}`)} ${reviewCounts[status] || 0}`
+              )
+            )
+          ) : null,
+          visibleReviewIssues.length ? visibleReviewIssues.map((issue) => {
             const severity = ["high", "medium", "low"].includes(issue.severity) ? issue.severity : "medium";
             return h(
               "div",
               {
-                key: `${issue.index}-${issueIndex}`,
-                className: "cait-reviewrow",
+                key: issue.index,
+                className: `cait-reviewrow is-${issue.status}`,
                 role: "button",
                 tabIndex: 0,
                 onClick: () => onJumpQa(issue.index),
@@ -4842,20 +4964,71 @@ function CatPanel({
                   { className: `cait-reviewrow-msg ${severity}` },
                   `[${t(`qa.${severity}`)}] ${issue.message}`
                 ),
-                issue.suggestion ? h(
-                  "button",
-                  {
-                    className: "cait-riskaction",
-                    onClick: (event) => {
-                      event.stopPropagation();
-                      onApplyReview(issue);
-                    }
-                  },
-                  t("qa.reviewApply")
-                ) : null
+                h(
+                  "div",
+                  { className: "cait-riskactions" },
+                  h(
+                    "span",
+                    { className: `cait-reviewstatus ${issue.status}` },
+                    t(`qa.reviewStatus.${issue.status}`)
+                  ),
+                  issue.suggestion ? h(
+                    "button",
+                    {
+                      className: "cait-riskaction",
+                      onClick: (event) => {
+                        event.stopPropagation();
+                        onApplyReview(issue);
+                      }
+                    },
+                    t("qa.reviewApply")
+                  ) : null,
+                  issue.status === "applied" ? h(
+                    "button",
+                    {
+                      className: "cait-riskaction",
+                      onClick: (event) => {
+                        event.stopPropagation();
+                        onReviewState(issue, "open");
+                      }
+                    },
+                    t("qa.reviewReopen")
+                  ) : h(
+                    "button",
+                    {
+                      className: "cait-riskaction",
+                      onClick: (event) => {
+                        event.stopPropagation();
+                        onReviewState(issue, "applied");
+                      }
+                    },
+                    t("qa.reviewMarkApplied")
+                  ),
+                  issue.status === "ignored" ? h(
+                    "button",
+                    {
+                      className: "cait-riskaction",
+                      onClick: (event) => {
+                        event.stopPropagation();
+                        onReviewState(issue, "open");
+                      }
+                    },
+                    t("qa.reviewReopen")
+                  ) : h(
+                    "button",
+                    {
+                      className: "cait-riskaction",
+                      onClick: (event) => {
+                        event.stopPropagation();
+                        onReviewState(issue, "ignored");
+                      }
+                    },
+                    t("qa.reviewMarkIgnored")
+                  )
+                )
               )
             );
-          }) : h("p", { className: "cait-empty-note" }, t("qa.reviewEmpty"))
+          }) : reviewIssues.length ? h("p", { className: "cait-empty-note" }, t("qa.reviewFilterEmpty")) : review && !review.running ? h("p", { className: "cait-empty-note" }, t("qa.reviewEmpty")) : null
         ) : null
       ) : null,
       tab === "concordance" ? h(
@@ -7474,17 +7647,6 @@ function describeError(error, t, fallback) {
 
 // client/workbench/controller.js
 var REVIEW_BATCH_SIZE = 20;
-var SEVERITY_RANK = { high: 0, medium: 1, low: 2 };
-function mergeReviewIssues(issues) {
-  const byIndex = /* @__PURE__ */ new Map();
-  for (const issue of issues) {
-    if (!issue || !Number.isInteger(issue.index) || byIndex.has(issue.index)) continue;
-    byIndex.set(issue.index, issue);
-  }
-  return [...byIndex.values()].sort(
-    (a, b) => (SEVERITY_RANK[a.severity] ?? 3) - (SEVERITY_RANK[b.severity] ?? 3) || a.index - b.index
-  );
-}
 function useWorkbenchController({ i18n, translate }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -7510,6 +7672,7 @@ function useWorkbenchController({ i18n, translate }) {
   const [qa, setQa] = useState(null);
   const [review, setReview] = useState(null);
   const [reviewBusy, setReviewBusy] = useState(false);
+  const [reviewFilter, setReviewFilter] = useState("open");
   const [analysis, setAnalysis] = useState(null);
   const [analysisBusy, setAnalysisBusy] = useState(false);
   const [replacePreview, setReplacePreview] = useState(null);
@@ -7542,6 +7705,16 @@ function useWorkbenchController({ i18n, translate }) {
   const index = doc ? Math.min(selected, Math.max(0, segments.length - 1)) : 0;
   const segment = segments[index] || null;
   const detail = doc?.current?.index === index ? doc.current : null;
+  const reviewIssues = useMemo(() => doc?.review?.issues || [], [doc]);
+  const reviewCounts = useMemo(() => {
+    const counts = { all: reviewIssues.length, open: 0, applied: 0, ignored: 0 };
+    for (const issue of reviewIssues) counts[issue.status] = (counts[issue.status] || 0) + 1;
+    return counts;
+  }, [reviewIssues]);
+  const visibleReviewIssues = useMemo(
+    () => reviewFilter === "all" ? reviewIssues : reviewIssues.filter((issue) => issue.status === reviewFilter),
+    [reviewIssues, reviewFilter]
+  );
   useEffect(() => {
     draftHistoryRef.current = { index, stack: [draft], cursor: 0, lastAt: 0 };
   }, [doc?.id, index]);
@@ -8321,47 +8494,32 @@ function useWorkbenchController({ i18n, translate }) {
     }
     const token = ++reviewRunRef.current;
     reviewCancelRef.current = false;
-    const collected = [];
     setReviewBusy(true);
     setReview({
       target,
       running: true,
       cancelled: false,
       done: 0,
-      total: indexes.length,
-      indexes,
-      issues: []
+      total: indexes.length
     });
     try {
       for (let offset = 0; offset < indexes.length; offset += REVIEW_BATCH_SIZE) {
         if (reviewCancelRef.current || reviewRunRef.current !== token) break;
         const batch = indexes.slice(offset, offset + REVIEW_BATCH_SIZE);
         const result = await rpc("reviewDocument", { documentId: doc.id, indexes: batch });
-        collected.push(...result?.issues || []);
         if (reviewRunRef.current !== token) break;
+        replaceRemoteState(result.state);
         setReview(
-          (prev) => prev ? {
-            ...prev,
-            done: Math.min(prev.total, offset + batch.length),
-            issues: mergeReviewIssues(collected)
-          } : prev
+          (prev) => prev ? { ...prev, done: Math.min(prev.total, offset + batch.length) } : prev
         );
       }
     } catch (error) {
-      if (reviewRunRef.current === token) {
-        setReview(null);
-        report(error);
-      }
+      if (reviewRunRef.current === token) report(error);
     } finally {
       if (reviewRunRef.current === token) {
         setReviewBusy(false);
         setReview(
-          (prev) => prev ? {
-            ...prev,
-            running: false,
-            cancelled: reviewCancelRef.current,
-            issues: mergeReviewIssues(collected)
-          } : prev
+          (prev) => prev ? { ...prev, running: false, cancelled: reviewCancelRef.current } : prev
         );
       }
     }
@@ -8376,6 +8534,46 @@ function useWorkbenchController({ i18n, translate }) {
       setDraft(issue.suggestion);
       setDirty(true);
     }
+  };
+  const setReviewIssueState = async (issue, status) => {
+    if (!doc || !issue || issue.status === status) return;
+    try {
+      const result = await rpc("setReviewIssueState", {
+        documentId: doc.id,
+        index: issue.index,
+        status
+      });
+      replaceRemoteState(result.state);
+    } catch (error) {
+      report(error);
+    }
+  };
+  const exportReview = async (format) => {
+    if (!doc) return;
+    try {
+      const file = await rpc("exportReview", { documentId: doc.id, format });
+      downloadFile(file.filename, file.content, file.mime);
+      notify(t("qa.reviewExported", { count: file.count }));
+    } catch (error) {
+      report(error);
+    }
+  };
+  const clearReview = () => {
+    if (!doc || !reviewIssues.length) return;
+    openConfirm({
+      title: t("qa.reviewClearTitle"),
+      message: t("qa.reviewClearMessage", { count: reviewIssues.length }),
+      confirmLabel: t("qa.reviewClear"),
+      action: async () => {
+        try {
+          const result = await rpc("clearReview", { documentId: doc.id });
+          replaceRemoteState(result.state);
+          notify(t("qa.reviewCleared", { count: result.cleared }));
+        } catch (error) {
+          report(error);
+        }
+      }
+    });
   };
   const applyQaFix = async (item, action) => {
     if (!doc || busy || !item) return;
@@ -8882,6 +9080,14 @@ function useWorkbenchController({ i18n, translate }) {
     qa,
     review,
     reviewBusy,
+    reviewIssues,
+    reviewCounts,
+    visibleReviewIssues,
+    reviewFilter,
+    setReviewFilter,
+    setReviewIssueState,
+    exportReview,
+    clearReview,
     analysis,
     analysisBusy,
     replacePreview,
@@ -9014,6 +9220,11 @@ function Workbench({ i18n, translate }) {
     qa,
     review,
     reviewBusy,
+    reviewIssues,
+    reviewCounts,
+    visibleReviewIssues,
+    reviewFilter,
+    setReviewFilter,
     analysis,
     analysisBusy,
     replacePreview,
@@ -9088,6 +9299,9 @@ function Workbench({ i18n, translate }) {
     runReview,
     cancelReview,
     applyReview,
+    setReviewIssueState,
+    exportReview,
+    clearReview,
     applyQaFix,
     runConcordance,
     applyConcordance,
@@ -9392,9 +9606,17 @@ function Workbench({ i18n, translate }) {
           onFixQa: applyQaFix,
           review,
           reviewBusy,
+          reviewIssues,
+          reviewCounts,
+          visibleReviewIssues,
+          reviewFilter,
+          onSetReviewFilter: setReviewFilter,
           onReview: runReview,
           onCancelReview: cancelReview,
           onApplyReview: applyReview,
+          onReviewState: setReviewIssueState,
+          onExportReview: exportReview,
+          onClearReview: clearReview,
           concordance,
           concordanceQuery,
           setConcordanceQuery,

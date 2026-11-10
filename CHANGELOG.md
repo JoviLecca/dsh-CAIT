@@ -14,6 +14,11 @@ All notable changes to CAIT are documented here. The project follows
   batches of 20, shows how many are done, and can be cancelled. The entry on the
   check tab is a primary button, and the palette command is called "review this
   page" again (`lib/review.js`, `client/workbench/controller.js`).
+- Review findings are now kept on the document. Every row carries `open`,
+  `applied` or `ignored`; re-running a review keeps decisions on findings that
+  did not change, and confirming a segment marks its open findings as applied.
+  The check tab filters by state, and the report exports as CSV or Markdown
+  (`lib/review.js`, `lib/review-status.js`, `client/components/panels.js`).
 
 ### Fixed
 

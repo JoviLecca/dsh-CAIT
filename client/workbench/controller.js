@@ -15,21 +15,8 @@ import { describeError } from '../errors.js'
 import { UI_LANG_CODES } from '../locales.js'
 
 // The server reviews at most 20 segments per call, so a longer run is split
-// into batches and merged client-side.
+// into batches and merged server-side.
 const REVIEW_BATCH_SIZE = 20
-const SEVERITY_RANK = { high: 0, medium: 1, low: 2 }
-
-function mergeReviewIssues(issues) {
-  const byIndex = new Map()
-  for (const issue of issues) {
-    if (!issue || !Number.isInteger(issue.index) || byIndex.has(issue.index)) continue
-    byIndex.set(issue.index, issue)
-  }
-  return [...byIndex.values()].sort(
-    (a, b) =>
-      (SEVERITY_RANK[a.severity] ?? 3) - (SEVERITY_RANK[b.severity] ?? 3) || a.index - b.index,
-  )
-}
 
 // Workbench 的状态与动作。渲染层只从这里取数据，不直接调用 rpc。
 export function useWorkbenchController({ i18n, translate }) {
@@ -61,6 +48,7 @@ export function useWorkbenchController({ i18n, translate }) {
   const [qa, setQa] = useState(null)
   const [review, setReview] = useState(null)
   const [reviewBusy, setReviewBusy] = useState(false)
+  const [reviewFilter, setReviewFilter] = useState('open')
   const [analysis, setAnalysis] = useState(null)
   const [analysisBusy, setAnalysisBusy] = useState(false)
   const [replacePreview, setReplacePreview] = useState(null)
@@ -94,6 +82,21 @@ export function useWorkbenchController({ i18n, translate }) {
   const index = doc ? Math.min(selected, Math.max(0, segments.length - 1)) : 0
   const segment = segments[index] || null
   const detail = doc?.current?.index === index ? doc.current : null
+  // The review report lives on the document, so it survives a reload; only the
+  // run progress below is transient.
+  const reviewIssues = useMemo(() => doc?.review?.issues || [], [doc])
+  const reviewCounts = useMemo(() => {
+    const counts = { all: reviewIssues.length, open: 0, applied: 0, ignored: 0 }
+    for (const issue of reviewIssues) counts[issue.status] = (counts[issue.status] || 0) + 1
+    return counts
+  }, [reviewIssues])
+  const visibleReviewIssues = useMemo(
+    () =>
+      reviewFilter === 'all'
+        ? reviewIssues
+        : reviewIssues.filter((issue) => issue.status === reviewFilter),
+    [reviewIssues, reviewFilter],
+  )
   useEffect(() => {
     draftHistoryRef.current = { index, stack: [draft], cursor: 0, lastAt: 0 }
   }, [doc?.id, index])
@@ -974,7 +977,6 @@ export function useWorkbenchController({ i18n, translate }) {
     }
     const token = ++reviewRunRef.current
     reviewCancelRef.current = false
-    const collected = []
     setReviewBusy(true)
     setReview({
       target,
@@ -982,43 +984,27 @@ export function useWorkbenchController({ i18n, translate }) {
       cancelled: false,
       done: 0,
       total: indexes.length,
-      indexes,
-      issues: [],
     })
     try {
       for (let offset = 0; offset < indexes.length; offset += REVIEW_BATCH_SIZE) {
         if (reviewCancelRef.current || reviewRunRef.current !== token) break
         const batch = indexes.slice(offset, offset + REVIEW_BATCH_SIZE)
         const result = await rpc('reviewDocument', { documentId: doc.id, indexes: batch })
-        collected.push(...(result?.issues || []))
         if (reviewRunRef.current !== token) break
+        // Each batch is persisted server side and comes back with the whole
+        // state, so the report in the panel is always what the store holds.
+        replaceRemoteState(result.state)
         setReview((prev) =>
-          prev
-            ? {
-                ...prev,
-                done: Math.min(prev.total, offset + batch.length),
-                issues: mergeReviewIssues(collected),
-              }
-            : prev,
+          prev ? { ...prev, done: Math.min(prev.total, offset + batch.length) } : prev,
         )
       }
     } catch (error) {
-      if (reviewRunRef.current === token) {
-        setReview(null)
-        report(error)
-      }
+      if (reviewRunRef.current === token) report(error)
     } finally {
       if (reviewRunRef.current === token) {
         setReviewBusy(false)
         setReview((prev) =>
-          prev
-            ? {
-                ...prev,
-                running: false,
-                cancelled: reviewCancelRef.current,
-                issues: mergeReviewIssues(collected),
-              }
-            : prev,
+          prev ? { ...prev, running: false, cancelled: reviewCancelRef.current } : prev,
         )
       }
     }
@@ -1035,6 +1021,49 @@ export function useWorkbenchController({ i18n, translate }) {
       setDraft(issue.suggestion)
       setDirty(true)
     }
+  }
+
+  const setReviewIssueState = async (issue, status) => {
+    if (!doc || !issue || issue.status === status) return
+    try {
+      const result = await rpc('setReviewIssueState', {
+        documentId: doc.id,
+        index: issue.index,
+        status,
+      })
+      replaceRemoteState(result.state)
+    } catch (error) {
+      report(error)
+    }
+  }
+
+  const exportReview = async (format) => {
+    if (!doc) return
+    try {
+      const file = await rpc('exportReview', { documentId: doc.id, format })
+      downloadFile(file.filename, file.content, file.mime)
+      notify(t('qa.reviewExported', { count: file.count }))
+    } catch (error) {
+      report(error)
+    }
+  }
+
+  const clearReview = () => {
+    if (!doc || !reviewIssues.length) return
+    openConfirm({
+      title: t('qa.reviewClearTitle'),
+      message: t('qa.reviewClearMessage', { count: reviewIssues.length }),
+      confirmLabel: t('qa.reviewClear'),
+      action: async () => {
+        try {
+          const result = await rpc('clearReview', { documentId: doc.id })
+          replaceRemoteState(result.state)
+          notify(t('qa.reviewCleared', { count: result.cleared }))
+        } catch (error) {
+          report(error)
+        }
+      },
+    })
   }
 
   const applyQaFix = async (item, action) => {
@@ -1584,6 +1613,14 @@ export function useWorkbenchController({ i18n, translate }) {
     qa,
     review,
     reviewBusy,
+    reviewIssues,
+    reviewCounts,
+    visibleReviewIssues,
+    reviewFilter,
+    setReviewFilter,
+    setReviewIssueState,
+    exportReview,
+    clearReview,
     analysis,
     analysisBusy,
     replacePreview,

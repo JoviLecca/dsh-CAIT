@@ -36,9 +36,17 @@ function CatPanel({
   onFixQa,
   review,
   reviewBusy,
+  reviewIssues,
+  reviewCounts,
+  visibleReviewIssues,
+  reviewFilter,
+  onSetReviewFilter,
   onReview,
   onCancelReview,
   onApplyReview,
+  onReviewState,
+  onExportReview,
+  onClearReview,
   concordance,
   concordanceQuery,
   setConcordanceQuery,
@@ -539,10 +547,10 @@ function CatPanel({
                     : h('p', { className: 'cait-empty-note' }, t('qa.empty')),
                 )
               : h('p', { className: 'cait-empty-note' }, t('qa.loading')),
-            review
+            review || reviewIssues.length
               ? h(
                   'div',
-                  { className: 'cait-review' },
+                  { className: 'cait-reviewlist' },
                   h(
                     'div',
                     { className: 'cait-listhead' },
@@ -550,33 +558,83 @@ function CatPanel({
                     h(
                       'span',
                       { className: 'cait-reviewmeta' },
-                      h(
-                        'span',
-                        { className: 'cait-muted' },
-                        t('qa.reviewProgress', { done: review.done, total: review.total }),
-                      ),
-                      review.running
+                      review
+                        ? h(
+                            'span',
+                            { className: 'cait-muted' },
+                            t('qa.reviewProgress', { done: review.done, total: review.total }),
+                          )
+                        : null,
+                      review && review.running
                         ? h(
                             'button',
                             { className: 'cait-linkbtn', onClick: onCancelReview },
                             t('qa.reviewCancel'),
                           )
                         : null,
+                      reviewIssues.length
+                        ? h(
+                            'button',
+                            {
+                              className: 'cait-linkbtn',
+                              onClick: () => onExportReview('csv'),
+                              title: t('qa.reviewExportCsvHint'),
+                            },
+                            h(Icon, { name: 'download', size: 12 }),
+                            t('qa.reviewExportCsv'),
+                          )
+                        : null,
+                      reviewIssues.length
+                        ? h(
+                            'button',
+                            {
+                              className: 'cait-linkbtn',
+                              onClick: () => onExportReview('markdown'),
+                              title: t('qa.reviewExportMarkdownHint'),
+                            },
+                            h(Icon, { name: 'download', size: 12 }),
+                            t('qa.reviewExportMarkdown'),
+                          )
+                        : null,
+                      reviewIssues.length
+                        ? h(
+                            'button',
+                            { className: 'cait-linkbtn', onClick: onClearReview },
+                            t('qa.reviewClear'),
+                          )
+                        : null,
                     ),
                   ),
-                  review.cancelled && !review.running
+                  review && review.cancelled && !review.running
                     ? h('p', { className: 'cait-empty-note' }, t('qa.reviewCancelled'))
                     : null,
-                  (review.issues || []).length
-                    ? review.issues.map((issue, issueIndex) => {
+                  reviewIssues.length
+                    ? h(
+                        'div',
+                        { className: 'cait-reviewfilters' },
+                        ['open', 'applied', 'ignored', 'all'].map((status) =>
+                          h(
+                            'button',
+                            {
+                              key: status,
+                              className: `cait-filterchip${reviewFilter === status ? ' active' : ''}`,
+                              onClick: () => onSetReviewFilter(status),
+                            },
+                            `${t(`qa.reviewFilter.${status}`)} ${reviewCounts[status] || 0}`,
+                          ),
+                        ),
+                      )
+                    : null,
+                  visibleReviewIssues.length
+                    ? visibleReviewIssues.map((issue) => {
                         const severity = ['high', 'medium', 'low'].includes(issue.severity)
                           ? issue.severity
                           : 'medium'
                         return h(
                           'div',
                           {
-                            key: `${issue.index}-${issueIndex}`,
-                            className: 'cait-reviewrow',
+                            key: issue.index,
+                            className: `cait-reviewrow is-${issue.status}`,
                             role: 'button',
                             tabIndex: 0,
                             onClick: () => onJumpQa(issue.index),
@@ -596,23 +654,82 @@ function CatPanel({
                               { className: `cait-reviewrow-msg ${severity}` },
                               `[${t(`qa.${severity}`)}] ${issue.message}`,
                             ),
-                            issue.suggestion
-                              ? h(
-                                  'button',
-                                  {
-                                    className: 'cait-riskaction',
-                                    onClick: (event) => {
-                                      event.stopPropagation()
-                                      onApplyReview(issue)
+                            h(
+                              'div',
+                              { className: 'cait-riskactions' },
+                              h(
+                                'span',
+                                { className: `cait-reviewstatus ${issue.status}` },
+                                t(`qa.reviewStatus.${issue.status}`),
+                              ),
+                              issue.suggestion
+                                ? h(
+                                    'button',
+                                    {
+                                      className: 'cait-riskaction',
+                                      onClick: (event) => {
+                                        event.stopPropagation()
+                                        onApplyReview(issue)
+                                      },
                                     },
-                                  },
-                                  t('qa.reviewApply'),
-                                )
-                              : null,
+                                    t('qa.reviewApply'),
+                                  )
+                                : null,
+                              issue.status === 'applied'
+                                ? h(
+                                    'button',
+                                    {
+                                      className: 'cait-riskaction',
+                                      onClick: (event) => {
+                                        event.stopPropagation()
+                                        onReviewState(issue, 'open')
+                                      },
+                                    },
+                                    t('qa.reviewReopen'),
+                                  )
+                                : h(
+                                    'button',
+                                    {
+                                      className: 'cait-riskaction',
+                                      onClick: (event) => {
+                                        event.stopPropagation()
+                                        onReviewState(issue, 'applied')
+                                      },
+                                    },
+                                    t('qa.reviewMarkApplied'),
+                                  ),
+                              issue.status === 'ignored'
+                                ? h(
+                                    'button',
+                                    {
+                                      className: 'cait-riskaction',
+                                      onClick: (event) => {
+                                        event.stopPropagation()
+                                        onReviewState(issue, 'open')
+                                      },
+                                    },
+                                    t('qa.reviewReopen'),
+                                  )
+                                : h(
+                                    'button',
+                                    {
+                                      className: 'cait-riskaction',
+                                      onClick: (event) => {
+                                        event.stopPropagation()
+                                        onReviewState(issue, 'ignored')
+                                      },
+                                    },
+                                    t('qa.reviewMarkIgnored'),
+                                  ),
+                            ),
                           ),
                         )
                       })
-                    : h('p', { className: 'cait-empty-note' }, t('qa.reviewEmpty')),
+                    : reviewIssues.length
+                      ? h('p', { className: 'cait-empty-note' }, t('qa.reviewFilterEmpty'))
+                      : review && !review.running
+                        ? h('p', { className: 'cait-empty-note' }, t('qa.reviewEmpty'))
+                        : null,
                 )
               : null,
           )

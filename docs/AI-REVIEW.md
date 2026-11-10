@@ -190,9 +190,9 @@ const runReview = async ({ target = 'page' } = {}) => {
 2. 观察一版，确认用户实际怎么用，再做 B；
 3. C 只在确实需要跟踪审校进度时做，否则 B 的"本次结果"已经够用。
 
-## 8. 实现记录（阶段 A + B，1.1.8-beta1）
+## 8. 实现记录（阶段 A + B + C，1.1.8-beta1）
 
-按用户要求一次做完 A + B，C 仍然不做。
+按用户要求一次做完 A + B + C。
 
 服务端 `lib/review.js`
 
@@ -219,4 +219,43 @@ const runReview = async ({ target = 'page' } = {}) => {
 - `_dev/test-review.mjs` 新增「review accepts an explicit index list」：6 段文档上送 `[5, 2, 2, 99, -1]`，断言 `indexes = [2, 5]`、`from = 2`、`to = 6`、提示词里没有 `[S3]`、模型多返回的索引 3 被丢弃；`indexes: []` 回退到 `from/count`；全部越界抛 `REVIEW_RANGE_INVALID`。
 - `_dev/test-review-flow.mjs`（新，jsdom）：25 段文档点「审校本页」→ 断言两次 `reviewDocument`（20 + 5）、第二批索引是 `[20..24]`、首批提示词停在 `[S19]`、界面显示「已审 25/25 段」且两批的问题都合并成两行；另一组直接调 store 验证 `indexes: [2]` 时模型顺带的 0 被丢弃。
 
-仍未做（阶段 C）：结果不落库，切文档/刷新即丢；没有「已审/已忽略」状态，也不能导出审校报告。
+仍未做（阶段 C 已做，这里只记当时不做的理由）：后台自动审校、逐段实时审校、用 AI 替换规则检查。
+
+## 9. 实现记录（阶段 C：审校报告落库）
+
+### 存储
+
+- 形状：`document.review = { updatedAt, issues: [{ index, severity, code, message, suggestion, status, at }] }`，仍是「一个句段一行」，按 index 去重，最多 `MAX_REVIEW_ISSUES_PER_DOC = 500` 行。
+- 放在 `store.documents[id].review`，不塞进句段对象（20k 句段的文件不会被撑大）；`documentView()` 里带 `review` 出去，所以刷新、重开文档、切 tab 都还在。
+- 迁移：`lib/restore.js` 的 `restoreReview(raw)` 逐行校验（index 必须是非负整数、severity 归一、status 归一），坏行丢弃而不是整份加载失败；`lib/persistence.js` 在 brief 之后调用它。
+- 状态三值 `open | applied | ignored` 放在 `lib/review-status.js`（`REVIEW_STATUSES`、`normalizeReviewStatus`），避免 `review.js` 与 `restore.js` 互相 import。
+
+### 语义
+
+- 重跑审校时，**同一条发现**（`code` 与 `message` 都相同）保留人工决定的状态；发现变了就是新问题，重置为 `open`——否则重跑会把「已忽略」全部洗回待处理。
+- 确认句段时，该段若有 `open` 的审校行，自动置 `applied`（确认是最强信号）；`ignored` 不覆盖。落盘失败时 `confirmSegment` 的 catch 会把它还原成 `open`。
+- `reviewDocument` 从只读变成写操作：`touch()` + `persist({ strict: true })`，并登记进 `MUTATIONS`，因此每批都回整份 state，客户端不再自己合并（原来的 `mergeReviewIssues` 已删）。
+
+### 接口
+
+- 新增三个 store 方法（`lib/review.js`）：
+  - `setReviewIssueState({ documentId, index, status })`：状态必须是三值之一（否则 `REVIEW_STATUS_INVALID`），找不到行抛 `REVIEW_ISSUE_NOT_FOUND`；
+  - `clearReview({ documentId })`：清空整份报告，没有报告抛 `REVIEW_NOT_FOUND`；
+  - `exportReview({ documentId, format })`：`csv` / `markdown`，返回 `{ filename, mime, content, count }`，非法格式抛 `REVIEW_FORMAT_INVALID`。
+- 客户端只负责下载（`downloadFile`）与确认弹窗（`clearReview` 走 `openConfirm`），导出内容由服务端生成，agent 工具将来可以复用同一份实现。
+
+### 界面
+
+- 「检查」tab 的审校区块：标题行右侧是进度 + 取消 + `CSV` / `MD` 导出 + 清空；下面是筛选 chips（`待处理 / 已处理 / 已忽略 / 全部`，带计数）与筛选后的行。
+- 每行有状态徽章与三个动作：`标为已处理`、`忽略`、`重新打开`；`applied` / `ignored` 的行整体弱化（`.is-applied` / `.is-ignored`）。
+- 容器 class 从 `cait-review` 改成 `cait-reviewlist`：`editor.js` 里已有一个同名三列 grid，复用会把行挤成三列。
+- 空态分两种：有报告但当前筛选为空 → `qa.reviewFilterEmpty`；完全没有报告 → `qa.reviewEmpty`。
+
+### 测试
+
+- `_dev/test-review-report.mjs`（新，6 组）：落库并重载后状态保留；确认句段自动 `applied` 且不覆盖 `ignored`；重跑同一条保留决定、换了发现则重开；CSV 与 Markdown 的内容、表头与转义；非法格式 / 无报告 / 清空的错误码；`restore` 丢弃坏行并按 severity + index 排序。
+- `_dev/test-review-flow.mjs` 增加第三段（jsdom）：审校 → 点行内「忽略」→ store 里状态变成 `ignored`、chips 变成「已忽略 1」、切到「已处理 0」显示空筛选提示、切回「全部 1」看到徽章。
+- 顺手修了测试夹具的两个真问题：
+  - `_dev/lib/workbench-harness.mjs` 之前**没有 await 异步 handler**，`reviewDocument` 这类 async 写方法返回的 state 是调用前的快照（真实 HTTP 层是 `await handlers[method](params)`）；现在改成 await，并补了 `settle()` 等一次 RPC 的 promise 链跑完。
+  - 同一个夹具把 `store.bootstrap()` 的结果**按引用**交给客户端，服务端就地改一个字段，客户端就会「没有 re-render 却看到新值」；现在响应体先 `JSON.parse(JSON.stringify())` 走一遍序列化，与线上一致。
+

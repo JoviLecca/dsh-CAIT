@@ -292,7 +292,15 @@ const CSS = `
 .cait-subhead-actions{display:flex;align-items:center;gap:6px}
 .cait-subhead-actions .cait-btn{height:26px;padding:0 9px;font-size:10.5px}
 .cait-reviewmeta{display:flex;align-items:center;gap:8px;font-weight:500;letter-spacing:0;text-transform:none}
-.cait-review{margin-top:10px;padding-top:8px;border-top:1px solid var(--dsw-alias-border-l1)}
+.cait-reviewlist{margin-top:10px;padding-top:8px;border-top:1px solid var(--dsw-alias-border-l1)}
+.cait-reviewfilters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.cait-filterchip{display:inline-flex;align-items:center;gap:4px;padding:2px 8px;border:1px solid var(--dsw-alias-border-l1);border-radius:999px;background:transparent;font-size:10.5px;color:var(--dsw-alias-label-secondary);cursor:pointer}
+.cait-filterchip:hover{background:var(--dsw-alias-bg-layer-2);color:var(--dsw-alias-label-primary)}
+.cait-filterchip.active{border-color:var(--dsw-alias-state-info-primary);background:color-mix(in srgb,var(--dsw-alias-state-info-primary) 10%,transparent);color:var(--dsw-alias-label-primary)}
+.cait-reviewstatus{display:inline-flex;align-items:center;padding:1px 6px;border-radius:999px;font-size:10px;border:1px solid var(--dsw-alias-border-l1);color:var(--dsw-alias-label-secondary)}
+.cait-reviewstatus.applied{border-color:color-mix(in srgb,var(--dsw-alias-state-success-primary) 40%,var(--dsw-alias-border-l1));color:var(--dsw-alias-state-success-primary)}
+.cait-reviewstatus.ignored{opacity:.65}
+.cait-reviewrow.is-applied,.cait-reviewrow.is-ignored{opacity:.72;border-left-color:var(--dsw-alias-border-l1)}
 .cait-reviewrow{display:flex;align-items:flex-start;gap:7px;width:100%;margin-bottom:6px;padding:7px 8px;border:1px solid var(--dsw-alias-border-l1);border-left:3px solid var(--dsw-alias-state-warn-primary);border-radius:7px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);text-align:left;cursor:pointer}
 .cait-reviewrow:hover{background:var(--dsw-alias-bg-layer-2)}
 .cait-reviewrow-index{min-width:18px;font-size:10px;font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-secondary);padding-top:2px}

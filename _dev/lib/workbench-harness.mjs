@@ -79,22 +79,27 @@ export async function mountWorkbench({ prepare } = {}) {
     const { method, params } = JSON.parse(init.body)
     calls.push({ method, params })
     const handler = handlers[method]
-    const body = (() => {
-      if (!handler) {
-        return { ok: false, error: { code: 'UNKNOWN_METHOD', message: `未知方法 ${method}` } }
-      }
+    let body
+    if (!handler) {
+      body = { ok: false, error: { code: 'UNKNOWN_METHOD', message: `未知方法 ${method}` } }
+    } else {
       try {
-        const result = handler(params)
+        // 有些 store 方法是 async 的（审校、预翻译），HTTP 层会 await，
+        // 这里也必须等，否则读到的 state 还是调用前的快照。
+        const result = await handler(params)
         // 与 registerCatApi 保持一致：写操作成功后附上整份 state。
         const data = MUTATIONS.has(method)
           ? { ...(result ?? {}), state: store.bootstrap() }
           : result
-        return { ok: true, data }
+        body = { ok: true, data }
       } catch (error) {
-        return { ok: false, error: { code: error?.code || 'ERROR', message: error?.message } }
+        body = { ok: false, error: { code: error?.code || 'ERROR', message: error?.message } }
       }
-    })()
-    return { ok: body.ok, status: 200, json: async () => body }
+    }
+    // 走一遍序列化，否则客户端拿到的是 store 内部对象的引用：
+    // 服务端就地改一个字段，客户端就会「没有 re-render 却看到新值」。
+    const wire = JSON.parse(JSON.stringify(body))
+    return { ok: wire.ok, status: 200, json: async () => wire }
   }
   setGlobal('fetch', fetchStub)
 
@@ -181,5 +186,25 @@ export async function mountWorkbench({ prepare } = {}) {
     restoreGlobals()
   }
 
-  return { store, handlers, calls, container, text, query, queryAll, byText, click, type, unmount }
+  // 等待一次 RPC 的 promise 链跑完并刷新 DOM。
+  const settle = async () => {
+    await flush()
+    await flush()
+    await flush()
+  }
+
+  return {
+    store,
+    handlers,
+    calls,
+    container,
+    text,
+    query,
+    queryAll,
+    byText,
+    click,
+    type,
+    settle,
+    unmount,
+  }
 }

@@ -11,6 +11,16 @@ function section(title) {
 
 const sentences = Array.from({ length: 25 }, (_, index) => `Line ${index + 1} is here.`).join(' ')
 
+const openQa = async (ui) => {
+  // The tab carries a count badge once rule-based checks find something, so the
+  // label is "检查4" rather than "检查".
+  const tab = ui
+    .queryAll('.cait-tab')
+    .find((element) => element.textContent.trim().startsWith('检查'))
+  assert.ok(tab, 'the QA tab is present')
+  await ui.click(tab)
+}
+
 section('review runs the page in 20-segment batches and merges the issues')
 {
   const prompts = []
@@ -52,7 +62,7 @@ section('review runs the page in 20-segment batches and merges the issues')
   })
 
   try {
-    await ui.click('检查')
+    await openQa(ui)
     assert.ok(ui.byText('审校本页'), 'the QA panel offers a page-sized review')
     await ui.click('审校本页')
 
@@ -72,7 +82,10 @@ section('review runs the page in 20-segment batches and merges the issues')
       text.includes('已审 25/25 段'),
       `progress should read 25/25, got: ${text.slice(0, 400)}`,
     )
-    assert.ok(text.includes('Tune 0') && text.includes('Tune 20'), 'both batches are merged')
+    assert.ok(
+      text.includes('Tune 0') && text.includes('Tune 20'),
+      `both batches are merged, got: ${text.slice(-600)}`,
+    )
     assert.equal(ui.queryAll('.cait-reviewrow').length, 2)
   } finally {
     await ui.unmount()
@@ -124,6 +137,72 @@ section('review only reports the segments it asked about')
       result.issues.map((issue) => issue.index),
       [2],
     )
+  } finally {
+    await ui.unmount()
+  }
+}
+
+section('a stored issue can be ignored and filtered')
+{
+  const ui = await mountWorkbench({
+    prepare({ store }) {
+      store.createDocument({
+        name: 'Review states',
+        text: 'Alpha one. Beta two. Gamma three.',
+        sourceLang: 'en',
+        targetLang: 'zh-CN',
+      })
+      for (let index = 0; index < 3; index += 1) {
+        store.saveDraft({ documentId: store.activeDocument().id, index, target: `T${index}` })
+      }
+      store.resolveReviewRoute = async () => ({
+        mock: false,
+        provider: 'test-provider',
+        model: 'test-model',
+        note: '',
+      })
+      store.mtRuntime = {
+        stream: async function* stream() {
+          yield {
+            type: 'text-delta',
+            text: JSON.stringify([
+              { index: 0, severity: 'high', code: 'OMISSION', message: 'Missing clause.' },
+            ]),
+          }
+          yield { type: 'finish', reason: { kind: 'stop' } }
+        },
+      }
+    },
+  })
+
+  try {
+    await openQa(ui)
+    await ui.click('审校本页')
+    assert.equal(ui.queryAll('.cait-reviewrow').length, 1)
+    assert.ok(ui.text().includes('待处理'), 'a fresh issue starts open')
+    assert.ok(ui.byText('待处理 1'), 'the filter chips count the open issue')
+
+    const row = ui.queryAll('.cait-reviewrow')[0]
+    const ignore = [...row.querySelectorAll('button')].find(
+      (button) => button.textContent.trim() === '忽略',
+    )
+    assert.ok(ignore, 'each row offers an ignore action')
+    await ui.click(ignore)
+    await ui.settle()
+
+    assert.equal(
+      ui.store.bootstrap().activeDocument.review.issues[0].status,
+      'ignored',
+      'the decision is persisted on the document',
+    )
+    assert.ok(ui.byText('已忽略 1'), 'the chips recount after the change')
+
+    await ui.click('已处理 0')
+    assert.ok(ui.text().includes('当前筛选下没有条目。'), 'an empty filter says so')
+
+    await ui.click('全部 1')
+    assert.ok(ui.text().includes('已忽略'), 'the row shows its stored status')
+    assert.equal(ui.queryAll('.cait-reviewrow').length, 1)
   } finally {
     await ui.unmount()
   }
