@@ -4,7 +4,7 @@ All notable changes to CAIT are documented here. The project follows
 [Semantic Versioning](https://semver.org/) and the format is based on
 [Keep a Changelog](https://keepachangelog.com/).
 
-## [Unreleased]
+## [1.1.8] - 2026-11-10
 
 ### Added
 
@@ -30,6 +30,14 @@ All notable changes to CAIT are documented here. The project follows
   (`T1..Tn`), the payload is a flat JSON array without repeated context, and
   answers that duplicate or contain another answer are dropped and retried one
   segment at a time (`lib/mt-translate.js`).
+- Error messages now follow the interface language. The server keeps sending a
+  stable `code`, and the workbench translates it through `client/errors.js`
+  (exact entry, then a family rule, then the server message) instead of showing
+  the Chinese `message` to English and Japanese users.
+- The review route is saved again. `settingsForStorage()` lists fields by hand
+  and `review` was never added, so the configured review provider and model were
+  dropped on every save and a restart fell back to "follow the translation
+  model" (`lib/persistence.js`).
 
 ### Changed
 
@@ -47,13 +55,6 @@ All notable changes to CAIT are documented here. The project follows
 - Confirming a segment no longer copies the whole TM array for rollback. The
   upsert returns the previous row values, and `undoTMWrite` restores just that
   row (`confirmSegment`: 93 ms → 71 ms at 20k segments / 10k entries).
-
-### Fixed
-
-- Error messages now follow the interface language. The server keeps sending a
-  stable `code`, and the workbench translates it through `client/errors.js`
-  (exact entry, then a family rule, then the server message) instead of showing
-  the Chinese `message` to English and Japanese users.
 - `npm run check` gains `check:errors`, which fails when a code raised in `lib/`
   has no copy in all three dictionaries and no category rule to fall back on.
 
