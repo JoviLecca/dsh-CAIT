@@ -1,3 +1,4 @@
+import { readdirSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { build } from 'esbuild'
@@ -12,6 +13,26 @@ import { build } from 'esbuild'
 export const projectRoot = dirname(dirname(dirname(fileURLToPath(import.meta.url))))
 export const clientEntry = join(projectRoot, 'client', 'index.js')
 export const clientBundlePath = join(projectRoot, 'client.js')
+
+/**
+ * 递归拼接 `client/` 下的作者态源码。
+ *
+ * 源码级断言（i18n 键引用、主题属性、UI 缩放写法）读这里；行为断言才在 vm 里跑
+ * `client.js` 产物，因为产物被 esbuild 重排且剥掉注释，无法做文本匹配。
+ */
+export function readAuthoredClient({ includeLocales = false } = {}) {
+  const collect = (dir) =>
+    readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const path = join(dir, entry.name)
+      if (entry.isDirectory()) return collect(path)
+      return entry.name.endsWith('.js') ? [path] : []
+    })
+  return collect(join(projectRoot, 'client'))
+    .filter((path) => includeLocales || !path.endsWith('locales.js'))
+    .sort()
+    .map((path) => readFileSync(path, 'utf8'))
+    .join('\n')
+}
 
 // 外框保持 DSH 侧契约不变：factory 收到 require，返回 entry 的默认导出。
 const HEADER = `// 由 scripts/build-client.mjs 从 client/ 构建生成，请勿手工修改。

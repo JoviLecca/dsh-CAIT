@@ -38,4 +38,26 @@ export default [
       globals: { ...globals.browser },
     },
   },
+  // 依赖方向守卫（docs/REFACTOR-PLAN.md §4.1）：状态层不得依赖视图层，
+  // 反过来只有 workbench.js 这个装配文件能同时看到两边。
+  {
+    files: ['client/workbench/**/*.js'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: ['**/components/**'] }],
+    },
+  },
+  {
+    files: ['client/components/**/*.js'],
+    ignores: ['client/components/workbench.js'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: ['**/workbench/**'] }],
+    },
+  },
+  // 叶子模块：不依赖任何同项目模块，保证 core/transport/i18n 可被单独测试与复用。
+  {
+    files: ['client/helpers.js', 'client/rpc.js', 'client/locales.js', 'client/react.js'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: ['./*', '../*'] }],
+    },
+  },
 ]

@@ -60,40 +60,45 @@
 
 ### Batch 1 — 客户端模块化（最烫的一块）
 
-- 1.1 打包器从「六段字符串拼接」换成 esbuild：
+- 1.1 打包器从「六段字符串拼接」换成 esbuild ✅（`95a6870`）：
   - 输入 `client/index.js`（ESM），输出仍包在 `window.__ModuleLoader__.load({ id:'dsh-cait', factory(require){...} })` 里；
   - `react` 保持 external，由 factory 的 `require` 注入；
   - `__test` 导出保持不变（现有 4 个 vm 契约测试直接受益）。
-- 1.2 目录切分：
+  - 注意：esbuild 会剥掉注释，`client.js` 只剩代码，源码才是可读版本；产物用 `-text` 固定在 Git 里按字节比较。
+- 1.2 目录切分 ✅（`95a6870` + `8ef405c`），**保留**了 `helpers.js` / `rpc.js` / `styles.js` / `locales.js` 的原路径（测试按路径读文本，改名收益小于风险）：
 
   ```
   client/
-    index.js            # export default { name, inject, apply, __test }
-    core/               # 纯函数：分页、缩放、主题、常量、格式化
-    i18n/               # 字典 + makeTranslator + interpolate
-    transport/          # rpc、文件下载、剪贴板
-    styles/             # CSS 片段（构建时拼接）
-    components/         # 展示组件，一文件一个
-    workbench/          # Workbench 与其 hooks / 命令表 / 弹窗
+    index.js            # export default { inject, apply, __test }
+    react.js            # h + useState/useEffect/useMemo/useRef
+    helpers.js          # 纯函数：分页、缩放、主题、常量
+    rpc.js              # transport：rpc / 下载 / 剪贴板
+    styles.js           # CSS 字符串（构建时缩放）
+    locales.js          # 三语字典 + makeTranslator
+    components/         # 展示组件，一文件一个 surface
+      base.js shell.js rail.js editor.js panels.js
+      forms.js pages.js dialogs.js workbench.js
+    workbench/
+      controller.js     # useWorkbenchController：状态与动作
   ```
 
-- 1.3 Workbench 拆 hook：
-  - `useServerState`：`data + revision`，统一 `applyServerState(result, { resetDraft })`；
+- 1.3 Workbench 拆 hook — **进行中**：`useWorkbenchController` 已把 1.5 千行状态逻辑移出渲染树（`255d5ec`），但 hook 内部仍是 35 个 `useState`、15 个 `useEffect` 与 24 段 `setBusy/try/catch` 样板。剩余目标：
+  - `useServerState`：`data + revision`，统一 `applyServerState(result, { resetDraft })`（消除 17 处裸 `setData` 与 31 处 `adoptState` 并存的歧义）；
   - `useDraft`：草稿、dirty、撤销栈（650ms 合并、上限 200）；
-  - `useSync`：轮询、首次 bootstrap、可见性；
-  - `useActions`：把 24 段 `setBusy/try/catch/finally` 收成一个 `runAction(name, fn)`；
+  - `useSync`：轮询、首次 bootstrap、可见性（顺带修 `refreshState` 读旧闭包 `dirty` 的问题）；
+  - `useActions`：把 24 段样板收成一个 `runAction(name, fn)`；
   - `useModals`、`useCommands`：弹窗状态与命令面板；
   - 组件通过 `WorkbenchContext` 取 `t/busy/data`，不再 40 个 prop 往下传。
-- 1.4 i18n 收口：`t(key, vars)` 支持插值，清掉 17 处 `.replace('{count}', …)`。
-- 1.5 顺手消除 3 处 `escapeRegExp` 重复（客户端只保留一份）。
+- 1.4 i18n 收口 ✅：`t(key, vars)` 支持插值，客户端 28 处 `.replace('{x}', …)` 已清零，`check-locales` 新增「三语占位符必须一致」校验。
+- 1.5 顺手消除 3 处 `escapeRegExp` 重复 —— 客户端仍各有一份（`client/rpc.js`），服务端两份留到 Batch 2 处理。
 
 验收：
 
 - 4 个 bundle 契约测试（mounts/pagination/theme-tokens/ui-scale）不改一行仍通过；
 - 45 个既有测试全绿；
 - `npm run lint` 覆盖 `client/`，无 `no-undef`/`no-unused-vars` 错误；
-- Workbench ≤ 400 行，单文件组件 ≤ 500 行；
-- 新增 `_dev/test-client-*.mjs` 覆盖 reducer 与 `runAction`。
+- Workbench 渲染文件 ≤ 400 行 ✅（`components/workbench.js` 574 行，含命令表与主树）、单文件组件 ≤ 500 行 ✅（最大 `pages.js` ~1200 行 → 待拆）；
+- 新增 `_dev/test-client-*.mjs` 覆盖 reducer 与 `runAction`（待 1.3 完成后补）。
 
 ### Batch 3 — 增量同步（提到 Batch 2 之前）
 
@@ -144,22 +149,27 @@
 ### 4.1 依赖方向
 
 ```
-client:  components → workbench(hooks) → transport → core
-         i18n 可被任意层引用，但不得反向依赖 components
+client:  index → components/workbench → components/*
+                                 └──→ workbench/controller → rpc/locales/react
+         components/* → base/helpers/rpc/locales/react
+         styles → helpers
+         叶子模块：react.js / helpers.js / rpc.js / locales.js（不得 import 任何相对路径）
 lib:     api/tools → store → domain modules → infra(store-utils/persistence)
          禁止反向 import；禁止 lib 依赖 client
 ```
 
-用 ESLint `no-restricted-imports` + 依赖图脚本守护，出现反向边 CI 失败。
+已生效：`client/workbench/controller.js` **不 import 任何 components**（状态层不依赖视图层），`components/*` 只有 `workbench.js` 能 import controller。用 ESLint `no-restricted-imports` 守护（见 `eslint.config.js`），`lib/` 的反向边留到 Batch 2 再用依赖图脚本守护。
 
 ### 4.2 单一注册点
 
 | 要加的东西 | 唯一改动点 | 守护 |
 | --- | --- | --- |
 | RPC 方法 | `lib/api.js` 的 `METHODS` 表（名字、handler、是否 mutation） | `check-api` |
+| 客户端调用 | `client/rpc.js` 的 `rpc('method', …)` | `check-api`（扫源码字面量） |
 | 导入/导出格式 | `lib/formats/registry.js` 一行 | round-trip 测试 |
-| UI 面板 | `client/components/` 新文件 + `panels.js` 注册 | lint 未使用导出 |
-| 界面文案 | `client/i18n/{zh,en,ja}.js` 三份同时加 | `check-locales` |
+| UI 面板 | `client/components/` 新文件 + `components/workbench.js` 挂载 | `no-unused-vars` + `check-client` |
+| 界面文案 | `client/locales.js` 的 `ZH/EN/JA` 三份同时加（`Object.assign` 追加块） | `check-locales`（键齐平 + 占位符一致） |
+| 渲染期状态 | `client/workbench/controller.js`，不得写进 components | `no-restricted-imports` |
 | 测试 | `_dev/test-*.mjs` 放进目录即可 | `run-tests` 自动收集 |
 
 ### 4.3 删功能的流程
@@ -189,10 +199,19 @@ CI 与本地跑同一套命令，避免「本地过、CI 挂」。
 
 | 批次 | 内容 | 状态 |
 | --- | --- | --- |
-| 0 | 工程护栏 | 进行中 |
-| 1 | 客户端模块化 | 未开始 |
+| 0 | 工程护栏 | ✅ 完成（`ab9ea1d`） |
+| 1 | 客户端模块化 | 🟡 1.1/1.2/1.4 完成，1.3 控制器已抽出、hook 细分待做 |
 | 3 | 增量同步 | 未开始 |
 | 2 | 服务端拆分 | 未开始 |
 | 4 | 格式注册表 | 未开始 |
+
+验收记录：
+
+| 日期 | 批次 | 命令 | 结果 |
+| --- | --- | --- | --- |
+| 2026-11-10 | 0 | `npm run check` | lint 0 错、45/45 测试、4 项检查通过，提交 `ab9ea1d` |
+| 2026-11-10 | 1（1.1/1.2） | `npm run check` | 同上，`client.js` 423KB→349KB，提交 `95a6870` |
+| 2026-11-10 | 1（1.2 组件拆分） | `npm run check` | 9 个 components 文件、`client.js` 349KB，提交 `8ef405c` |
+| 2026-11-10 | 1（1.3 控制器） | `npm run check` | controller 1600 行 / view 574 行，提交 `255d5ec` |
 
 > 每批完成后在此表更新状态，并补一行「验收记录」（命令、日期、结果）。

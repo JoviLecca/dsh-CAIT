@@ -5289,7 +5289,7 @@ function LibraryPage({
         }))
       });
       if (result?.state) onApplyState(result.state);
-      notify(t("term.added").replace("{added}", String(result.added)));
+      notify(t("term.added", { added: result.added }));
       setTerms(null);
       await loadRows();
     } catch (error) {
@@ -5408,7 +5408,7 @@ function LibraryPage({
       const count = action === "dedupe" ? preview.duplicates : preview.matched;
       onConfirm({
         title: t(`tm.maintain.${action}`),
-        message: t(`tm.maintain.${action}Hint`).replace("{count}", String(count)),
+        message: t(`tm.maintain.${action}Hint`, { count }),
         confirmLabel: t(`tm.maintain.${action}`),
         action: async () => {
           const result = await rpc(action === "dedupe" ? "dedupeTmLibrary" : "pruneTmLibrary", {
@@ -5418,7 +5418,7 @@ function LibraryPage({
           });
           if (result?.state) onApplyState(result.state);
           await loadRows();
-          notify(t("tm.maintain.done").replace("{count}", String(count)));
+          notify(t("tm.maintain.done", { count }));
         }
       });
     } catch (error) {
@@ -6156,8 +6156,13 @@ function ExportModal({ t, busy, onClose, onExport, onImportReview, qa }) {
       h(
         "span",
         null,
-        `${t("qa.exportBanner").replace("{count}", String(issues))} `,
-        t("qa.counts").replace("{placeholder}", String(qa.counts.PLACEHOLDER_MISSING)).replace("{number}", String(qa.counts.NUMBER_MISMATCH)).replace("{term}", String(qa.counts.TERM_NOT_USED)).replace("{empty}", String(qa.counts.EMPTY_TARGET))
+        `${t("qa.exportBanner", { count: issues })} `,
+        t("qa.counts", {
+          placeholder: qa.counts.PLACEHOLDER_MISSING,
+          number: qa.counts.NUMBER_MISMATCH,
+          term: qa.counts.TERM_NOT_USED,
+          empty: qa.counts.EMPTY_TARGET
+        })
       )
     ) : null,
     h(
@@ -6911,7 +6916,10 @@ function ReplaceModal({ t, busy, preview, undoCount, onPreview, onApply, onUndo,
       h(
         "div",
         { className: "cait-replacecounts" },
-        t("replace.results").replace("{count}", String(preview.total)).replace("{segments}", String(preview.matchedSegments || 0))
+        t("replace.results", {
+          count: preview.total,
+          segments: preview.matchedSegments || 0
+        })
       ),
       preview.truncated ? h("p", { className: "cait-mt-hint" }, t("replace.truncated")) : null,
       preview.matches?.length ? h(
@@ -7395,7 +7403,7 @@ function useWorkbenchController({ i18n, translate }) {
   const importNotice = (result, fallback) => {
     const warning = result?.warnings?.[0];
     if (warning) {
-      const message = warning.code === "TMX_INLINE_MARKUP_LOST" ? t("toast.tmxMarkupLost").replace("{count}", warning.count) : warning.message || t("toast.tmxMarkupLost").replace("{count}", warning.count);
+      const message = warning.code === "TMX_INLINE_MARKUP_LOST" ? t("toast.tmxMarkupLost", { count: warning.count }) : warning.message || t("toast.tmxMarkupLost", { count: warning.count });
       notify(message, "info");
     } else {
       notify(fallback);
@@ -7465,8 +7473,8 @@ function useWorkbenchController({ i18n, translate }) {
         await refreshState();
       }
       if (preCancelRef.current) notify(t("toast.preCancelled"));
-      else if (failed) notify(t("toast.preFailed").replace("{count}", String(failed)));
-      else notify(t("toast.preDone").replace("{count}", String(filled)));
+      else if (failed) notify(t("toast.preFailed", { count: failed }));
+      else notify(t("toast.preDone", { count: filled }));
     } catch (error) {
       report(error);
     } finally {
@@ -8004,7 +8012,7 @@ function useWorkbenchController({ i18n, translate }) {
       setReplaceUndo(Array.isArray(result.undo) && result.undo.length ? result.undo : null);
       setReplacePreview(null);
       adoptState(result.state, result.undo?.[0]?.index);
-      notify(t("toast.replaced").replace("{count}", String(result.applied ?? 0)));
+      notify(t("toast.replaced", { count: result.applied ?? 0 }));
     } catch (error) {
       report(error);
     } finally {
@@ -8209,13 +8217,13 @@ function useWorkbenchController({ i18n, translate }) {
     setModal({
       type: "confirm",
       title: t("rail.confirmAll"),
-      message: t("rail.confirmAllMessage").replace("{count}", String(awaiting)),
+      message: t("rail.confirmAllMessage", { count: awaiting }),
       confirmLabel: t("rail.confirmAll"),
       action: async () => {
         const result = await rpc("confirmSegments", { documentId: active.id, status: "translated" });
         await refreshState();
         setTmRefresh((value) => value + 1);
-        notify(t("toast.confirmedMany").replace("{count}", String(result.confirmed.length)));
+        notify(t("toast.confirmedMany", { count: result.confirmed.length }));
       }
     });
   };
@@ -8230,7 +8238,7 @@ function useWorkbenchController({ i18n, translate }) {
       action: async () => {
         const result = await rpc("propagateDocument", { documentId: active.id });
         await refreshState();
-        notify(t("toast.propagated").replace("{count}", String(result.filled)));
+        notify(t("toast.propagated", { count: result.filled }));
       }
     });
   };
@@ -8248,18 +8256,20 @@ function useWorkbenchController({ i18n, translate }) {
       setModal({
         type: "confirm",
         title: t("modal.confirm.clearPretranslatedTitle"),
-        message: t("modal.confirm.clearPretranslatedMessage").replace("{count}", String(total)).replace("{mt}", String(counts.mt || 0)).replace("{tm}", String(counts.tm || 0)).replace("{auto}", String(counts.auto || 0)),
-        confirmLabel: t("modal.confirm.clearPretranslatedConfirm").replace(
-          "{count}",
-          String(total)
-        ),
+        message: t("modal.confirm.clearPretranslatedMessage", {
+          count: total,
+          mt: counts.mt || 0,
+          tm: counts.tm || 0,
+          auto: counts.auto || 0
+        }),
+        confirmLabel: t("modal.confirm.clearPretranslatedConfirm", { count: total }),
         action: async () => {
           const result = await rpc("clearUnconfirmedTranslations", {
             documentId: active.id,
             confirm: true
           });
           adoptState(result.state, result.cursor);
-          notify(t("toast.pretranslatedCleared").replace("{count}", String(result.cleared)));
+          notify(t("toast.pretranslatedCleared", { count: result.cleared }));
         }
       });
     } catch (error) {
@@ -8452,7 +8462,10 @@ function useWorkbenchController({ i18n, translate }) {
         });
         adoptState(result.state);
         notify(
-          t("toast.reviewApplied").replace("{applied}", String(result.applied)).replace("{unmatched}", String(result.unmatched + result.sourceMismatch))
+          t("toast.reviewApplied", {
+            applied: result.applied,
+            unmatched: result.unmatched + result.sourceMismatch
+          })
         );
         setModal(null);
       } catch (error) {
@@ -8513,7 +8526,7 @@ function useWorkbenchController({ i18n, translate }) {
   const qaRisk = (qa?.risks || []).find((item) => item.index === index) || null;
   const deleteClosedDocument = (document2) => openConfirm({
     title: t("doc.deleteTitle"),
-    message: t("doc.deleteMessage").replace("{name}", document2.name),
+    message: t("doc.deleteMessage", { name: document2.name }),
     confirmLabel: t("doc.delete"),
     action: async () => {
       const result = await rpc("deleteDocument", { documentId: document2.id });
@@ -8523,7 +8536,7 @@ function useWorkbenchController({ i18n, translate }) {
   });
   const clearClosedDocuments = () => openConfirm({
     title: t("doc.cleanTitle"),
-    message: t("doc.cleanAllMessage").replace("{count}", String(closedDocuments.length)),
+    message: t("doc.cleanAllMessage", { count: closedDocuments.length }),
     confirmLabel: t("doc.cleanAll"),
     action: async () => {
       let lastState = null;
@@ -8532,7 +8545,7 @@ function useWorkbenchController({ i18n, translate }) {
         lastState = result.state;
       }
       if (lastState) adoptState(lastState);
-      notify(t("toast.docsCleared").replace("{count}", String(closedDocuments.length)));
+      notify(t("toast.docsCleared", { count: closedDocuments.length }));
     }
   });
   useEffect(() => {

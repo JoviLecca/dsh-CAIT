@@ -52,12 +52,13 @@ function ExportModal({ t, busy, onClose, onExport, onImportReview, qa }) {
           h(
             'span',
             null,
-            `${t('qa.exportBanner').replace('{count}', String(issues))} `,
-            t('qa.counts')
-              .replace('{placeholder}', String(qa.counts.PLACEHOLDER_MISSING))
-              .replace('{number}', String(qa.counts.NUMBER_MISMATCH))
-              .replace('{term}', String(qa.counts.TERM_NOT_USED))
-              .replace('{empty}', String(qa.counts.EMPTY_TARGET)),
+            `${t('qa.exportBanner', { count: issues })} `,
+            t('qa.counts', {
+              placeholder: qa.counts.PLACEHOLDER_MISSING,
+              number: qa.counts.NUMBER_MISMATCH,
+              term: qa.counts.TERM_NOT_USED,
+              empty: qa.counts.EMPTY_TARGET,
+            }),
           ),
         )
       : null,
@@ -858,9 +859,10 @@ function ReplaceModal({ t, busy, preview, undoCount, onPreview, onApply, onUndo,
           h(
             'div',
             { className: 'cait-replacecounts' },
-            t('replace.results')
-              .replace('{count}', String(preview.total))
-              .replace('{segments}', String(preview.matchedSegments || 0)),
+            t('replace.results', {
+              count: preview.total,
+              segments: preview.matchedSegments || 0,
+            }),
           ),
           preview.truncated ? h('p', { className: 'cait-mt-hint' }, t('replace.truncated')) : null,
           preview.matches?.length

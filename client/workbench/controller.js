@@ -137,8 +137,8 @@ export function useWorkbenchController({ i18n, translate }) {
     if (warning) {
       const message =
         warning.code === 'TMX_INLINE_MARKUP_LOST'
-          ? t('toast.tmxMarkupLost').replace('{count}', warning.count)
-          : warning.message || t('toast.tmxMarkupLost').replace('{count}', warning.count)
+          ? t('toast.tmxMarkupLost', { count: warning.count })
+          : warning.message || t('toast.tmxMarkupLost', { count: warning.count })
       notify(message, 'info')
     } else {
       notify(fallback)
@@ -219,8 +219,8 @@ export function useWorkbenchController({ i18n, translate }) {
         await refreshState()
       }
       if (preCancelRef.current) notify(t('toast.preCancelled'))
-      else if (failed) notify(t('toast.preFailed').replace('{count}', String(failed)))
-      else notify(t('toast.preDone').replace('{count}', String(filled)))
+      else if (failed) notify(t('toast.preFailed', { count: failed }))
+      else notify(t('toast.preDone', { count: filled }))
     } catch (error) {
       report(error)
     } finally {
@@ -809,7 +809,7 @@ export function useWorkbenchController({ i18n, translate }) {
       setReplaceUndo(Array.isArray(result.undo) && result.undo.length ? result.undo : null)
       setReplacePreview(null)
       adoptState(result.state, result.undo?.[0]?.index)
-      notify(t('toast.replaced').replace('{count}', String(result.applied ?? 0)))
+      notify(t('toast.replaced', { count: result.applied ?? 0 }))
     } catch (error) {
       report(error)
     } finally {
@@ -1030,13 +1030,13 @@ export function useWorkbenchController({ i18n, translate }) {
     setModal({
       type: 'confirm',
       title: t('rail.confirmAll'),
-      message: t('rail.confirmAllMessage').replace('{count}', String(awaiting)),
+      message: t('rail.confirmAllMessage', { count: awaiting }),
       confirmLabel: t('rail.confirmAll'),
       action: async () => {
         const result = await rpc('confirmSegments', { documentId: active.id, status: 'translated' })
         await refreshState()
         setTmRefresh((value) => value + 1)
-        notify(t('toast.confirmedMany').replace('{count}', String(result.confirmed.length)))
+        notify(t('toast.confirmedMany', { count: result.confirmed.length }))
       },
     })
   }
@@ -1052,7 +1052,7 @@ export function useWorkbenchController({ i18n, translate }) {
       action: async () => {
         const result = await rpc('propagateDocument', { documentId: active.id })
         await refreshState()
-        notify(t('toast.propagated').replace('{count}', String(result.filled)))
+        notify(t('toast.propagated', { count: result.filled }))
       },
     })
   }
@@ -1071,22 +1071,20 @@ export function useWorkbenchController({ i18n, translate }) {
       setModal({
         type: 'confirm',
         title: t('modal.confirm.clearPretranslatedTitle'),
-        message: t('modal.confirm.clearPretranslatedMessage')
-          .replace('{count}', String(total))
-          .replace('{mt}', String(counts.mt || 0))
-          .replace('{tm}', String(counts.tm || 0))
-          .replace('{auto}', String(counts.auto || 0)),
-        confirmLabel: t('modal.confirm.clearPretranslatedConfirm').replace(
-          '{count}',
-          String(total),
-        ),
+        message: t('modal.confirm.clearPretranslatedMessage', {
+          count: total,
+          mt: counts.mt || 0,
+          tm: counts.tm || 0,
+          auto: counts.auto || 0,
+        }),
+        confirmLabel: t('modal.confirm.clearPretranslatedConfirm', { count: total }),
         action: async () => {
           const result = await rpc('clearUnconfirmedTranslations', {
             documentId: active.id,
             confirm: true,
           })
           adoptState(result.state, result.cursor)
-          notify(t('toast.pretranslatedCleared').replace('{count}', String(result.cleared)))
+          notify(t('toast.pretranslatedCleared', { count: result.cleared }))
         },
       })
     } catch (error) {
@@ -1291,9 +1289,10 @@ export function useWorkbenchController({ i18n, translate }) {
         })
         adoptState(result.state)
         notify(
-          t('toast.reviewApplied')
-            .replace('{applied}', String(result.applied))
-            .replace('{unmatched}', String(result.unmatched + result.sourceMismatch)),
+          t('toast.reviewApplied', {
+            applied: result.applied,
+            unmatched: result.unmatched + result.sourceMismatch,
+          }),
         )
         setModal(null)
       } catch (error) {
@@ -1364,7 +1363,7 @@ export function useWorkbenchController({ i18n, translate }) {
   const deleteClosedDocument = (document) =>
     openConfirm({
       title: t('doc.deleteTitle'),
-      message: t('doc.deleteMessage').replace('{name}', document.name),
+      message: t('doc.deleteMessage', { name: document.name }),
       confirmLabel: t('doc.delete'),
       action: async () => {
         const result = await rpc('deleteDocument', { documentId: document.id })
@@ -1376,7 +1375,7 @@ export function useWorkbenchController({ i18n, translate }) {
   const clearClosedDocuments = () =>
     openConfirm({
       title: t('doc.cleanTitle'),
-      message: t('doc.cleanAllMessage').replace('{count}', String(closedDocuments.length)),
+      message: t('doc.cleanAllMessage', { count: closedDocuments.length }),
       confirmLabel: t('doc.cleanAll'),
       action: async () => {
         let lastState = null
@@ -1385,7 +1384,7 @@ export function useWorkbenchController({ i18n, translate }) {
           lastState = result.state
         }
         if (lastState) adoptState(lastState)
-        notify(t('toast.docsCleared').replace('{count}', String(closedDocuments.length)))
+        notify(t('toast.docsCleared', { count: closedDocuments.length }))
       },
     })
 

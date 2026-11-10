@@ -570,7 +570,7 @@ function LibraryPage({
         })),
       })
       if (result?.state) onApplyState(result.state)
-      notify(t('term.added').replace('{added}', String(result.added)))
+      notify(t('term.added', { added: result.added }))
       setTerms(null)
       await loadRows()
     } catch (error) {
@@ -708,7 +708,7 @@ function LibraryPage({
       const count = action === 'dedupe' ? preview.duplicates : preview.matched
       onConfirm({
         title: t(`tm.maintain.${action}`),
-        message: t(`tm.maintain.${action}Hint`).replace('{count}', String(count)),
+        message: t(`tm.maintain.${action}Hint`, { count }),
         confirmLabel: t(`tm.maintain.${action}`),
         action: async () => {
           const result = await rpc(action === 'dedupe' ? 'dedupeTmLibrary' : 'pruneTmLibrary', {
@@ -718,7 +718,7 @@ function LibraryPage({
           })
           if (result?.state) onApplyState(result.state)
           await loadRows()
-          notify(t('tm.maintain.done').replace('{count}', String(count)))
+          notify(t('tm.maintain.done', { count: count }))
         },
       })
     } catch (error) {

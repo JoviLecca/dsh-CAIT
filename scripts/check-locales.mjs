@@ -1,7 +1,7 @@
-import { readFileSync, readdirSync } from 'node:fs'
+import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { projectRoot } from './lib/client-source.mjs'
+import { projectRoot, readAuthoredClient } from './lib/client-source.mjs'
 
 const strict = process.argv.includes('--strict')
 const { ZH, EN, JA } = await import(pathToFileURL(join(projectRoot, 'client', 'locales.js')).href)
@@ -33,7 +33,22 @@ for (const [lang, dict] of Object.entries(DICTS)) {
   }
 }
 
-// 2. locale/*.json 是另一条 i18n 通道，重叠的键必须与客户端字典同值。
+// 2. 占位符必须跨语言一致：翻译时漏写或改名，运行期就会把 `{count}` 原样显示出来。
+const placeholders = (text) => new Set([...String(text).matchAll(/\{(\w+)\}/g)].map((m) => m[1]))
+for (const key of allKeys) {
+  const shapes = Object.entries(DICTS).map(([lang, dict]) => ({
+    lang,
+    names: [...placeholders(dict[key])].sort().join(','),
+  }))
+  const expected = shapes[0].names
+  for (const shape of shapes.slice(1)) {
+    if (shape.names !== expected) {
+      fail(`${key} 的占位符不一致：${shapes.map((s) => `${s.lang}=[${s.names}]`).join(' ')}`)
+    }
+  }
+}
+
+// 3. locale/*.json 是另一条 i18n 通道，重叠的键必须与客户端字典同值。
 const localeDir = join(projectRoot, 'locale')
 for (const [lang, dict] of Object.entries(DICTS)) {
   const payload = JSON.parse(readFileSync(join(localeDir, `${lang}.json`), 'utf8'))
@@ -44,11 +59,8 @@ for (const [lang, dict] of Object.entries(DICTS)) {
   }
 }
 
-// 3. 疑似死键：定义了但客户端片段里没有任何字面量或模板前缀引用。
-const fragments = readdirSync(join(projectRoot, 'client')).filter((name) => name.endsWith('.js'))
-const clientText = fragments
-  .map((name) => readFileSync(join(projectRoot, 'client', name), 'utf8'))
-  .join('\n')
+// 4. 疑似死键：定义了但客户端源码里没有任何字面量或模板前缀引用。
+const clientText = readAuthoredClient()
 const literals = new Set()
 for (const match of clientText.matchAll(/['"]([A-Za-z][A-Za-z0-9]*(?:\.[A-Za-z0-9_]+)+)['"]/g)) {
   literals.add(match[1])
