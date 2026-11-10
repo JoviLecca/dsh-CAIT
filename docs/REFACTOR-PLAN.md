@@ -133,13 +133,19 @@
 
 ### Batch 4 — 格式注册表
 
-- 4.1 `lib/formats/registry.js`：每项 `{ id, label, extensions, canImport, canExport, parse, build }`。
-- 4.2 `import-export.js` 的 218 行导入链、369 行导出链改成查表 + 统一适配。
-- 4.3 每个格式一条 round-trip 测试（parse → build → parse）。
+已按两个方向落地（未建 `lib/formats/` 目录，避免与已有的 `lib/formats.js` 重名）：
+
+- 4.1 `lib/export-document.js`：每种格式一个适配器，统一返回 `{ filename, mime, content, count }`；
+  `EXPORTERS` 是唯一注册表，`import-export.js` 只做查表。简单文本格式共用一张小表。
+- 4.2 `lib/import-file.js`：每种文件类型一个 reader（docx/epub/xlsx|pptx/tmx/本地化/结构化文本/纯文本），
+  `pickReader` 是唯一分派点，四段重复的「解析 → 定语言 → createDocument → units/warnings」只写一次。
+- 4.3 `scripts/check-formats.mjs`：把导出对话框的格式清单、导入框的 `accept` 扩展名与两张注册表双向比对。
+  首跑就发现本地化格式（.strings/.resx/.arb/.yaml/.properties）能被读取却不在导入框里，已补。
 
 验收：
 
-- 新增一种格式 = 新建一个文件 + 注册表加一行，不改 `import-export.js`；
+- 新增一种格式 = 加一个适配器/reader + 注册表一行，不改 `import-export.js`（现 338 行）；
+- `npm run check:formats` 守住两个方向；
 - 现有全部格式测试通过（docx/xlsx/pptx/epub/csv/srt/vtt/po/xliff/html/json/rtf/tmx/strings）。
 
 ## 4. 结构约定（未来增删功能必须遵守）
@@ -189,7 +195,7 @@ lib:     api/tools → store → domain modules → infra(store-utils/persistenc
 ## 5. 验收命令
 
 ```bash
-npm run check     # format:check + lint + check:client + check:locales + check:api + test
+npm run check     # format:check + lint + check:locales/store/formats/api/client + test
 npm run build:client
 npm run test
 ```
@@ -204,7 +210,7 @@ CI 与本地跑同一套命令，避免「本地过、CI 挂」。
 | 1 | 客户端模块化 | 🟡 1.1/1.2/1.4 完成，1.3 控制器已抽出、hook 细分待做 |
 | 3 | 增量同步 | 🟡 3.3 轮询已改为 revision 探测；3.1/3.2/3.4 待做 |
 | 2 | 服务端拆分 | 🟡 2.1/2.2 完成（`f155e3d`、`b0faec9`），2.3/2.4 待做 |
-| 4 | 格式注册表 | 未开始 |
+| 4 | 格式注册表 | ✅ 完成（`70202e8`、`0ff6812`、`ab3f416`） |
 
 验收记录：
 
@@ -217,6 +223,12 @@ CI 与本地跑同一套命令，避免「本地过、CI 挂」。
 | 2026-11-10 | 1（i18n 传参） | `npm run check` | 28 处 `.replace('{x}')` 清零，check:locales 新增占位符校验，提交 `274a94e` |
 | 2026-11-10 | 1（jsdom 端到端） | `npm run check` | 47/47 套件（新增 mount/flow 两个 jsdom 用例），提交 `b8165f0` |
 | 2026-11-10 | 1（草稿保护） | `npm run check` | stale closure 6 处改 `dirtyRef`，13 处裸 `setData` 收口，提交 `154121c` |
+| 2026-11-10 | 2（mixin 注册表） | `npm run check` | 27 个 mixin / 130 个方法，重名装配期抛错，提交 `f155e3d` |
+| 2026-11-10 | 2（store 瘦身） | `npm run check` | `store.js` 1400→156 行，提交 `b0faec9` |
+| 2026-11-10 | 3（3.3 轮询） | `npm run check` | `test-sync` 断言探测 <100B，提交 `057917a` |
+| 2026-11-10 | 4（导出注册表） | `npm run check` | 25 种格式 + 7 种本地化格式全部查表，提交 `70202e8` |
+| 2026-11-10 | 4（导入 reader） | `npm run check` | `import-export.js` 982→338 行，提交 `0ff6812` |
+| 2026-11-10 | 4（守卫） | `npm run check:formats` | 导出 28 项、导入 26 种扩展名双向比对，补全本地化 accept，提交 `ab3f416` |
 | 2026-11-10 | 2（2.1 组合显式化） | `npm run check` | 20 个 mixin / 101 个方法登记，重名装配期抛错，提交 `f155e3d` |
 | 2026-11-10 | 2（2.2 store 瘦身） | `npm run check` | `store.js` 1400→156 行，7 个领域模块，27 个 mixin / 130 个方法，47/47 通过，提交 `b0faec9` |
 | 2026-11-10 | 3（3.3 轮询） | `npm run check` | 空闲轮询不再传整份快照，`test-sync` 断言探测 <100B，48/48 通过，提交 `057917a` |

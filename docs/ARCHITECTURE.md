@@ -103,7 +103,7 @@ client/index.js            注册 DSH 面板、i18n 适配（entry）
 - 界面链路用 `_dev/lib/workbench-harness.mjs` 在 jsdom 里挂载 `client.js` 产物，配真实 store
   （`test-workbench-mount.mjs`、`test-workbench-flow.mjs` 是范例）
 
-`npm run check` = lint + 格式检查 + 四个契约检查（locales/store/api/client）+ 全量测试，
+`npm run check` = lint + 格式检查 + 五个契约检查（locales/store/formats/api/client）+ 全量测试，
 CI 与 `prepublishOnly` 都跑它。
 
 ## 7. 加东西的标准动作
@@ -113,6 +113,7 @@ CI 与 `prepublishOnly` 都跑它。
 | 新 RPC | store 方法 → `createHandlers` → 写操作登记 `MUTATIONS` → 客户端 `rpc()` | `check:api` |
 | 新 store 方法 | 加进对应的 `*Methods` 模块；**不要**新建 mixin，也**不要**往 `store.js` 类体堆 | `check:store` |
 | 新界面文案 | `client/locales.js` 的 ZH/EN/JA 三处 | `check:locales` |
-| 新导出格式 | Batch 4 之后加一条注册表项；当前先加 `import-export.js` 分支并补测试 | `npm test` |
+| 新导出格式 | `lib/export-document.js` 加适配器 + `EXPORTERS` 一项 + 导出对话框一行 | `check:formats` |
+| 新导入格式 | `lib/import-file.js` 的表项（或 reader）+ 导入框 `accept` | `check:formats` |
 | 新 store 字段 | 构造函数 → `persist()` → `restore()` 迁移 → `bootstrap()` | `npm test` |
 | 改客户端 | `client/**` → `npm run build:client` | `check:client` + `npm test` |
