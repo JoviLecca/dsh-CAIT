@@ -58,17 +58,39 @@
 守卫：`check:errors` 已并入 `npm run check`；`_dev/test-errors.mjs` 断言
 「专属键优先 / 类别兜底 / 未知码回退 message / 占位符被填充 / 116 个码 × 3 语言都有文案」。
 
-### P2 先测量，再决定要不要改协议
+### P2 已测量：瓶颈不是协议，是 TM 查找
 
-不要凭"线性变慢"就动 `bootstrap()`。先写一个只读基准脚本（放 `scripts/` 或 `%TEMP%`）：
+基准脚本 `scripts/bench-scale.mjs`（`npm run bench`）用临时 `dataDir` 建真实 store，
+`--segments` / `--tm` 可调，每组取 3 次中位数。它先量一遍空 TM 的读路径，再灌 TM 复测，
+这样才能把「全库 TM 扫描」从 `bootstrap()` 里单独摘出来。
 
-- 造 20k 句段文档 + 10k 条 TM，量：`confirmSegment` 一次调用的耗时与响应字节数；
-- 量 `segmentDetail`（每次选句段触发的全库 TM 扫描）在 10k TM 下的耗时；
-- 量 `bootstrap()` 的空载与满载耗时。
+20,000 句段 / 10,000 TM（Node 26，Windows）：
 
-拿到数字再判断：如果 20k 句段下一次写操作 < 200ms 且 < 2MB，**就不改协议**，把这条划掉；
-如果明显超，再设计 `bootstrap({ since })`，并且单独一轮做（会同时改 `api.js` 响应形状、
-`controller` 的 `adoptState`、以及变更追踪）。
+| 路径 | 中位数 | 载荷 |
+| --- | --- | --- |
+| `bootstrap()`（TM=0） | 4.5 ms | 6.0 MB |
+| `JSON.stringify(state)` | 16.3 ms | 6.0 MB |
+| `bootstrap()`（TM=10k） | 113.5 ms | 6.0 MB |
+| `segmentDetail()`（TM=10k） | 111.1 ms | — |
+| `selectSegment()`（点一下） | 109.8 ms | — |
+| `confirmSegment()` | 206 ms | — |
+| `API confirmSegment` 含回传 state | 309 ms | 6.0 MB |
+| `persist()` | 58 ms | 13.5 MB 落盘 |
+
+典型文档 500 句段 / 2,000 TM：点一下 21 ms、写一次 54 ms / 0.16 MB。
+
+结论：**6 MB 状态本身只要 4.5 ms 构建 + 16 ms 序列化**，`bootstrap()` 的 113 ms 里约 109 ms
+是 `lookupTM`。它给每条 TM 调 `similarity(text, entry.key)`，而 `diceCoefficient` 每条都重新
+拆一遍 query 的 bigram/token，单条约 11 µs × 10k 条。所以在典型 2k TM 的文档里，
+每次点句段也要白付 21 ms。
+
+因此顺序改成：**先做 TM 查找索引，再复测，最后才谈 `bootstrap({ since })`**。
+真要做增量下发，等于为 4.5 ms 的构建成本改协议（`api.js` 响应形状 + `adoptState` + 变更追踪），
+不划算。
+
+P2.1 的做法（下一轮）：exact-key `Map` 快路径、长度带预筛（先按字符数排掉不可能达标的 entry）、
+query 的 bigram/token 只算一次（`similarity.js` 暴露 prepared 变体），目标是 10k TM 下
+`lookupTM` < 10 ms，且结果与现在逐条等价——用随机用例把新旧实现跑对照。
 
 ### P3 顺手做，不单独开轮
 
