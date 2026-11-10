@@ -1,4 +1,6 @@
-    const CSS = `
+import { CAIT_UNIT_VAR, scaleCssLengths } from './helpers.js'
+
+const CSS = `
 .cait-root{--cait-u:1;position:relative;display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden;background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-primary);font-family:inherit;font-size:13px;line-height:1.5;color-scheme:light}
 .cait-root[data-cait-theme="dark"]{color-scheme:dark}
 .cait-root *{box-sizing:border-box}
@@ -495,5 +497,7 @@
 @media(max-width:700px){.cait-body{grid-template-columns:minmax(0,1fr)}.cait-rail{display:none}.cait-editor-col{padding:14px}.cait-topbar{padding:9px 10px}.cait-export-grid{grid-template-columns:1fr}}
 `
 
-    // Every fixed pixel length scales through --cait-u; see helpers.js.
-    const CSS_SCALED = scaleCssLengths(CSS, CAIT_UNIT_VAR)
+// Every fixed pixel length scales through --cait-u; see helpers.js.
+const CSS_SCALED = scaleCssLengths(CSS, CAIT_UNIT_VAR)
+
+export { CSS, CSS_SCALED }

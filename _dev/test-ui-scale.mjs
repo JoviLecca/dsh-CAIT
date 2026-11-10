@@ -204,18 +204,23 @@ assert.deepEqual(
 )
 
 // --- wiring checks ---------------------------------------------------------
-assert.ok(source.includes('const CSS_SCALED = scaleCssLengths(CSS, CAIT_UNIT_VAR)'))
-assert.equal(source.includes("h('style', null, CSS)"), false, 'renders must use CSS_SCALED')
-assert.equal((source.match(/h\('style', null, CSS_SCALED\)/g) || []).length, 3)
+// client.js is a build artifact: esbuild re-prints it, so source-level wiring is
+// asserted on the authored modules and only behaviour is asserted on the bundle.
+const wiring = ['styles.js', 'components.js']
+  .map((name) => fs.readFileSync(new URL(`../client/${name}`, import.meta.url), 'utf8'))
+  .join('\n')
+assert.ok(wiring.includes('const CSS_SCALED = scaleCssLengths(CSS, CAIT_UNIT_VAR)'))
+assert.equal(wiring.includes("h('style', null, CSS)"), false, 'renders must use CSS_SCALED')
+assert.equal((wiring.match(/h\('style', null, CSS_SCALED\)/g) || []).length, 3)
 assert.equal(
-  (source.match(/ref: rootRef/g) || []).length,
+  (wiring.match(/ref: rootRef/g) || []).length,
   3,
   'all three root branches share the ref',
 )
-assert.ok(source.includes('new ResizeObserver(measure)'), 'panel resizes must re-measure')
-assert.ok(source.includes('element.style.setProperty(CAIT_UNIT_VAR, String(unit))'))
+assert.ok(wiring.includes('new ResizeObserver(measure)'), 'panel resizes must re-measure')
+assert.ok(wiring.includes('element.style.setProperty(CAIT_UNIT_VAR, String(unit))'))
 assert.ok(
-  source.includes('calc(${value}px * var(${CAIT_UNIT_VAR}, 1))'),
+  wiring.includes('calc(${value}px * var(${CAIT_UNIT_VAR}, 1))'),
   'inline icon sizes must use the same unit',
 )
 

@@ -67,7 +67,7 @@ for (const name of names) {
   }
 }
 
-const clientText = ['components.js', 'rpc.js', 'entry.js']
+const clientText = ['components.js', 'rpc.js', 'index.js']
   .map((name) => readFileSync(join(projectRoot, 'client', name), 'utf8'))
   .join('\n')
 

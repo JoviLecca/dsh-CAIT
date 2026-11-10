@@ -2,13 +2,14 @@ import js from '@eslint/js'
 import globals from 'globals'
 
 /**
- * 分阶段接入：
- * - 现在覆盖 node 侧（lib / scripts / _dev / index.js）。
- * - client/ 仍是共享作用域的拼接片段，不是独立模块，Batch 1 改成 ESM 后再纳入。
+ * 两套运行环境：
+ * - node 侧：lib / scripts / _dev / index.js（ESM + node globals）
+ * - 浏览器侧：client/（ESM + browser globals，React 通过 import 引入）
+ * client.js 是构建产物，不参与检查。
  */
 export default [
   {
-    ignores: ['client.js', 'client/**', 'node_modules/**', '.npm-cache/**', '_dev/fixtures/**'],
+    ignores: ['client.js', 'node_modules/**', '.npm-cache/**', '_dev/fixtures/**'],
   },
   js.configs.recommended,
   {
@@ -29,6 +30,12 @@ export default [
         },
       ],
       'no-empty': ['error', { allowEmptyCatch: true }],
+    },
+  },
+  {
+    files: ['client/**/*.js'],
+    languageOptions: {
+      globals: { ...globals.browser },
     },
   },
 ]

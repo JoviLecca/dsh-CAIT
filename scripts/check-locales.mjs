@@ -1,10 +1,10 @@
 import { readFileSync, readdirSync } from 'node:fs'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { projectRoot } from './lib/client-source.mjs'
 
 const strict = process.argv.includes('--strict')
-const dictSource = readFileSync(join(projectRoot, 'client', 'locales.js'), 'utf8')
-const { ZH, EN, JA } = new Function(`${dictSource}\nreturn { ZH, EN, JA }`)()
+const { ZH, EN, JA } = await import(pathToFileURL(join(projectRoot, 'client', 'locales.js')).href)
 const DICTS = { zh: ZH, en: EN, ja: JA }
 
 let failed = false

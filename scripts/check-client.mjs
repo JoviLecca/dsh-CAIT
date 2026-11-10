@@ -1,19 +1,18 @@
 import { readFileSync } from 'node:fs'
-import { join } from 'node:path'
-import { buildClientSource, projectRoot } from './lib/client-source.mjs'
+import { buildClientSource, clientBundlePath } from './lib/client-source.mjs'
 
-const expected = buildClientSource()
+const expected = await buildClientSource()
 
 try {
   new Function(expected)
 } catch (error) {
-  console.error(`client/ 片段拼装后语法不合法: ${error.message}`)
+  console.error(`client/ 构建产物语法不合法: ${error.message}`)
   process.exit(1)
 }
 
-const actual = readFileSync(join(projectRoot, 'client.js'), 'utf8')
+const actual = readFileSync(clientBundlePath, 'utf8')
 if (actual === expected) {
-  console.log('client.js 与 client/ 片段一致')
+  console.log('client.js 与 client/ 源码一致')
   process.exit(0)
 }
 

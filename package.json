@@ -43,7 +43,7 @@
     "check:locales": "node scripts/check-locales.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint lib index.js scripts _dev",
+    "lint": "eslint lib index.js scripts _dev client",
     "test": "node scripts/run-tests.mjs",
     "test:one": "node scripts/run-tests.mjs",
     "prepublishOnly": "npm run build:client && npm run check"
@@ -78,6 +78,7 @@
     "@deepseek-ai/schemastery": "^3.19.0",
     "@eslint/js": "^10.0.1",
     "eslint": "^10.14.0",
+    "esbuild": "^0.28.2",
     "globals": "^17.14.0",
     "prettier": "^3.9.10"
   },

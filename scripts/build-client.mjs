@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs'
-import { join } from 'node:path'
-import { buildClientSource, CLIENT_PARTS, projectRoot } from './lib/client-source.mjs'
+import { buildClientSource, clientBundlePath } from './lib/client-source.mjs'
 
-writeFileSync(join(projectRoot, 'client.js'), buildClientSource())
-console.log(`built client.js from ${CLIENT_PARTS.length} fragments`)
+const source = await buildClientSource()
+writeFileSync(clientBundlePath, source, 'utf8')
+console.log(`built client.js (${(source.length / 1024).toFixed(0)} KB)`)
