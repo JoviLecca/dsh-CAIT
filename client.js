@@ -2904,7 +2904,7 @@ function DocumentSourceForm({ t, settings, busy, submitLabel, onSubmit, defaultM
       h("input", {
         ref: inputRef,
         type: "file",
-        accept: ".txt,.md,.markdown,.tmx,.docx,.epub,.csv,.srt,.vtt,.po,.pot,.xliff,.xlf,.sdlxliff,.html,.htm,.json,.rtf,.xlsx,.pptx",
+        accept: ".txt,.md,.markdown,.tmx,.docx,.epub,.csv,.srt,.vtt,.po,.pot,.xliff,.xlf,.sdlxliff,.html,.htm,.json,.rtf,.xlsx,.pptx,.strings,.stringsdict,.resx,.arb,.yaml,.yml,.properties",
         hidden: true,
         onChange: (event) => pickFile(event.target.files?.[0])
       }),
