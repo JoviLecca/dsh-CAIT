@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CatStore } from '../lib/store.js'
 import { STORE_VERSION } from '../lib/limits.js'
+import { DEFAULT_SETTINGS } from '../lib/settings.js'
 
 const silent = { warn() {}, error() {} }
 const roots = []
@@ -236,6 +237,38 @@ try {
     'the draft survives a restart',
   )
   assert.equal(resumed.docs.get(draftId).segments[2].status, 'translated')
+
+  // 8. Settings survive a restart, and settingsForStorage covers every field of
+  // DEFAULT_SETTINGS — a field left out there is written as "missing" and comes
+  // back as its default after a restart (this is how the review route reset).
+  const settingsDir = tempDir()
+  const settingsFile = join(settingsDir, 'store.json')
+  const saving = new CatStore({ dataDir: settingsDir, logger: silent })
+  saving.saveSettings({
+    fuzzyThreshold: 0.55,
+    mt: { provider: 'mock', model: 'cait-mock', temperature: 0.4 },
+    review: { provider: 'deepseek', model: 'chat-pro', temperature: 0.6 },
+  })
+  const storedSettings = JSON.parse(readFileSync(settingsFile, 'utf8')).settings
+  assert.deepEqual(
+    Object.keys(storedSettings).sort(),
+    Object.keys(DEFAULT_SETTINGS).sort(),
+    'settingsForStorage must write every DEFAULT_SETTINGS key',
+  )
+  for (const group of ['preprocess', 'mt', 'review']) {
+    assert.deepEqual(
+      Object.keys(storedSettings[group] ?? {}).sort(),
+      Object.keys(DEFAULT_SETTINGS[group]).sort(),
+      `settingsForStorage must write every ${group} field`,
+    )
+  }
+
+  const reloaded = new CatStore({ dataDir: settingsDir, logger: silent })
+  assert.equal(reloaded.settings.review.provider, 'deepseek')
+  assert.equal(reloaded.settings.review.model, 'chat-pro')
+  assert.equal(reloaded.settings.review.temperature, 0.6)
+  assert.equal(reloaded.settings.fuzzyThreshold, 0.55)
+  assert.equal(reloaded.settings.mt.temperature, 0.4)
 
   console.log('test-persistence: all assertions passed')
 } finally {
