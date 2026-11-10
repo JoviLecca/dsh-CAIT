@@ -1,0 +1,117 @@
+# 下一轮指导（v.1.1.8_beta1 之后）
+
+这份文档是**下一轮工作的唯一入口**：版本约定、优先级、结构红线、工具红线都在这里。
+架构事实（目录、依赖方向、加东西的标准动作）在 [ARCHITECTURE.md](./ARCHITECTURE.md)，
+两份冲突时以本文为准。上一份执行计划 `REFACTOR-PLAN.md` 的批次已收尾，已删除；它的
+「结构约定」一节已经并进 `ARCHITECTURE.md`。
+
+## 0. 版本与发布约定
+
+- 这一轮的快照编号是 **`v.1.1.8_beta1`**（注意是 `v.` 开头、下划线接 `beta1`），
+  `package.json` 里写 `1.1.8-beta1`（npm 只接受 semver，下划线不可用，两者是同一个版本）。
+- **只推 tag，不发 Release。** 目的只是给这一轮结构治理留一个不丢的存档点。
+- 已核实：`.github/workflows/publish.yml` 只在 `release: published` 与手动 `workflow_dispatch`
+  时触发，**推 tag 不会发 npm**。所以「不打 Release」就是「不会发布」。
+- 下一次真正要发版时，再按老流程：改 `package.json` → 打 `v1.1.9` → 建 Release → 由 CI 发 npm。
+
+## 1. 这一轮已经做完了什么
+
+从 `ab9ea1d`（加护栏）到本快照共 18 个提交，`npm run check` 九步全绿、49 个测试套件通过：
+
+| 面 | 结果 |
+| --- | --- |
+| 工程护栏 | prettier + eslint + 5 个契约检查（locales/store/formats/shared/api/client）+ 测试 runner + CI |
+| 客户端 | 六片段 → ESM + esbuild；`components.js` 6069 行 → 9 个模块；`Workbench` → controller/view 两层 |
+| 服务端 | `store.js` 1400 → 156 行；27 个 mixin / 130 个方法走注册表，重名在装配期抛错 |
+| 格式层 | 导出 370 行 if 链 → 适配器注册表；导入 218 行 if 链 → 一类型一 reader；`import-export.js` 982 → 338 行 |
+| 同步 | 轮询先打 `currentRevision`（<100 B），版本没变不再拉整份快照 |
+| 顺带修的真 bug | 预翻译循环里 `dirty` 读到旧闭包会覆盖用户输入；13 处裸 `setData` 丢草稿；Icon 重复键；CatPanel 死状态；本地化文件不在导入框里 |
+
+## 2. 下一轮的优先级
+
+### P1 错误消息国际化（用户能感觉到，且不动协议）
+
+现状：服务端 121+ 处 `CatError('CODE', '中文文案')`，而客户端直接把 `error.message` 弹出来：
+
+```js
+// client/workbench/controller.js
+const report = (error) => notify(error?.message || t('toast.error'), 'error')
+```
+
+结果：英文/日文用户操作失败时看到中文。
+
+做法（按此顺序，每步都能单独提交）：
+
+1. `lib/errors.js` 里让 `CatError` 稳定带 `code`（现在就有），并新增 `lib/error-messages.js`：
+   `ERROR_MESSAGES = { CODE: { zh, en, ja } }`，只覆盖**会展示给用户**的 code。
+2. 客户端 `report()` 改成 `t('error.' + error.code, { message: error.message })`，字典缺 key 时
+   回退 `error.message`（服务端中文兜底，行为不比现在差）。
+3. `client/locales.js` 的三本字典补 `error.*`；`check:locales` 已经会校验三语键齐平与占位符一致，
+   新 key 缺语言会直接失败——这条已有守卫不需要重写。
+4. 服务端可以继续保持中文 message（作为兜底与日志），**不要**为了 i18n 去删中文文案。
+
+### P2 先测量，再决定要不要改协议
+
+不要凭"线性变慢"就动 `bootstrap()`。先写一个只读基准脚本（放 `scripts/` 或 `%TEMP%`）：
+
+- 造 20k 句段文档 + 10k 条 TM，量：`confirmSegment` 一次调用的耗时与响应字节数；
+- 量 `segmentDetail`（每次选句段触发的全库 TM 扫描）在 10k TM 下的耗时；
+- 量 `bootstrap()` 的空载与满载耗时。
+
+拿到数字再判断：如果 20k 句段下一次写操作 < 200ms 且 < 2MB，**就不改协议**，把这条划掉；
+如果明显超，再设计 `bootstrap({ since })`，并且单独一轮做（会同时改 `api.js` 响应形状、
+`controller` 的 `adoptState`、以及变更追踪）。
+
+### P3 顺手做，不单独开轮
+
+- `lib/store-utils.js`（40 个导出、23 个 importers）按职责拆开——**跟着下一次改这些 import 的功能一起做**；
+- `lib/tools.js`（1267 行）21 个工具的 `try/catch + failure()` 样板收敛成一个包装；
+- 约 31 个疑似死 i18n 键；`locale/*.json` 与 `client/locales.js` 重复的 5 个 `match.*` 键合并成一条通道；
+- `import-export.js` 改名（现在只剩附件挂载、TMX 导入、XLIFF 审校，名字已名不副实）。
+
+### 明确不做
+
+**不要把 `controller.js` 的 35 个 `useState` 按面板拆成多个 hook。** 现在 controller/view 的边界
+是清楚的；再拆每个 hook 都要接 `data / busy / notify / report / adoptState / replaceRemoteState`
+一长串依赖，只是把属性透传从组件层搬到 hook 层，同时引入 hook 顺序这种隐式契约。收益低、风险高。
+
+## 3. 结构红线（新功能必须遵守）
+
+细节见 `ARCHITECTURE.md` §4/§5，这里只列最容易被忘的四条：
+
+1. **依赖方向**：`client/workbench/**` 不许 import `components/**`；`components/**` 不许 import
+   `workbench/**`（`workbench.js` 除外）；`helpers/rpc/locales/react` 是叶子，不许 import 相对路径。
+   `eslint` 的 `no-restricted-imports` 已经在守，别绕过。
+2. **单一注册点**：新 RPC 要过 `createHandlers` + `MUTATIONS`；新 store 方法进已有的 `*Methods`
+   模块（不要新建 mixin，也不要往 `store.js` 类体堆）；新格式进 `EXPORTERS` / import 表。
+3. **新增文案走 `t(key, vars)`**，不许 `t(key).replace('{x}')`——`check:locales` 会查占位符一致性。
+4. **改客户端必须 `npm run build:client`**，`check:client` 比对的是产物与源码是否一致。
+
+提交纪律：一个提交一个主题、`npm run check` 全绿再提交、不做"顺手重构 + 功能"混合提交。
+
+## 4. 自我校准：这一轮踩过的工具坑（硬性红线）
+
+这一轮 18 个提交里，有两次"文件被我写坏"的事故，**都不是设计判断错，而是改文件的方式错**。
+下一轮直接按下面的规则做，不要再重复：
+
+1. **绝对不要用 PowerShell 的 `Set-Content` / `Get-Content | -replace | Set-Content` 改源码。**
+   PS 5.1 按 ANSI 解码 UTF-8 文件：中文注释变 GBK 乱码、注释吞掉换行、`export function` 被并进
+   注释行。本轮 `client/components/workbench.js` 与 `package.json` 各被弄坏一次。
+2. **批量改写只走两条路**：单个位置用 `edit` / `write` 工具；成规模的机械改写写一个 Node 脚本
+   （`readFileSync` / `writeFileSync`，`split(/\r?\n/)` 处理 CRLF，脚本放 `%TEMP%` 或
+   `scripts/_*.mjs`，跑完即删）。
+3. **不要用 `Get-Content | Out-String` 判断文件是否乱码。** 控制台解码会骗人：本轮曾误报
+   「JA 字典乱码」「`lib/tools.js` 乱码」两次，实际文件都是合法 UTF-8。要判定就实测：
+   `node -e` 或临时 `.mjs` 读文件数 U+FFFD，或直接看 `git diff`。
+4. **多行提交信息用 `git commit -F <文件>`**，别在 pwsh 里内联长 message（PS 会把引号拆成 pathspec）。
+5. **本机 pwsh 是 Low 完整性**：写 `.git` / 需要 node 写盘（prettier、build、git commit/push）时
+   单次 `danger-full-access`；改工作区源码优先用 `edit`/`write` 工具，它走宿主进程不受这个限制。
+
+## 5. 验收门槛（每批收尾都跑）
+
+```bash
+npm run check        # lint + format:check + locales + store + formats + shared + api + client + test
+npm run build:client # 改过 client/** 时
+```
+
+`check` 全绿才算做完；新增能力要配对应的契约检查或测试，不要只靠"我看了一眼"。
