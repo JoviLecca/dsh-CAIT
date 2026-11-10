@@ -4,6 +4,17 @@ All notable changes to CAIT are documented here. The project follows
 [Semantic Versioning](https://semver.org/) and the format is based on
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [Unreleased]
+
+### Fixed
+
+- Error messages now follow the interface language. The server keeps sending a
+  stable `code`, and the workbench translates it through `client/errors.js`
+  (exact entry, then a family rule, then the server message) instead of showing
+  the Chinese `message` to English and Japanese users.
+- `npm run check` gains `check:errors`, which fails when a code raised in `lib/`
+  has no copy in all three dictionaries and no category rule to fall back on.
+
 ## [1.1.7] - 2026-11-10
 
 Format-depth release: DOCX tables, headers, footers, and notes; Apple/Android

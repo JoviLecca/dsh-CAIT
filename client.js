@@ -227,7 +227,7 @@ var ZH = {
   "common.refresh": "刷新",
   "storage.saveFailed": "保存失败：",
   "storage.stale": "数据已在其他窗口或 agent 操作中更新；当前草稿未被覆盖。保存后可刷新同步。",
-  "error.load": "无法加载 CAIT 工作台",
+  "workbench.loadFailed": "无法加载 CAIT 工作台",
   "rail.title": "句段",
   "rail.search": "筛选句段…",
   "rail.empty": "没有匹配的句段",
@@ -630,7 +630,7 @@ var EN = {
   "common.refresh": "Refresh",
   "storage.saveFailed": "Save failed: ",
   "storage.stale": "Data changed in another window or by an agent. Your draft is preserved; save and refresh to sync.",
-  "error.load": "Could not load the CAIT workbench",
+  "workbench.loadFailed": "Could not load the CAIT workbench",
   "rail.title": "Segments",
   "rail.search": "Filter segments…",
   "rail.empty": "No matching segments",
@@ -1033,7 +1033,7 @@ var JA = {
   "common.refresh": "更新",
   "storage.saveFailed": "保存に失敗しました：",
   "storage.stale": "データは別ウィンドウまたは agent の操作で更新されました。現在の下書きは上書きされていません。保存後に更新すると同期されます。",
-  "error.load": "CAIT ワークベンチを読み込めません",
+  "workbench.loadFailed": "CAIT ワークベンチを読み込めません",
   "rail.title": "セグメント",
   "rail.search": "セグメントを絞り込む…",
   "rail.empty": "一致するセグメントはありません",
@@ -1934,6 +1934,156 @@ Object.assign(JA, {
   "modal.confirm.mergeCue": "現在のキューと次を結合し、外側の時間範囲を使います。続行しますか？",
   "modal.confirm.splitCue": "現在のキューの中央で二分割し、訳文を比率で分けます。続行しますか？"
 });
+Object.assign(ZH, {
+  "error.generic": "操作失败。",
+  "error.parse": "文件解析失败。",
+  "error.noUnits": "文件里没有可导入的内容。",
+  "error.empty": "内容为空。",
+  "error.notFound": "找不到对应的内容。",
+  "error.notMounted": "相关记忆库或术语库尚未挂载。",
+  "error.bound": "还没有绑定记忆库。",
+  "error.tooLarge": "内容超出大小上限。",
+  "error.tooLong": "文本超出长度上限。",
+  "error.tooMany": "数量超出上限。",
+  "error.invalid": "输入无效。",
+  "error.failed": "操作失败，请稍后重试。",
+  "error.required": "缺少必要的信息。",
+  "error.unsupported": "不支持该格式或类型。",
+  "error.mismatch": "内容对不上，无法继续。",
+  "error.NO_DOCUMENT": "尚未打开任何文档。",
+  "error.NO_SEGMENTS": "当前文档还没有句段。",
+  "error.NO_SUGGESTION": "没有可用的建议译文。",
+  "error.SEGMENT_LOCKED": "该句段已锁定，请先解锁。",
+  "error.SEGMENT_OUT_OF_RANGE": "该句段不存在。",
+  "error.ALREADY_CONFIRMED": "该句段已经确认。",
+  "error.NOT_CONFIRMED": "该句段尚未确认。",
+  "error.EMPTY_FILE": "文件内容为空。",
+  "error.EMPTY_TERM": "术语不能为空。",
+  "error.EMPTY_TM_ENTRY": "记忆库条目不能为空。",
+  "error.EMPTY_NOTE": "备注内容为空。",
+  "error.EMPTY_QUERY": "请输入要查找的内容。",
+  "error.EMPTY_SEGMENT": "句段内容为空。",
+  "error.EMPTY_SOURCE": "原文为空。",
+  "error.EMPTY_TARGET": "译文为空。",
+  "error.EMPTY_BATCH": "没有可分批处理的内容。",
+  "error.EMPTY_GLOSSARY_IMPORT": "没有可导入的术语。",
+  "error.EMPTY_GLOSSARY_MOUNT": "还没有挂载术语库。",
+  "error.EMPTY_TM_MOUNT": "还没有挂载记忆库。",
+  "error.EMPTY_REPLACE_QUERY": "查找内容不能为空。",
+  "error.EMPTY_REPLACE_UNDO": "没有可撤销的替换。",
+  "error.INVALID_REGEX": "正则表达式无效。",
+  "error.ALIGN_INPUT": "对齐输入无效。",
+  "error.DUPLICATE_TM_ENTRY": "记忆库里已经有相同的原文。",
+  "error.SAME_TM_LIBRARY": "不能选择同一个记忆库。",
+  "error.PLACEHOLDER_MISMATCH": "占位符与原文不一致。",
+  "error.REPLACE_UNDO_MISMATCH": "文档已变化，无法撤销上次替换。",
+  "error.LOCALIZATION_YAML_NESTED": "不支持嵌套的 YAML 字符串文件。",
+  "error.UNKNOWN_METHOD": "该操作不受支持。",
+  "error.REVIEW_UNAVAILABLE": "没有可用的审校服务。",
+  "error.NETWORK": "无法连接到 CAIT 服务。",
+  "error.HTTP": "服务返回 HTTP {status}。",
+  "error.CLIPBOARD": "当前环境不支持剪贴板。"
+});
+Object.assign(EN, {
+  "error.generic": "Something went wrong.",
+  "error.parse": "That file could not be parsed.",
+  "error.noUnits": "There is nothing to import in that file.",
+  "error.empty": "There is nothing here.",
+  "error.notFound": "That item no longer exists.",
+  "error.notMounted": "The memory or glossary is not mounted.",
+  "error.bound": "No memory is bound yet.",
+  "error.tooLarge": "That is over the size limit.",
+  "error.tooLong": "That text is too long.",
+  "error.tooMany": "That is over the limit.",
+  "error.invalid": "That input is not valid.",
+  "error.failed": "That failed; please try again.",
+  "error.required": "Some required information is missing.",
+  "error.unsupported": "That format or type is not supported.",
+  "error.mismatch": "That content does not line up, so it cannot continue.",
+  "error.NO_DOCUMENT": "No document is open.",
+  "error.NO_SEGMENTS": "This document has no segments yet.",
+  "error.NO_SUGGESTION": "No suggested translation is available.",
+  "error.SEGMENT_LOCKED": "This segment is locked; unlock it first.",
+  "error.SEGMENT_OUT_OF_RANGE": "That segment does not exist.",
+  "error.ALREADY_CONFIRMED": "This segment is already confirmed.",
+  "error.NOT_CONFIRMED": "This segment is not confirmed yet.",
+  "error.EMPTY_FILE": "That file is empty.",
+  "error.EMPTY_TERM": "The term cannot be empty.",
+  "error.EMPTY_TM_ENTRY": "The memory entry cannot be empty.",
+  "error.EMPTY_NOTE": "The note is empty.",
+  "error.EMPTY_QUERY": "Enter something to search for.",
+  "error.EMPTY_SEGMENT": "That segment is empty.",
+  "error.EMPTY_SOURCE": "The source text is empty.",
+  "error.EMPTY_TARGET": "The translation is empty.",
+  "error.EMPTY_BATCH": "There is nothing to process in batches.",
+  "error.EMPTY_GLOSSARY_IMPORT": "There are no terms to import.",
+  "error.EMPTY_GLOSSARY_MOUNT": "No glossary is mounted.",
+  "error.EMPTY_TM_MOUNT": "No memory is mounted.",
+  "error.EMPTY_REPLACE_QUERY": "The search text cannot be empty.",
+  "error.EMPTY_REPLACE_UNDO": "There is no replacement to undo.",
+  "error.INVALID_REGEX": "That regular expression is not valid.",
+  "error.ALIGN_INPUT": "The alignment input is not valid.",
+  "error.DUPLICATE_TM_ENTRY": "The memory already has this source text.",
+  "error.SAME_TM_LIBRARY": "Pick two different memories.",
+  "error.PLACEHOLDER_MISMATCH": "The placeholders do not match the source.",
+  "error.REPLACE_UNDO_MISMATCH": "The document changed, so the last replacement cannot be undone.",
+  "error.LOCALIZATION_YAML_NESTED": "Nested YAML string files are not supported.",
+  "error.UNKNOWN_METHOD": "That operation is not supported.",
+  "error.REVIEW_UNAVAILABLE": "No review service is available.",
+  "error.NETWORK": "Could not reach the CAIT service.",
+  "error.HTTP": "The service returned HTTP {status}.",
+  "error.CLIPBOARD": "Clipboard access is not available here."
+});
+Object.assign(JA, {
+  "error.generic": "操作に失敗しました。",
+  "error.parse": "ファイルを解析できませんでした。",
+  "error.noUnits": "インポートできる内容がありません。",
+  "error.empty": "内容が空です。",
+  "error.notFound": "対象が見つかりません。",
+  "error.notMounted": "メモリまたは用語集がマウントされていません。",
+  "error.bound": "メモリが紐付いていません。",
+  "error.tooLarge": "サイズ上限を超えています。",
+  "error.tooLong": "テキストが長すぎます。",
+  "error.tooMany": "上限を超えています。",
+  "error.invalid": "入力が正しくありません。",
+  "error.failed": "失敗しました。もう一度お試しください。",
+  "error.required": "必要な情報が不足しています。",
+  "error.unsupported": "その形式には対応していません。",
+  "error.mismatch": "内容が一致しないため続行できません。",
+  "error.NO_DOCUMENT": "文書が開かれていません。",
+  "error.NO_SEGMENTS": "この文書にはまだセグメントがありません。",
+  "error.NO_SUGGESTION": "利用できる提案訳がありません。",
+  "error.SEGMENT_LOCKED": "このセグメントはロックされています。先に解除してください。",
+  "error.SEGMENT_OUT_OF_RANGE": "そのセグメントは存在しません。",
+  "error.ALREADY_CONFIRMED": "このセグメントは確認済みです。",
+  "error.NOT_CONFIRMED": "このセグメントはまだ確認されていません。",
+  "error.EMPTY_FILE": "ファイルの内容が空です。",
+  "error.EMPTY_TERM": "用語を入力してください。",
+  "error.EMPTY_TM_ENTRY": "メモリの項目を入力してください。",
+  "error.EMPTY_NOTE": "メモの内容が空です。",
+  "error.EMPTY_QUERY": "検索する語句を入力してください。",
+  "error.EMPTY_SEGMENT": "セグメントの内容が空です。",
+  "error.EMPTY_SOURCE": "原文が空です。",
+  "error.EMPTY_TARGET": "訳文が空です。",
+  "error.EMPTY_BATCH": "バッチ処理する内容がありません。",
+  "error.EMPTY_GLOSSARY_IMPORT": "インポートできる用語がありません。",
+  "error.EMPTY_GLOSSARY_MOUNT": "用語集がマウントされていません。",
+  "error.EMPTY_TM_MOUNT": "メモリがマウントされていません。",
+  "error.EMPTY_REPLACE_QUERY": "検索語を入力してください。",
+  "error.EMPTY_REPLACE_UNDO": "取り消せる置換がありません。",
+  "error.INVALID_REGEX": "正規表現が正しくありません。",
+  "error.ALIGN_INPUT": "アラインメントの入力が正しくありません。",
+  "error.DUPLICATE_TM_ENTRY": "同じ原文がメモリにあります。",
+  "error.SAME_TM_LIBRARY": "同じメモリは指定できません。",
+  "error.PLACEHOLDER_MISMATCH": "プレースホルダーが原文と一致しません。",
+  "error.REPLACE_UNDO_MISMATCH": "文書が変わったため、直前の置換を取り消せません。",
+  "error.LOCALIZATION_YAML_NESTED": "ネストした YAML 文字列ファイルには対応していません。",
+  "error.UNKNOWN_METHOD": "その操作には対応していません。",
+  "error.REVIEW_UNAVAILABLE": "利用できるレビューサービスがありません。",
+  "error.NETWORK": "CAIT サービスに接続できません。",
+  "error.HTTP": "サービスが HTTP {status} を返しました。",
+  "error.CLIPBOARD": "この環境ではクリップボードを使えません。"
+});
 var UI_LANGS = [
   ["auto", ""],
   ["zh", "简体中文"],
@@ -2474,11 +2624,18 @@ var CSS_SCALED = scaleCssLengths(CSS, CAIT_UNIT_VAR);
 
 // client/rpc.js
 var API = "/cait/api/rpc";
-var RpcError = class extends Error {
-  constructor(message, code) {
+var ClientError = class extends Error {
+  constructor(message, code, vars) {
     super(message);
-    this.name = "RpcError";
+    this.name = "ClientError";
     this.code = code;
+    this.vars = vars;
+  }
+};
+var RpcError = class extends ClientError {
+  constructor(message, code, vars) {
+    super(message, code, vars);
+    this.name = "RpcError";
   }
 };
 async function rpc(method, params = {}) {
@@ -2502,7 +2659,7 @@ async function rpc(method, params = {}) {
   }
   if (!response.ok || !payload?.ok) {
     const message = payload?.error?.message || `CAIT 服务返回 HTTP ${response.status}`;
-    throw new RpcError(message, payload?.error?.code || "HTTP");
+    throw new RpcError(message, payload?.error?.code || "HTTP", { status: response.status });
   }
   return payload.data;
 }
@@ -2554,7 +2711,9 @@ function decodeBase64(value) {
   return bytes;
 }
 async function copyText(value) {
-  if (!navigator.clipboard?.writeText) throw new Error("当前环境不支持剪贴板。");
+  if (!navigator.clipboard?.writeText) {
+    throw new ClientError("当前环境不支持剪贴板。", "CLIPBOARD");
+  }
   await navigator.clipboard.writeText(value);
 }
 
@@ -7297,6 +7456,45 @@ function AnalysisModal({ t, analysis, busy, onClose }) {
   );
 }
 
+// client/errors.js
+var ERROR_FAMILIES = [
+  { prefix: "INVALID_", key: "error.invalid" },
+  { prefix: "MISSING_", key: "error.required" },
+  { prefix: "TOO_MANY_", key: "error.tooMany" },
+  { suffix: "_PARSE", key: "error.parse" },
+  { suffix: "_NO_UNITS", key: "error.noUnits" },
+  { suffix: "_NOT_FOUND", key: "error.notFound" },
+  { suffix: "_NOT_MOUNTED", key: "error.notMounted" },
+  { suffix: "_BOUND", key: "error.bound" },
+  { suffix: "_TOO_LARGE", key: "error.tooLarge" },
+  { suffix: "_TOO_LONG", key: "error.tooLong" },
+  { suffix: "_TOO_MANY", key: "error.tooMany" },
+  { suffix: "_FAILED", key: "error.failed" },
+  { suffix: "_REQUIRED", key: "error.required" },
+  { suffix: "_UNSUPPORTED", key: "error.unsupported" },
+  { suffix: "_INVALID", key: "error.invalid" },
+  { suffix: "_EMPTY", key: "error.empty" },
+  { suffix: "_MISMATCH", key: "error.mismatch" }
+];
+function errorKeys(code) {
+  const value = String(code || "");
+  const keys = [];
+  if (!value) return keys;
+  keys.push(`error.${value}`);
+  const family = ERROR_FAMILIES.find(
+    (rule) => rule.prefix ? value.startsWith(rule.prefix) : value.endsWith(rule.suffix)
+  );
+  if (family) keys.push(family.key);
+  return keys;
+}
+function describeError(error, t, fallback) {
+  for (const key of errorKeys(error?.code)) {
+    const text = t(key, error?.vars);
+    if (text && text !== key) return text;
+  }
+  return error?.message || fallback || t("error.generic");
+}
+
 // client/workbench/controller.js
 function useWorkbenchController({ i18n, translate }) {
   const [data, setData] = useState(null);
@@ -7404,7 +7602,7 @@ function useWorkbenchController({ i18n, translate }) {
     else setData(next);
   };
   const notify = (message, kind = "success") => setToast({ message, kind, id: Date.now() });
-  const report = (error) => notify(error?.message || t("toast.error"), "error");
+  const report = (error) => notify(describeError(error, t), "error");
   const importNotice = (result, fallback) => {
     const warning = result?.warnings?.[0];
     if (warning) {
@@ -7498,7 +7696,7 @@ function useWorkbenchController({ i18n, translate }) {
       setLoadError("");
     }).catch((error) => {
       if (!alive) return;
-      setLoadError(error?.message || t("error.load"));
+      setLoadError(describeError(error, t, t("workbench.loadFailed")));
     }).finally(() => {
       if (alive) setLoading(false);
     });
@@ -7607,7 +7805,7 @@ function useWorkbenchController({ i18n, translate }) {
           setTmError("");
         }
       }).catch((error) => {
-        if (!cancelled) setTmError(error?.message || t("toast.error"));
+        if (!cancelled) setTmError(describeError(error, t));
       });
     }, 260);
     return () => {
@@ -8365,7 +8563,7 @@ function useWorkbenchController({ i18n, translate }) {
       setMt(result);
       notify(t("toast.mtReady"), "info");
     } catch (error) {
-      setMtError(error?.message || t("toast.error"));
+      setMtError(describeError(error, t));
     } finally {
       setMtBusy(false);
     }

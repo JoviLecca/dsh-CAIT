@@ -10,6 +10,7 @@ import {
   DEFAULT_FUZZY_THRESHOLD,
 } from '../helpers.js'
 import { rpc, filePayload, downloadFile, decodeBase64, copyText } from '../rpc.js'
+import { describeError } from '../errors.js'
 import { UI_LANG_CODES } from '../locales.js'
 
 // Workbench 的状态与动作。渲染层只从这里取数据，不直接调用 rpc。
@@ -139,7 +140,7 @@ export function useWorkbenchController({ i18n, translate }) {
   }
 
   const notify = (message, kind = 'success') => setToast({ message, kind, id: Date.now() })
-  const report = (error) => notify(error?.message || t('toast.error'), 'error')
+  const report = (error) => notify(describeError(error, t), 'error')
   const importNotice = (result, fallback) => {
     const warning = result?.warnings?.[0]
     if (warning) {
@@ -253,7 +254,7 @@ export function useWorkbenchController({ i18n, translate }) {
       })
       .catch((error) => {
         if (!alive) return
-        setLoadError(error?.message || t('error.load'))
+        setLoadError(describeError(error, t, t('workbench.loadFailed')))
       })
       .finally(() => {
         if (alive) setLoading(false)
@@ -383,7 +384,7 @@ export function useWorkbenchController({ i18n, translate }) {
           }
         })
         .catch((error) => {
-          if (!cancelled) setTmError(error?.message || t('toast.error'))
+          if (!cancelled) setTmError(describeError(error, t))
         })
     }, 260)
     return () => {
@@ -1193,7 +1194,7 @@ export function useWorkbenchController({ i18n, translate }) {
       setMt(result)
       notify(t('toast.mtReady'), 'info')
     } catch (error) {
-      setMtError(error?.message || t('toast.error'))
+      setMtError(describeError(error, t))
     } finally {
       setMtBusy(false)
     }

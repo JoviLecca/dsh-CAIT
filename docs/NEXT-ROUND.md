@@ -29,26 +29,34 @@
 
 ## 2. 下一轮的优先级
 
-### P1 错误消息国际化（用户能感觉到，且不动协议）
+### P1 错误消息国际化（已完成，2026-11-10）
 
-现状：服务端 121+ 处 `CatError('CODE', '中文文案')`，而客户端直接把 `error.message` 弹出来：
+现状（改之前）：服务端 121+ 处 `CatError('CODE', '中文文案')`，而客户端直接把 `error.message` 弹出来，
+英文/日文用户操作失败时看到中文。
 
-```js
-// client/workbench/controller.js
-const report = (error) => notify(error?.message || t('toast.error'), 'error')
-```
+实际做法（与原计划不同，记录原因）：
 
-结果：英文/日文用户操作失败时看到中文。
+1. **没有建 `lib/error-messages.js` 的「一码一条」大表**。116 个错误码里大多数只是措辞差异
+   （`XLSX_PARSE` / `PPTX_PARSE` / `EPUB_PARSE` 读起来是一样的），写成 116×3 条是第二份需要同步的
+   注册表，新增错误时最容易忘。改成 `client/errors.js` 里 16 条**类别规则**：
+   前缀 `INVALID_` / `MISSING_` / `TOO_MANY_`，后缀 `_PARSE`、`_NO_UNITS`、`_NOT_FOUND`、
+   `_NOT_MOUNTED`、`_BOUND`、`_TOO_LARGE`、`_TOO_LONG`、`_TOO_MANY`、`_FAILED`、`_REQUIRED`、
+   `_UNSUPPORTED`、`_INVALID`、`_EMPTY`、`_MISMATCH`。
+   专属键优先，类别兜底，所以想精修某个码时随时加一条即可。
+2. **契约由脚本守**：`scripts/check-errors.mjs` 扫描 `lib/` 里真正会被抛出的码（含 `fail('CODE')`、
+   `editError('CODE')`、`parseOrFail(parse, 'CODE')` 这类助手），要求每个码都能在字典里取到文案——
+   专属键或类别键都行，取不到就 `npm run check` 失败。字典里多余的 `error.*` 孤儿键同样判失败。
+3. 客户端统一走 `describeError(error, t)`：专属键 → 类别键 → 服务端 message → `error.generic`。
+   保留 message 作为倒数第二层，是为了让「客户端还没认识的新码」仍然能显示一句可读的话，
+   而不是笼统的「操作失败」。四个展示点（`report`、`setLoadError`、`setTmError`、`setMtError`）都已切换。
+4. `client/rpc.js` 的三条本地中文（网络失败 / HTTP 状态 / 剪贴板）改成带 code 的 `ClientError`
+   （`NETWORK` / `HTTP` / `CLIPBOARD`），HTTP 那条用 `{status}` 占位符，由 `t(key, vars)` 填充。
+5. 字典加在 `client/locales.js` 尾部三个 `Object.assign` 块里，共 48 键 × 3 语言；
+   顺带把不是错误码的 UI 键 `error.load` 改名 `workbench.loadFailed`，避免和 `error.*` 命名空间混淆。
+6. 服务端中文 message 全部保留（兜底与日志用），没有为了 i18n 去删。
 
-做法（按此顺序，每步都能单独提交）：
-
-1. `lib/errors.js` 里让 `CatError` 稳定带 `code`（现在就有），并新增 `lib/error-messages.js`：
-   `ERROR_MESSAGES = { CODE: { zh, en, ja } }`，只覆盖**会展示给用户**的 code。
-2. 客户端 `report()` 改成 `t('error.' + error.code, { message: error.message })`，字典缺 key 时
-   回退 `error.message`（服务端中文兜底，行为不比现在差）。
-3. `client/locales.js` 的三本字典补 `error.*`；`check:locales` 已经会校验三语键齐平与占位符一致，
-   新 key 缺语言会直接失败——这条已有守卫不需要重写。
-4. 服务端可以继续保持中文 message（作为兜底与日志），**不要**为了 i18n 去删中文文案。
+守卫：`check:errors` 已并入 `npm run check`；`_dev/test-errors.mjs` 断言
+「专属键优先 / 类别兜底 / 未知码回退 message / 占位符被填充 / 116 个码 × 3 语言都有文案」。
 
 ### P2 先测量，再决定要不要改协议
 
@@ -110,8 +118,16 @@ const report = (error) => notify(error?.message || t('toast.error'), 'error')
 ## 5. 验收门槛（每批收尾都跑）
 
 ```bash
-npm run check        # lint + format:check + locales + store + formats + shared + api + client + test
+npm run check        # lint + format:check + locales + errors + store + formats + shared + api + client + test
 npm run build:client # 改过 client/** 时
 ```
 
 `check` 全绿才算做完；新增能力要配对应的契约检查或测试，不要只靠"我看了一眼"。
+
+### 进度记录
+
+| 日期 | 内容 | 提交 |
+| --- | --- | --- |
+| 2026-11-10 | 快照 `v.1.1.8_beta1` | `68403ad` + tag |
+| 2026-11-10 | P1 错误消息 i18n：类别规则 + `describeError` + `check:errors` + `test-errors` | 见下文 |
+

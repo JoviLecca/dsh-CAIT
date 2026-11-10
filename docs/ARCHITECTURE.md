@@ -69,6 +69,12 @@ index.js  apply(ctx)
 对得上、客户端 `rpc('...')` 的方法名都存在。**动态方法名（三元/变量）无法静态核对**，
 脚本会把它们打印出来，改动时要人工确认。
 
+错误信封是 `{ code, message }`（`lib/errors.js` 的 `CatError`）。`code` 是稳定契约，`message`
+只是兜底：界面统一走 `client/errors.js` 的 `describeError(error, t)`，按 `error.<CODE>` →
+类别规则（`*_PARSE`、`*_NOT_FOUND`、`TOO_MANY_*` 等）→ 服务端 message → `error.generic`
+的顺序取文案。新增错误码时，要么在 `client/locales.js` 给它一条专属文案，要么让后缀/前缀
+落进已有类别，否则 `check:errors` 直接失败。
+
 ## 5. 客户端结构
 
 `client/` 是真正的 ESM，依赖方向自上而下（`eslint.config.js` 用 `no-restricted-imports` 守着）：
@@ -78,7 +84,7 @@ client/index.js            注册 DSH 面板、i18n 适配（entry）
   ├─ workbench/controller.js  useWorkbenchController：全部状态与动作（数据层/动作层）
   ├─ workbench.js            纯视图：h() 树，只读 controller 的返回值
   └─ components/*.js         各界面：base/shell/rail/editor/panels/forms/dialogs/pages
-        └─ helpers.js  rpc.js  locales.js  react.js   （叶子，不得 import 上层）
+        └─ helpers.js  rpc.js  errors.js  locales.js  react.js   （叶子，不得 import 上层）
 ```
 
 - `components/**` 不得 import `workbench/**`；`workbench/**` 不得 import `components/**`
@@ -103,8 +109,8 @@ client/index.js            注册 DSH 面板、i18n 适配（entry）
 - 界面链路用 `_dev/lib/workbench-harness.mjs` 在 jsdom 里挂载 `client.js` 产物，配真实 store
   （`test-workbench-mount.mjs`、`test-workbench-flow.mjs` 是范例）
 
-`npm run check` = lint + 格式检查 + 五个契约检查（locales/store/formats/api/client）+ 全量测试，
-CI 与 `prepublishOnly` 都跑它。
+`npm run check` = lint + 格式检查 + 七个契约检查（locales/errors/store/formats/shared/api/client）
++ 全量测试，CI 与 `prepublishOnly` 都跑它。
 
 ## 7. 加东西的标准动作
 
@@ -113,6 +119,7 @@ CI 与 `prepublishOnly` 都跑它。
 | 新 RPC | store 方法 → `createHandlers` → 写操作登记 `MUTATIONS` → 客户端 `rpc()` | `check:api` |
 | 新 store 方法 | 加进对应的 `*Methods` 模块；**不要**新建 mixin，也**不要**往 `store.js` 类体堆 | `check:store` |
 | 新界面文案 | `client/locales.js` 的 ZH/EN/JA 三处 | `check:locales` |
+| 新错误码 | `throw new CatError('CODE', …)`；文案落进已有类别，或在三本字典加 `error.CODE` | `check:errors` |
 | 新导出格式 | `lib/export-document.js` 加适配器 + `EXPORTERS` 一项 + 导出对话框一行 | `check:formats` |
 | 新导入格式 | `lib/import-file.js` 的表项（或 reader）+ 导入框 `accept` | `check:formats` |
 | 新 store 字段 | 构造函数 → `persist()` → `restore()` 迁移 → `bootstrap()` | `npm test` |

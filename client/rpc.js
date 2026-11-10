@@ -1,10 +1,21 @@
 const API = '/cait/api/rpc'
 
-class RpcError extends Error {
-  constructor(message, code) {
+// `code` is what the UI translates (client/errors.js); `message` is the fallback
+// shown verbatim when a code has no copy yet, and `vars` fills placeholders such
+// as the HTTP status.
+class ClientError extends Error {
+  constructor(message, code, vars) {
     super(message)
-    this.name = 'RpcError'
+    this.name = 'ClientError'
     this.code = code
+    this.vars = vars
+  }
+}
+
+class RpcError extends ClientError {
+  constructor(message, code, vars) {
+    super(message, code, vars)
+    this.name = 'RpcError'
   }
 }
 
@@ -31,7 +42,7 @@ async function rpc(method, params = {}) {
 
   if (!response.ok || !payload?.ok) {
     const message = payload?.error?.message || `CAIT 服务返回 HTTP ${response.status}`
-    throw new RpcError(message, payload?.error?.code || 'HTTP')
+    throw new RpcError(message, payload?.error?.code || 'HTTP', { status: response.status })
   }
   return payload.data
 }
@@ -95,11 +106,14 @@ function decodeBase64(value) {
 }
 
 async function copyText(value) {
-  if (!navigator.clipboard?.writeText) throw new Error('当前环境不支持剪贴板。')
+  if (!navigator.clipboard?.writeText) {
+    throw new ClientError('当前环境不支持剪贴板。', 'CLIPBOARD')
+  }
   await navigator.clipboard.writeText(value)
 }
 
 export {
+  ClientError,
   RpcError,
   rpc,
   escapeRegExp,
