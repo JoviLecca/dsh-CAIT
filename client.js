@@ -7513,6 +7513,9 @@ function useWorkbenchController({ i18n, translate }) {
       if (!alive || inFlight || busyRef.current) return;
       inFlight = true;
       try {
+        const head = await rpc("currentRevision");
+        if (!alive) return;
+        if (Number(head?.revision) === Number(data?.revision)) return;
         const next = await rpc("bootstrap");
         if (!alive) return;
         if (Number(next.revision) !== Number(data?.revision)) {

@@ -1,6 +1,4 @@
-import { readFileSync, readdirSync } from 'node:fs'
-import { join } from 'node:path'
-import { projectRoot } from './lib/client-source.mjs'
+import { readAuthoredClient } from './lib/client-source.mjs'
 import { CatStore } from '../lib/store.js'
 import { createHandlers, MUTATIONS } from '../lib/api.js'
 
@@ -67,14 +65,7 @@ for (const name of names) {
   }
 }
 
-const componentDir = join(projectRoot, 'client', 'components')
-const clientText = [
-  ...readdirSync(componentDir)
-    .filter((name) => name.endsWith('.js'))
-    .map((name) => readFileSync(join(componentDir, name), 'utf8')),
-  readFileSync(join(projectRoot, 'client', 'rpc.js'), 'utf8'),
-  readFileSync(join(projectRoot, 'client', 'index.js'), 'utf8'),
-].join('\n')
+const clientText = readAuthoredClient()
 
 // `rpc(...)` 的实参里可能直接写方法名，也可能是三元或变量；只取括号内的字面量。
 function rpcArguments(text) {

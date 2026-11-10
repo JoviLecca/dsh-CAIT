@@ -270,6 +270,12 @@ export function useWorkbenchController({ i18n, translate }) {
       if (!alive || inFlight || busyRef.current) return
       inFlight = true
       try {
+        // Two round trips only when something actually changed: the revision
+        // probe is a few dozen bytes, a bootstrap carries every segment of the
+        // active document.
+        const head = await rpc('currentRevision')
+        if (!alive) return
+        if (Number(head?.revision) === Number(data?.revision)) return
         const next = await rpc('bootstrap')
         if (!alive) return
         if (Number(next.revision) !== Number(data?.revision)) {
