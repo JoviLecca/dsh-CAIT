@@ -27,7 +27,7 @@ index.js  apply(ctx)
 | --- | --- | --- |
 | 入口 | `index.js` | 组装、生命周期、卸载时 flush |
 | 协议层 | `lib/api.js`、`lib/tools.js` | HTTP/工具的参数与错误信封，不含业务分支 |
-| 状态层 | `lib/store.js` + `lib/store-mixins.js` 登记的 20 个方法模块 | `CatStore` 持有 `docs/tm/glossary/settings/revision`，接口由 mixin 挂到原型上 |
+| 状态层 | `lib/store.js`（状态与持久化接线，约 150 行）+ `lib/store-mixins.js` 登记的 27 个方法模块 | `CatStore` 持有 `docs/tm/glossary/settings/revision`，接口由 mixin 挂到原型上 |
 | 领域层 | `formats/localization/docx/xlsx/pptx/epub/qa/review/replace/...` | 纯函数或「只依赖传入参数」的模块 |
 | 基础设施 | `lib/store-utils.js`、`lib/errors.js`、`lib/persistence.js` | 通用工具、错误类型、落盘与迁移 |
 
@@ -53,8 +53,9 @@ index.js  apply(ctx)
 `persist()` 把整份状态写入 `store.json`（tmp + rename 原子写，64MB 上限），
 `restore()` 负责版本迁移。**加字段必须同时改迁移**，否则老用户的库会被静默丢字段。
 
-`bootstrap()` 返回给客户端的是快照：文档列表 + 活动文档的全部句段。它目前是全量的，
-Batch 3 会改成按 `revision` 增量下发。
+`bootstrap()` 返回给客户端的是快照：文档列表 + 活动文档的全部句段，仍然是全量的。
+客户端每 2 秒先调 `currentRevision()`（几十字节），只有 `revision` 变了才拉一次 `bootstrap()`；
+写操作的响应仍然附带整份 `state`，增量下发是 Batch 3 的剩余部分。
 
 ## 4. 接口契约
 
