@@ -2558,7 +2558,7 @@ async function copyText(value) {
   await navigator.clipboard.writeText(value);
 }
 
-// client/components.js
+// client/components/base.js
 function Spinner() {
   return h("span", { className: "cait-spinner", "aria-hidden": true });
 }
@@ -2688,23 +2688,6 @@ function CaitMark({ size = 16 }) {
     })
   );
 }
-function CaitSidebarIcon({ size = 18, active }) {
-  return h(
-    "span",
-    {
-      style: {
-        display: "inline-flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: size,
-        height: size,
-        color: active ? "var(--dsw-alias-brand-primary)" : "currentColor"
-      },
-      "aria-hidden": true
-    },
-    h(CaitMark, { size })
-  );
-}
 function highlightSource(text, hits) {
   const terms = [...new Set((hits || []).map((hit) => hit.term).filter(Boolean))].sort(
     (a, b) => b.length - a.length
@@ -2764,6 +2747,233 @@ function Toast({ toast }) {
     { className: `cait-toast cait-toast-${toast.kind || "success"}`, role: "status" },
     h(Icon, { name: icon, size: 14 }),
     h("span", null, toast.message)
+  );
+}
+
+// client/components/forms.js
+function DocumentSourceForm({ t, settings, busy, submitLabel, onSubmit, defaultMode = "text" }) {
+  const [mode, setMode] = useState(defaultMode);
+  const [name, setName] = useState("");
+  const [text, setText] = useState("");
+  const [file, setFile] = useState(null);
+  const [sourceLang, setSourceLang] = useState(settings.sourceLang || "en");
+  const [targetLang, setTargetLang] = useState(settings.targetLang || "zh-CN");
+  const [csvSourceColumn, setCsvSourceColumn] = useState("");
+  const [csvTargetColumn, setCsvTargetColumn] = useState("");
+  const inputRef = useRef(null);
+  useEffect(() => {
+    if (settings.sourceLang) setSourceLang(settings.sourceLang);
+    if (settings.targetLang) setTargetLang(settings.targetLang);
+  }, [settings.sourceLang, settings.targetLang]);
+  const pickFile = (nextFile) => {
+    if (!nextFile) return;
+    setFile(nextFile);
+    setMode("file");
+    if (!name.trim()) setName(stripExtension(nextFile.name));
+  };
+  const submit = (event) => {
+    event.preventDefault();
+    onSubmit({
+      mode,
+      name,
+      text,
+      file,
+      sourceLang,
+      targetLang,
+      csvSourceColumn,
+      csvTargetColumn
+    });
+  };
+  const canSubmit = mode === "file" ? Boolean(file) : Boolean(text.trim());
+  const isCsv = mode === "file" && /\.csv$/i.test(file?.name || "");
+  return h(
+    "form",
+    { className: "cait-docform", onSubmit: submit },
+    h(
+      "div",
+      { className: "cait-segmented" },
+      h(
+        "button",
+        {
+          type: "button",
+          className: mode === "text" ? "active" : "",
+          onClick: () => setMode("text")
+        },
+        t("empty.paste")
+      ),
+      h(
+        "button",
+        {
+          type: "button",
+          className: mode === "file" ? "active" : "",
+          onClick: () => setMode("file")
+        },
+        t("empty.file")
+      )
+    ),
+    h(
+      "label",
+      { className: "cait-field" },
+      h("span", null, t("modal.new.name")),
+      h("input", {
+        className: "cait-input",
+        value: name,
+        onChange: (event) => setName(event.target.value),
+        placeholder: t("modal.new.namePlaceholder")
+      })
+    ),
+    h(
+      "div",
+      { className: "cait-grid2" },
+      h(
+        "label",
+        { className: "cait-field" },
+        h("span", null, t("modal.new.sourceLang")),
+        h(
+          "select",
+          {
+            className: "cait-input",
+            value: sourceLang,
+            onChange: (event) => setSourceLang(event.target.value)
+          },
+          LANGUAGES.map(
+            ([code, label]) => h("option", { key: code, value: code }, `${label} (${code})`)
+          )
+        )
+      ),
+      h(
+        "label",
+        { className: "cait-field" },
+        h("span", null, t("modal.new.targetLang")),
+        h(
+          "select",
+          {
+            className: "cait-input",
+            value: targetLang,
+            onChange: (event) => setTargetLang(event.target.value)
+          },
+          LANGUAGES.map(
+            ([code, label]) => h("option", { key: code, value: code }, `${label} (${code})`)
+          )
+        )
+      )
+    ),
+    isCsv ? h(
+      "div",
+      { className: "cait-grid2" },
+      h(
+        "label",
+        { className: "cait-field" },
+        h("span", null, t("modal.new.csvSource")),
+        h("input", {
+          className: "cait-input",
+          value: csvSourceColumn,
+          onChange: (event) => setCsvSourceColumn(event.target.value),
+          placeholder: t("modal.new.csvColumnPlaceholder")
+        })
+      ),
+      h(
+        "label",
+        { className: "cait-field" },
+        h("span", null, t("modal.new.csvTarget")),
+        h("input", {
+          className: "cait-input",
+          value: csvTargetColumn,
+          onChange: (event) => setCsvTargetColumn(event.target.value),
+          placeholder: t("modal.new.csvColumnPlaceholder")
+        })
+      ),
+      h("p", { className: "cait-modal-hint" }, t("modal.new.csvHint"))
+    ) : null,
+    mode === "text" ? h("textarea", {
+      className: "cait-formtext",
+      value: text,
+      onChange: (event) => setText(event.target.value),
+      placeholder: t("empty.textPlaceholder"),
+      rows: 6
+    }) : h(
+      "label",
+      {
+        className: "cait-drop",
+        onDragOver: (event) => event.preventDefault(),
+        onDrop: (event) => {
+          event.preventDefault();
+          pickFile(event.dataTransfer?.files?.[0]);
+        }
+      },
+      h("input", {
+        ref: inputRef,
+        type: "file",
+        accept: ".txt,.md,.markdown,.tmx,.docx,.epub,.csv,.srt,.vtt,.po,.pot,.xliff,.xlf,.sdlxliff,.html,.htm,.json,.rtf,.xlsx,.pptx",
+        hidden: true,
+        onChange: (event) => pickFile(event.target.files?.[0])
+      }),
+      h(Icon, { name: file ? "file" : "upload", size: 22 }),
+      h("strong", null, file ? file.name : t("empty.drop")),
+      h("span", null, file ? formatBytes(file.size) : t("modal.new.dropHint"))
+    ),
+    h(
+      "div",
+      { className: "cait-formfoot" },
+      h("span", { className: "cait-muted" }, t("empty.formats")),
+      h(
+        "button",
+        {
+          className: "cait-btn cait-btn-primary",
+          type: "submit",
+          disabled: Boolean(busy) || !canSubmit
+        },
+        busy === "create" ? h(Spinner) : h(Icon, { name: "plus", size: 13 }),
+        busy === "create" ? t("modal.new.importing") : submitLabel
+      )
+    )
+  );
+}
+function NewDocModal({ t, settings, busy, defaultMode, onClose, onCreate }) {
+  return h(
+    Modal,
+    { title: t("modal.new.title"), onClose },
+    h(DocumentSourceForm, {
+      t,
+      settings,
+      busy,
+      submitLabel: t("modal.new.create"),
+      onSubmit: onCreate,
+      defaultMode
+    }),
+    h(
+      "div",
+      { className: "cait-demo-row" },
+      h("span", null, t("modal.new.sample")),
+      h(
+        "button",
+        {
+          className: "cait-linkbtn",
+          onClick: () => onCreate({ demo: true }),
+          disabled: Boolean(busy)
+        },
+        t("modal.new.demo")
+      )
+    )
+  );
+}
+
+// client/components/shell.js
+function CaitSidebarIcon({ size = 18, active }) {
+  return h(
+    "span",
+    {
+      style: {
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: size,
+        height: size,
+        color: active ? "var(--dsw-alias-brand-primary)" : "currentColor"
+      },
+      "aria-hidden": true
+    },
+    h(CaitMark, { size })
   );
 }
 function SaveBanner({ t, storage, stale, onRefresh }) {
@@ -3089,6 +3299,60 @@ function Topbar({
     )
   );
 }
+function EmptyState({ t, settings, busy, onCreate, onDemo }) {
+  return h(
+    "div",
+    { className: "cait-empty" },
+    h(
+      "div",
+      { className: "cait-empty-inner" },
+      h("span", { className: "cait-kicker" }, "CAIT · CAT WORKBENCH"),
+      h("h1", null, t("empty.title")),
+      h("p", { className: "cait-lede" }, t("empty.desc")),
+      h(
+        "div",
+        { className: "cait-features" },
+        h(
+          "div",
+          { className: "cait-feature" },
+          h("strong", null, h(Icon, { name: "database", size: 12 }), t("empty.features.tm")),
+          h("span", null, t("empty.features.tmDesc"))
+        ),
+        h(
+          "div",
+          { className: "cait-feature" },
+          h("strong", null, h(Icon, { name: "book", size: 12 }), t("empty.features.glossary")),
+          h("span", null, t("empty.features.glossaryDesc"))
+        ),
+        h(
+          "div",
+          { className: "cait-feature" },
+          h("strong", null, h(Icon, { name: "sparkles", size: 12 }), t("empty.features.mt")),
+          h("span", null, t("empty.features.mtDesc"))
+        )
+      ),
+      h(DocumentSourceForm, {
+        t,
+        settings,
+        busy,
+        submitLabel: t("empty.create"),
+        onSubmit: onCreate
+      }),
+      h(
+        "div",
+        { className: "cait-demo-row" },
+        h("span", null, t("empty.demoHint")),
+        h(
+          "button",
+          { className: "cait-linkbtn", onClick: onDemo, disabled: Boolean(busy) },
+          t("empty.demo")
+        )
+      )
+    )
+  );
+}
+
+// client/components/rail.js
 var SEGMENT_FILTERS = ["all", "pending", "translated", "confirmed", "risk"];
 function SegmentRail({
   t,
@@ -3383,6 +3647,8 @@ function SegmentRail({
     )
   );
 }
+
+// client/components/editor.js
 function EditorPane({
   t,
   doc,
@@ -3917,6 +4183,8 @@ function TmMatchCard({ t, match, onApply, onEdit, onDelete, busy }) {
     ) : h("p", { className: "cait-card-target" }, match.target)
   );
 }
+
+// client/components/panels.js
 function CatPanel({
   t,
   doc,
@@ -4511,212 +4779,8 @@ function CatPanel({
     )
   );
 }
-function DocumentSourceForm({ t, settings, busy, submitLabel, onSubmit, defaultMode = "text" }) {
-  const [mode, setMode] = useState(defaultMode);
-  const [name, setName] = useState("");
-  const [text, setText] = useState("");
-  const [file, setFile] = useState(null);
-  const [sourceLang, setSourceLang] = useState(settings.sourceLang || "en");
-  const [targetLang, setTargetLang] = useState(settings.targetLang || "zh-CN");
-  const [csvSourceColumn, setCsvSourceColumn] = useState("");
-  const [csvTargetColumn, setCsvTargetColumn] = useState("");
-  const inputRef = useRef(null);
-  useEffect(() => {
-    if (settings.sourceLang) setSourceLang(settings.sourceLang);
-    if (settings.targetLang) setTargetLang(settings.targetLang);
-  }, [settings.sourceLang, settings.targetLang]);
-  const pickFile = (nextFile) => {
-    if (!nextFile) return;
-    setFile(nextFile);
-    setMode("file");
-    if (!name.trim()) setName(stripExtension(nextFile.name));
-  };
-  const submit = (event) => {
-    event.preventDefault();
-    onSubmit({
-      mode,
-      name,
-      text,
-      file,
-      sourceLang,
-      targetLang,
-      csvSourceColumn,
-      csvTargetColumn
-    });
-  };
-  const canSubmit = mode === "file" ? Boolean(file) : Boolean(text.trim());
-  const isCsv = mode === "file" && /\.csv$/i.test(file?.name || "");
-  return h(
-    "form",
-    { className: "cait-docform", onSubmit: submit },
-    h(
-      "div",
-      { className: "cait-segmented" },
-      h(
-        "button",
-        {
-          type: "button",
-          className: mode === "text" ? "active" : "",
-          onClick: () => setMode("text")
-        },
-        t("empty.paste")
-      ),
-      h(
-        "button",
-        {
-          type: "button",
-          className: mode === "file" ? "active" : "",
-          onClick: () => setMode("file")
-        },
-        t("empty.file")
-      )
-    ),
-    h(
-      "label",
-      { className: "cait-field" },
-      h("span", null, t("modal.new.name")),
-      h("input", {
-        className: "cait-input",
-        value: name,
-        onChange: (event) => setName(event.target.value),
-        placeholder: t("modal.new.namePlaceholder")
-      })
-    ),
-    h(
-      "div",
-      { className: "cait-grid2" },
-      h(
-        "label",
-        { className: "cait-field" },
-        h("span", null, t("modal.new.sourceLang")),
-        h(
-          "select",
-          {
-            className: "cait-input",
-            value: sourceLang,
-            onChange: (event) => setSourceLang(event.target.value)
-          },
-          LANGUAGES.map(
-            ([code, label]) => h("option", { key: code, value: code }, `${label} (${code})`)
-          )
-        )
-      ),
-      h(
-        "label",
-        { className: "cait-field" },
-        h("span", null, t("modal.new.targetLang")),
-        h(
-          "select",
-          {
-            className: "cait-input",
-            value: targetLang,
-            onChange: (event) => setTargetLang(event.target.value)
-          },
-          LANGUAGES.map(
-            ([code, label]) => h("option", { key: code, value: code }, `${label} (${code})`)
-          )
-        )
-      )
-    ),
-    isCsv ? h(
-      "div",
-      { className: "cait-grid2" },
-      h(
-        "label",
-        { className: "cait-field" },
-        h("span", null, t("modal.new.csvSource")),
-        h("input", {
-          className: "cait-input",
-          value: csvSourceColumn,
-          onChange: (event) => setCsvSourceColumn(event.target.value),
-          placeholder: t("modal.new.csvColumnPlaceholder")
-        })
-      ),
-      h(
-        "label",
-        { className: "cait-field" },
-        h("span", null, t("modal.new.csvTarget")),
-        h("input", {
-          className: "cait-input",
-          value: csvTargetColumn,
-          onChange: (event) => setCsvTargetColumn(event.target.value),
-          placeholder: t("modal.new.csvColumnPlaceholder")
-        })
-      ),
-      h("p", { className: "cait-modal-hint" }, t("modal.new.csvHint"))
-    ) : null,
-    mode === "text" ? h("textarea", {
-      className: "cait-formtext",
-      value: text,
-      onChange: (event) => setText(event.target.value),
-      placeholder: t("empty.textPlaceholder"),
-      rows: 6
-    }) : h(
-      "label",
-      {
-        className: "cait-drop",
-        onDragOver: (event) => event.preventDefault(),
-        onDrop: (event) => {
-          event.preventDefault();
-          pickFile(event.dataTransfer?.files?.[0]);
-        }
-      },
-      h("input", {
-        ref: inputRef,
-        type: "file",
-        accept: ".txt,.md,.markdown,.tmx,.docx,.epub,.csv,.srt,.vtt,.po,.pot,.xliff,.xlf,.sdlxliff,.html,.htm,.json,.rtf,.xlsx,.pptx",
-        hidden: true,
-        onChange: (event) => pickFile(event.target.files?.[0])
-      }),
-      h(Icon, { name: file ? "file" : "upload", size: 22 }),
-      h("strong", null, file ? file.name : t("empty.drop")),
-      h("span", null, file ? formatBytes(file.size) : t("modal.new.dropHint"))
-    ),
-    h(
-      "div",
-      { className: "cait-formfoot" },
-      h("span", { className: "cait-muted" }, t("empty.formats")),
-      h(
-        "button",
-        {
-          className: "cait-btn cait-btn-primary",
-          type: "submit",
-          disabled: Boolean(busy) || !canSubmit
-        },
-        busy === "create" ? h(Spinner) : h(Icon, { name: "plus", size: 13 }),
-        busy === "create" ? t("modal.new.importing") : submitLabel
-      )
-    )
-  );
-}
-function NewDocModal({ t, settings, busy, defaultMode, onClose, onCreate }) {
-  return h(
-    Modal,
-    { title: t("modal.new.title"), onClose },
-    h(DocumentSourceForm, {
-      t,
-      settings,
-      busy,
-      submitLabel: t("modal.new.create"),
-      onSubmit: onCreate,
-      defaultMode
-    }),
-    h(
-      "div",
-      { className: "cait-demo-row" },
-      h("span", null, t("modal.new.sample")),
-      h(
-        "button",
-        {
-          className: "cait-linkbtn",
-          onClick: () => onCreate({ demo: true }),
-          disabled: Boolean(busy)
-        },
-        t("modal.new.demo")
-      )
-    )
-  );
-}
+
+// client/components/pages.js
 function AlignPage({ t, data, notify, report, onConfirm }) {
   const [sourceFile, setSourceFile] = useState(null);
   const [targetFile, setTargetFile] = useState(null);
@@ -6042,6 +6106,8 @@ function LibraryPage({
     ) : null
   );
 }
+
+// client/components/dialogs.js
 function ExportModal({ t, busy, onClose, onExport, onImportReview, qa }) {
   const issues = qa?.issueCount || 0;
   const items = [
@@ -6563,58 +6629,6 @@ function ConfirmModal({ t, state, busy, onClose, onConfirm }) {
         { className: "cait-btn cait-btn-danger", onClick: onConfirm, disabled: Boolean(busy) },
         busy ? h(Spinner) : null,
         state.confirmLabel || t("modal.confirm.ok")
-      )
-    )
-  );
-}
-function EmptyState({ t, settings, busy, onCreate, onDemo }) {
-  return h(
-    "div",
-    { className: "cait-empty" },
-    h(
-      "div",
-      { className: "cait-empty-inner" },
-      h("span", { className: "cait-kicker" }, "CAIT · CAT WORKBENCH"),
-      h("h1", null, t("empty.title")),
-      h("p", { className: "cait-lede" }, t("empty.desc")),
-      h(
-        "div",
-        { className: "cait-features" },
-        h(
-          "div",
-          { className: "cait-feature" },
-          h("strong", null, h(Icon, { name: "database", size: 12 }), t("empty.features.tm")),
-          h("span", null, t("empty.features.tmDesc"))
-        ),
-        h(
-          "div",
-          { className: "cait-feature" },
-          h("strong", null, h(Icon, { name: "book", size: 12 }), t("empty.features.glossary")),
-          h("span", null, t("empty.features.glossaryDesc"))
-        ),
-        h(
-          "div",
-          { className: "cait-feature" },
-          h("strong", null, h(Icon, { name: "sparkles", size: 12 }), t("empty.features.mt")),
-          h("span", null, t("empty.features.mtDesc"))
-        )
-      ),
-      h(DocumentSourceForm, {
-        t,
-        settings,
-        busy,
-        submitLabel: t("empty.create"),
-        onSubmit: onCreate
-      }),
-      h(
-        "div",
-        { className: "cait-demo-row" },
-        h("span", null, t("empty.demoHint")),
-        h(
-          "button",
-          { className: "cait-linkbtn", onClick: onDemo, disabled: Boolean(busy) },
-          t("empty.demo")
-        )
       )
     )
   );
@@ -7274,6 +7288,8 @@ function AnalysisModal({ t, analysis, busy, onClose }) {
     )
   );
 }
+
+// client/components/workbench.js
 function Workbench({ i18n, translate }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);

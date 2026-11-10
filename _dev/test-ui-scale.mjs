@@ -206,9 +206,16 @@ assert.deepEqual(
 // --- wiring checks ---------------------------------------------------------
 // client.js is a build artifact: esbuild re-prints it, so source-level wiring is
 // asserted on the authored modules and only behaviour is asserted on the bundle.
-const wiring = ['styles.js', 'components.js']
-  .map((name) => fs.readFileSync(new URL(`../client/${name}`, import.meta.url), 'utf8'))
-  .join('\n')
+const wiring = [
+  fs.readFileSync(new URL('../client/styles.js', import.meta.url), 'utf8'),
+  ...fs
+    .readdirSync(new URL('../client/components/', import.meta.url))
+    .filter((name) => name.endsWith('.js'))
+    .sort()
+    .map((name) =>
+      fs.readFileSync(new URL(`../client/components/${name}`, import.meta.url), 'utf8'),
+    ),
+].join('\n')
 assert.ok(wiring.includes('const CSS_SCALED = scaleCssLengths(CSS, CAIT_UNIT_VAR)'))
 assert.equal(wiring.includes("h('style', null, CSS)"), false, 'renders must use CSS_SCALED')
 assert.equal((wiring.match(/h\('style', null, CSS_SCALED\)/g) || []).length, 3)

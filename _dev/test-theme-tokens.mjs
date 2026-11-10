@@ -12,7 +12,12 @@ const root = new URL('..', import.meta.url)
 const read = (name) => fs.readFileSync(new URL(name, root), 'utf8')
 
 const styles = read('client/styles.js')
-const components = read('client/components.js')
+const components = fs
+  .readdirSync(new URL('client/components/', root))
+  .filter((name) => name.endsWith('.js'))
+  .sort()
+  .map((name) => read(`client/components/${name}`))
+  .join('\n')
 const helpers = read('client/helpers.js')
 
 function section(name) {

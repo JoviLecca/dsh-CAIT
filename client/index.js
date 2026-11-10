@@ -26,7 +26,8 @@ import {
 } from './helpers.js'
 import { ZH, EN, JA, UI_LANG_CODES, resolveUiLang, makeTranslator } from './locales.js'
 import { CSS_SCALED } from './styles.js'
-import { CaitSidebarIcon, Workbench } from './components.js'
+import { CaitSidebarIcon } from './components/shell.js'
+import { Workbench } from './components/workbench.js'
 
 const entry = {
   // `locale` must be declared: Cordis guards service access with the inject
