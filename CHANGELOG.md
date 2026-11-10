@@ -13,6 +13,15 @@ All notable changes to CAIT are documented here. The project follows
   token counts prove they cannot reach the threshold (`lib/similarity.js`). At
   20,000 segments with 10,000 TM entries a click went from 110 ms to 1 ms, and
   `bootstrap()` from 113 ms to 5 ms, with identical results.
+- `store.json` is written as compact JSON. The pretty-printed copy cost 33 ms and
+  11.9 MB at 20k segments versus 15 ms and 7.6 MB, and nobody reads a
+  multi-megabyte data file by eye.
+- `importTM` looks rows up through an identity index instead of scanning the
+  memory per pair (2000 pairs: 70 ms → 37 ms). Imported context variants are
+  capped in one pass at the end rather than one scan per row.
+- Confirming a segment no longer copies the whole TM array for rollback. The
+  upsert returns the previous row values, and `undoTMWrite` restores just that
+  row (`confirmSegment`: 93 ms → 71 ms at 20k segments / 10k entries).
 
 ### Fixed
 

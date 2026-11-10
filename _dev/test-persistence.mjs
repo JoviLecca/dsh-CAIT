@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'n
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CatStore } from '../lib/store.js'
-import { STORE_VERSION } from '../lib/store-utils.js'
+import { STORE_VERSION } from '../lib/limits.js'
 
 const silent = { warn() {}, error() {} }
 const roots = []

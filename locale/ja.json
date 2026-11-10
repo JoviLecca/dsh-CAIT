@@ -2,10 +2,5 @@
   "meta": {
     "title": "CAIT 翻訳ワークベンチ (dsh-cait)",
     "description": "DSH に組み込まれた CAT（翻訳支援）ワークベンチ：翻訳メモリ、用語集、セグメント編集、AI 翻訳候補、TXT/Markdown/DOCX/TMX のインポートとエクスポート。"
-  },
-  "match.exact": "完全一致",
-  "match.near_exact": "ほぼ完全一致",
-  "match.high_fuzzy": "高あいまい一致",
-  "match.medium_fuzzy": "中あいまい一致",
-  "match.low_fuzzy": "低あいまい一致"
+  }
 }

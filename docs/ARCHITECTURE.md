@@ -29,12 +29,15 @@ index.js  apply(ctx)
 | 协议层 | `lib/api.js`、`lib/tools.js` | HTTP/工具的参数与错误信封，不含业务分支 |
 | 状态层 | `lib/store.js`（状态与持久化接线，约 150 行）+ `lib/store-mixins.js` 登记的 27 个方法模块 | `CatStore` 持有 `docs/tm/glossary/settings/revision`，接口由 mixin 挂到原型上 |
 | 领域层 | `formats/localization/docx/xlsx/pptx/epub/qa/review/replace/...` | 纯函数或「只依赖传入参数」的模块 |
-| 基础设施 | `lib/store-utils.js`、`lib/errors.js`、`lib/persistence.js` | 通用工具、错误类型、落盘与迁移 |
+| 基础设施 | `lib/limits.js`、`lib/lang.js`、`lib/settings.js`、`lib/text-utils.js`、`lib/segment-state.js`、`lib/restore.js`、`lib/errors.js`、`lib/persistence.js` | 通用常量/工具、错误类型、落盘与迁移 |
 
 规则：
 
 - 领域层不得 import `store.js`；需要 store 能力时由 store 传参进来。
-- `store-utils.js` 只放纯函数与常量，不再接新职责（它已经是杂物抽屉，见路线图 Batch 2）。
+- 基础设施里的六个纯函数模块按用途分工，新增东西先找对应文件，找不到再建新文件：
+  `limits.js` 只管上限与常量，`lang.js` 管语言代码，`settings.js` 管设置默认值与还原，
+  `text-utils.js` 管字符串/哈希/CSV/Markdown 小工具，`segment-state.js` 管三态与 `origin`，
+  `restore.js` 只管「从磁盘数据还原成内存对象」。**不要再造一个杂物抽屉。**
 - mixin 的所有权只在 `lib/store-mixins.js` 的 `STORE_MIXINS` 里登记一次；`applyMixins` 在装配时
   拒绝同名方法（含与 `CatStore` 类体重名），`npm run check:store` 会打印归属表，并在
   「模块导出了 `*Methods` 但没登记」时失败。
@@ -50,12 +53,15 @@ index.js  apply(ctx)
 - `settings`：界面语言、TM 阈值、MT 路由等
 - `revision`：每次写操作自增，客户端靠它判断是否需要重新拉取
 
-`persist()` 把整份状态写入 `store.json`（tmp + rename 原子写，64MB 上限），
+`persist()` 把整份状态写入 `store.json`（紧凑 JSON、tmp + rename 原子写，64MB 上限），
 `restore()` 负责版本迁移。**加字段必须同时改迁移**，否则老用户的库会被静默丢字段。
+不写成缩进格式是有意的：20k 句段时缩进版 11.9MB / 33ms，紧凑版 7.6MB / 15ms，而几 MB 的
+`store.json` 本来也不会有人肉眼读。一次确认（`confirmSegment`）在 20k 句段下约 71ms，
+其中落盘约 52ms —— 再往下要换增量日志，暂时不值得。
 
 `bootstrap()` 返回给客户端的是快照：文档列表 + 活动文档的全部句段，仍然是全量的。
 客户端每 2 秒先调 `currentRevision()`（几十字节），只有 `revision` 变了才拉一次 `bootstrap()`；
-写操作的响应仍然附带整份 `state`。20k 句段下一次写约 115 ms / 6 MB（`npm run bench`），
+写操作的响应仍然附带整份 `state`。20k 句段下一次写约 103 ms / 6 MB（`npm run bench`），
 所以「增量下发」留到真有大文档抱怨时再做。
 
 TM 检索（`lookupTM`）对每条记忆算一次相似度，但先用**可证明的上界**把不可能的条目筛掉：

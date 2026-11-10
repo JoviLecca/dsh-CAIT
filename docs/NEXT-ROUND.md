@@ -117,12 +117,27 @@ P2.1 已完成。做法不是「长度带预筛」，而是**按计数算上界*
 对 1152 组（query × threshold × limit）逐字段比对 `lookupTM` 的结果，并单独校验 ICE 等级。
 
 
-### P3 顺手做，不单独开轮
+### P3 顺手项（已完成，2026-11-10）
 
-- `lib/store-utils.js`（40 个导出、23 个 importers）按职责拆开——**跟着下一次改这些 import 的功能一起做**；
-- `lib/tools.js`（1267 行）21 个工具的 `try/catch + failure()` 样板收敛成一个包装；
-- 约 31 个疑似死 i18n 键；`locale/*.json` 与 `client/locales.js` 重复的 5 个 `match.*` 键合并成一条通道；
-- `import-export.js` 改名（现在只剩附件挂载、TMX 导入、XLIFF 审校，名字已名不副实）。
+- ✅ `lib/store-utils.js`（40 个导出、23 个 importers）按职责拆成 `limits.js` / `lang.js` /
+  `settings.js` / `text-utils.js` / `segment-state.js` / `restore.js`，43 个 import 由脚本改写；
+- ✅ `lib/tools.js` 21 个工具的 `try/catch + failure()` 收敛成 `guard(spec)`，每个工具只剩 `run()`；
+- ✅ 32 个死 i18n 键删除（621 → 589，三语同步），`locale/*.json` 只保留 `meta.*`，重复的
+  `match.*` 交给 `check:locales` 的重叠校验兜住；
+- ✅ `lib/import-export.js` → `lib/file-ops.js`（`fileMethods` / mixin 名 `files`）。
+
+### P4 性能收尾（已完成，2026-11-10）
+
+| 路径（20k 句段 / 10k TM） | 改前 | 改后 |
+| --- | --- | --- |
+| `importTM`（2000 对） | 70 ms（每条线性扫全表） | **37 ms**（identity 索引） |
+| `confirmSegment()` | 92.9 ms | **70.7 ms**（不再整表拷贝 TM 做 undo） |
+| `persist()` | 58 ms / 13.5 MB | **52 ms / 9.2 MB**（紧凑 JSON） |
+| `API confirmSegment` 含回传 state | 115 ms | **103 ms** |
+
+`upsertTM` 的 undo 从「拷贝整个 `tm` 数组」改成「记一行 `before` + `evictedAll`」：
+写失败时 `undoTMWrite` 只回滚这一条，`_dev/test-tm*.mjs` 覆盖了成功与回滚两条路径。
+`persist()` 不再缩进输出——几 MB 的 `store.json` 没人肉眼读，省下的 4MB 与 ~15ms 更实在。
 
 ### 明确不做
 
@@ -176,5 +191,7 @@ npm run build:client # 改过 client/** 时
 | 日期 | 内容 | 提交 |
 | --- | --- | --- |
 | 2026-11-10 | 快照 `v.1.1.8_beta1` | `68403ad` + tag |
-| 2026-11-10 | P1 错误消息 i18n：类别规则 + `describeError` + `check:errors` + `test-errors` | 见下文 |
+| 2026-11-10 | P1 错误消息 i18n：类别规则 + `describeError` + `check:errors` + `test-errors` | `cda9c5f` |
+| 2026-11-10 | P2 基准与 TM 索引：`bench-scale.mjs`、`prepare/scoreCeiling`、`test-tm-index` | `5a10bf2`、`c6859bc` |
+| 2026-11-10 | P3/P4：文档同步、tools 样板、死键、`file-ops.js`、utils 六拆、TM 写入索引、紧凑落盘 | 见 `git log` |
 

@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { CatStore } from '../lib/store.js'
 import { contextHashOf, contextOf, fnv1a } from '../lib/context.js'
 import { MAX_CONTEXT_VARIANTS } from '../lib/tm.js'
-import { STORE_FILENAME, STORE_VERSION } from '../lib/store-utils.js'
+import { STORE_FILENAME, STORE_VERSION } from '../lib/limits.js'
 
 const silent = { log() {}, warn() {}, error() {} }
 const roots = []

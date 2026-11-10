@@ -17,7 +17,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm バージョン" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
-  <img alt="テスト 45 スイート" src="https://img.shields.io/badge/tests-45%20suites-brightgreen.svg" />
+  <img alt="テスト 51 スイート" src="https://img.shields.io/badge/tests-51%20suites-brightgreen.svg" />
   <img alt="API キー不要" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
 </p>
 
@@ -416,45 +416,34 @@ flowchart LR
 
 ```text
 cait/
-├─ package.json
-├─ cordis.patch.yml
-├─ index.js                 # Host 側
-├─ client.js                # 生成された Web バンドル
-├─ client/                  # helpers, styles, RPC, components, locales, entry
-├─ scripts/build-client.mjs
-├─ icon.svg
-├─ locale/{en,zh,ja}.json
-├─ NOTICE
-├─ README.md
-├─ README.zh-CN.md
-├─ README.ja.md
-├─ CHANGELOG.md
-├─ lib/
-│  ├─ store.js              # CatStore ファサード + 文書 / セグメントの中核
-│  ├─ errors.js
-│  ├─ store-utils.js
-│  ├─ libraries.js          # TM / 用語集レジストリとマウント
-│  ├─ tm.js
-│  ├─ glossary.js
-│  ├─ persistence.js
-│  ├─ import-export.js
-│  ├─ formats.js            # CSV/SRT/VTT/PO/XLIFF/HTML/JSON/RTF
-│  ├─ html.js               # HTML/XHTML テキストラン走査と書き戻し
-│  ├─ epub.js               # EPUB パッケージ読み込み / spine インポート / パッチ書き出し
-│  ├─ preprocess.js         # インポート時の原文前処理ステージ
-│  ├─ xlsx.js
-│  ├─ pptx.js
-│  ├─ segmenter.js
-│  ├─ similarity.js
-│  ├─ tmx.js
-│  ├─ docx.js
-│  ├─ markdown.js
-│  ├─ xml.js
-│  ├─ mt.js
-│  ├─ tools.js
-│  └─ api.js
-└─ _dev/                    # テスト、フィクスチャ、ローカルパッチのオーバーレイ
+├─ index.js                 # Host 側：ストア + ツール + プライベート API
+├─ client.js                # 生成される Web バンドル（編集しない）
+├─ client/                  # Client 側のソース
+│  ├─ index.js              # slot と locale の組み立て
+│  ├─ helpers.js            # 純粋関数。他モジュールを import しない
+│  ├─ rpc.js                # fetch ラッパーと転送層のエラー
+│  ├─ errors.js             # エラーコード → 文言
+│  ├─ react.js              # React を import する唯一のモジュール
+│  ├─ styles.js             # CSS + px→var(--cait-u) スケーリング
+│  ├─ locales.js            # ZH/EN/JA 辞書（各 621 キー）
+│  ├─ components/           # 画面領域ごとに 1 モジュール
+│  └─ workbench/            # controller.js（状態）+ workbench.js（表示）
+├─ lib/                     # Host モジュール。全体図は docs/ARCHITECTURE.md §5
+│  ├─ store.js              # CatStore ファサード。store-mixins.js を適用
+│  ├─ store-mixins.js       # ストアモジュールの唯一のレジストリ
+│  ├─ api.js                # プライベート RPC + 唯一の書き込み一覧
+│  ├─ tools.js              # 21 個の Agent ツール
+│  └─ …                     # 文書、セグメント、ライブラリ、形式、永続化
+├─ scripts/                 # ビルド、契約チェック、テストランナー、ベンチ
+├─ locale/{en,zh,ja}.json   # パッケージメタデータの文字列のみ
+├─ docs/                    # ARCHITECTURE.md、NEXT-ROUND.md
+└─ _dev/                    # テストスイート + fixture
 ```
+
+モジュールの全体図、依存の向き、および「ストアメソッド / RPC ハンドラ /
+形式 / エラーコードを追加する」ときの規則は
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) にあります。ここは短い
+スケッチだけにして、再び古くならないようにします。
 
 </details>
 
@@ -463,35 +452,38 @@ cait/
 Node.js 22+ と DSH `0.2.x` が必要です。DSH `0.2.2-rc.1` と Node `26.7.0` で動作確認済み。
 
 ```sh
-npm run build:client
-node --check client.js
-
-node _dev/test-core.mjs
-node _dev/test-imports.mjs
-node _dev/test-formats.mjs
-node _dev/test-epub.mjs
-node _dev/test-preprocess.mjs
-node _dev/test-second-tier.mjs
-node _dev/test-docx-export.mjs
-node _dev/test-api.mjs
-node _dev/test-plugin.mjs
-node _dev/test-persistence.mjs
-node _dev/test-documents.mjs
-node _dev/test-libraries.mjs
-node _dev/test-mounts.mjs
-node _dev/test-ui-scale.mjs
-node _dev/test-mt.mjs
+npm install        # 最初の 1 回だけ
+npm run check      # CI と同じ一式：lint、整形、契約チェック、テスト
+npm test           # _dev/ の 51 スイートだけ
 ```
+
+`npm run check` が唯一のゲートで、次の順に走ります:
+
+| ステップ | 何を保証するか |
+| --- | --- |
+| `lint` | `lib/`、`index.js`、`scripts/`、`_dev/`、`client/` を ESLint |
+| `format:check` | Prettier とツリーが一致している |
+| `check:locales` | ZH/EN/JA のキー集合（621 個）と `{プレースホルダ}` が一致 |
+| `check:errors` | `lib/` で投げる全エラーコードに文言がある |
+| `check:store` | 全ストア mixin が登録済みで、名前の重複がない |
+| `check:formats` | 全エクスポート形式とインポート拡張子が接続され UI に出ている |
+| `check:shared` | クライアントとサーバーの共有定数が一致している |
+| `check:api` | 全 RPC ハンドラがストアにあり、クライアントの呼び出しも実在する |
+| `check:client` | ディスク上の `client.js` が `client/` のビルド結果と一致する |
+| `test` | `_dev/` の 51 スイートを 1 プロセスずつ実行 |
+
+`npm run bench` は規模の経路を測ります（既定は `--segments 20000 --tm 10000`）。
+これらの数値に関わる変更の前に一度走らせてください。
 
 インポート / エクスポートのフィクスチャは `_dev/sample.docx`、`_dev/sample-table.docx`、
 `_dev/sample-format.docx` です。対応する `python _dev/make-*.py` スクリプトで再生成
-できます。45 スイートすべてが通るはずです。
+できます。
 
 ### リリース
 
-`npm publish` は `prepublishOnly` を実行し、`client/` のフラグメントから
-`client.js` を再ビルドして構文チェックするため、古いバンドルが出荷されることは
-ありません。リポジトリのルートで実行します:
+`npm publish` は `prepublishOnly` を実行し、`client/` から `client.js` を
+再ビルドしたうえで `npm run check` を丸ごと走らせるため、古いバンドルや契約
+違反を抱えたまま出荷されることはありません。リポジトリのルートで実行します:
 
 ```sh
 npm publish

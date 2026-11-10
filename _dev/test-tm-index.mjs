@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CatStore } from '../lib/store.js'
-import { DEFAULT_TM_ID } from '../lib/store-utils.js'
+import { DEFAULT_TM_ID } from '../lib/limits.js'
 import { contextOf } from '../lib/context.js'
 import { classifyMatchType, normalizeText, similarity } from '../lib/similarity.js'
 

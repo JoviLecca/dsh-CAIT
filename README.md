@@ -16,7 +16,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm version" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
-  <img alt="Tests: 45 suites" src="https://img.shields.io/badge/tests-45%20suites-brightgreen.svg" />
+  <img alt="Tests: 51 suites" src="https://img.shields.io/badge/tests-51%20suites-brightgreen.svg" />
   <img alt="No API key required" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
 </p>
 
@@ -489,49 +489,34 @@ flowchart LR
 
 ```text
 cait/
-├─ package.json
-├─ cordis.patch.yml
-├─ index.js                 # Host half
-├─ client.js                # generated Web bundle
-├─ client/                  # helpers, styles, RPC, components, locales, entry
-├─ scripts/build-client.mjs
-├─ icon.svg
-├─ locale/{en,zh,ja}.json
-├─ NOTICE
-├─ README.md
-├─ README.zh-CN.md
-├─ README.ja.md
-├─ CHANGELOG.md
-├─ lib/
-│  ├─ store.js              # CatStore facade + document/segment core
-│  ├─ errors.js
-│  ├─ store-utils.js
-│  ├─ libraries.js          # TM/glossary registries + mounts
-│  ├─ library-view.js       # Library paging/search + export entry points
-│  ├─ library-export.js     # Glossary TBX / CSV / JSON builders
-│  ├─ tm.js
-│  ├─ glossary.js
-│  ├─ persistence.js
-│  ├─ import-export.js
-│  ├─ formats.js            # CSV/SRT/VTT/PO/XLIFF/HTML/JSON/RTF
-│  ├─ html.js               # Shared HTML/XHTML run scanner + patcher
-│  ├─ epub.js               # EPUB package read / spine import / patch export
-│  ├─ preprocess.js         # Import-time source cleaning stage
-│  ├─ pre-translate.js      # Block pre-translation methods
-│  ├─ qa.js                 # Derived QA report (never persisted)
-│  ├─ xlsx.js
-│  ├─ pptx.js
-│  ├─ segmenter.js
-│  ├─ similarity.js
-│  ├─ tmx.js
-│  ├─ docx.js
-│  ├─ markdown.js
-│  ├─ xml.js
-│  ├─ mt.js
-│  ├─ tools.js
-│  └─ api.js
-└─ _dev/                    # tests, fixtures, local patch overlay
+├─ index.js                 # Host half: store + tools + private API
+├─ client.js                # generated Web bundle (do not edit)
+├─ client/                  # Web half sources
+│  ├─ index.js              # slot + locale wiring
+│  ├─ helpers.js            # pure helpers, no imports
+│  ├─ rpc.js                # fetch wrapper + transport errors
+│  ├─ errors.js             # error code → message lookup
+│  ├─ react.js              # the only module that imports React
+│  ├─ styles.js             # CSS + px→var(--cait-u) scaling
+│  ├─ locales.js            # ZH/EN/JA dictionaries (621 keys each)
+│  ├─ components/           # one module per surface
+│  └─ workbench/            # controller.js (state) + workbench.js (view)
+├─ lib/                     # Host modules; the map is docs/ARCHITECTURE.md §5
+│  ├─ store.js              # CatStore facade, applies store-mixins.js
+│  ├─ store-mixins.js       # single registry of store modules
+│  ├─ api.js                # private RPC + the only mutation list
+│  ├─ tools.js              # 21 agent tools
+│  └─ …                     # documents, segments, libraries, formats, persistence
+├─ scripts/                 # build, contract checks, test runner, bench
+├─ locale/{en,zh,ja}.json   # package metadata strings only
+├─ docs/                    # ARCHITECTURE.md, NEXT-ROUND.md
+└─ _dev/                    # test suites + fixtures
 ```
+
+The full module map, dependency direction, and the rules for adding a store
+method, an RPC handler, a format, or an error code live in
+[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md). Keep this sketch short so it
+cannot rot.
 
 </details>
 
@@ -541,49 +526,38 @@ Requires Node.js 22+ and DSH `0.2.x`. Tested with DSH `0.2.2-rc.1` and Node
 `26.7.0`.
 
 ```sh
-npm run build:client
-node --check client.js
-
-node _dev/test-core.mjs
-node _dev/test-imports.mjs
-node _dev/test-formats.mjs
-node _dev/test-epub.mjs
-node _dev/test-preprocess.mjs
-node _dev/test-second-tier.mjs
-node _dev/test-docx-export.mjs
-node _dev/test-api.mjs
-node _dev/test-plugin.mjs
-node _dev/test-persistence.mjs
-node _dev/test-documents.mjs
-node _dev/test-libraries.mjs
-node _dev/test-mounts.mjs
-node _dev/test-ui-scale.mjs
-node _dev/test-mt.mjs
-node _dev/test-mt-routes.mjs
-node _dev/test-three-state.mjs
-node _dev/test-pretranslate.mjs
-node _dev/test-qa.mjs
-node _dev/test-library-crud.mjs
-node _dev/test-library-view.mjs
-node _dev/test-pagination.mjs
-node _dev/test-replace.mjs
-node _dev/test-notes.mjs
-node _dev/test-lock.mjs
-node _dev/test-segment-edit.mjs
-node _dev/test-review.mjs
-node _dev/test-theme-tokens.mjs
-node _dev/test-e2e-1.1.mjs
+npm install        # once
+npm run check      # everything CI runs: lint, format, contracts, tests
+npm test           # just the 51 suites in _dev/
 ```
+
+`npm run check` is the gate. It runs, in order:
+
+| Step | What it proves |
+| --- | --- |
+| `lint` | ESLint over `lib/`, `index.js`, `scripts/`, `_dev/`, `client/` |
+| `format:check` | Prettier agrees with the tree |
+| `check:locales` | ZH/EN/JA have the same 621 keys and the same `{placeholders}` |
+| `check:errors` | every error code raised in `lib/` resolves to a message |
+| `check:store` | every store mixin is registered and no name is shadowed |
+| `check:formats` | every export format and import extension is wired and offered |
+| `check:shared` | client and server agree on shared constants |
+| `check:api` | every RPC handler exists on the store and every client call exists |
+| `check:client` | `client.js` on disk equals what `client/` builds |
+| `test` | 51 suites in `_dev/`, run one process at a time |
+
+`npm run bench` measures the scale paths (`--segments 20000 --tm 10000` by
+default); use it before changing anything the numbers depend on.
 
 The import/export fixtures are `_dev/sample.docx`, `_dev/sample-table.docx`, and
 `_dev/sample-format.docx`; regenerate them with the matching
-`python _dev/make-*.py` scripts. All 36 suites should pass.
+`python _dev/make-*.py` scripts.
 
 ### Releasing
 
-`npm publish` runs `prepublishOnly`, which rebuilds `client.js` from the
-`client/` fragments and syntax-checks the result, so a release cannot ship a
-stale bundle. Publishing from the repository root:
+`npm publish` runs `prepublishOnly`, which rebuilds `client.js` from `client/`
+and then runs the full `npm run check`, so a release cannot ship a stale bundle
+or a failing contract. Publishing from the repository root:
 
 ```sh
 npm publish

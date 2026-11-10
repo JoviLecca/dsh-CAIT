@@ -8,7 +8,7 @@
 import assert from 'node:assert/strict'
 import * as clientHelpers from '../client/helpers.js'
 import { PAGE_SIZE_OPTIONS, PAGE_SIZE_DEFAULT } from '../lib/library-view.js'
-import { DEFAULT_FUZZY_THRESHOLD as SERVER_FUZZY_THRESHOLD } from '../lib/store-utils.js'
+import { DEFAULT_FUZZY_THRESHOLD as SERVER_FUZZY_THRESHOLD } from '../lib/settings.js'
 
 const pairs = [
   ['PAGE_SIZE_OPTIONS', clientHelpers.PAGE_SIZE_OPTIONS, PAGE_SIZE_OPTIONS],

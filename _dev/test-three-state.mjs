@@ -3,7 +3,8 @@ import { mkdtempSync, rmSync, writeFileSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CatStore } from '../lib/store.js'
-import { STORE_VERSION, normalizeSegmentState, segmentStatus } from '../lib/store-utils.js'
+import { STORE_VERSION } from '../lib/limits.js'
+import { normalizeSegmentState, segmentStatus } from '../lib/segment-state.js'
 
 const silent = { warn() {}, error() {} }
 const roots = []

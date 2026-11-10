@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CatStore } from '../lib/store.js'
 import { PRETRANSLATE_BLOCK_MAX } from '../lib/pre-translate.js'
-import { STORE_VERSION } from '../lib/store-utils.js'
+import { STORE_VERSION } from '../lib/limits.js'
 
 const silent = { log() {}, warn() {}, error() {} }
 const roots = []

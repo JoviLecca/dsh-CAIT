@@ -6,7 +6,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CatStore } from '../lib/store.js'
-import { STORE_VERSION } from '../lib/store-utils.js'
+import { STORE_VERSION } from '../lib/limits.js'
 
 const silent = { log() {}, warn() {}, error() {} }
 const dir = mkdtempSync(join(tmpdir(), 'cait-e2e-'))

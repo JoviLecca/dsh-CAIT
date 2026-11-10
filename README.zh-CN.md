@@ -16,7 +16,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm 版本" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
-  <img alt="45 套测试" src="https://img.shields.io/badge/tests-45%20suites-brightgreen.svg" />
+  <img alt="51 套测试" src="https://img.shields.io/badge/tests-51%20suites-brightgreen.svg" />
   <img alt="无需 API Key" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
 </p>
 
@@ -392,45 +392,33 @@ flowchart LR
 
 ```text
 cait/
-├─ package.json
-├─ cordis.patch.yml
-├─ index.js                 # Host 端
-├─ client.js                # 生成的 Web bundle
-├─ client/                  # helpers、styles、RPC、components、locales、entry
-├─ scripts/build-client.mjs
-├─ icon.svg
-├─ locale/{en,zh,ja}.json
-├─ NOTICE
-├─ README.md
-├─ README.zh-CN.md
-├─ README.ja.md
-├─ CHANGELOG.md
-├─ lib/
-│  ├─ store.js              # CatStore 门面 + 文档/句段核心
-│  ├─ errors.js
-│  ├─ store-utils.js
-│  ├─ libraries.js          # TM/术语库注册表 + 挂载
-│  ├─ tm.js
-│  ├─ glossary.js
-│  ├─ persistence.js
-│  ├─ import-export.js
-│  ├─ formats.js            # CSV/SRT/VTT/PO/XLIFF/HTML/JSON/RTF
-│  ├─ html.js               # 共享 HTML/XHTML 文本块扫描与回写
-│  ├─ epub.js               # EPUB 包读取 / spine 导入 / 回写导出
-│  ├─ preprocess.js         # 导入期源文预处理阶段
-│  ├─ xlsx.js
-│  ├─ pptx.js
-│  ├─ segmenter.js
-│  ├─ similarity.js
-│  ├─ tmx.js
-│  ├─ docx.js
-│  ├─ markdown.js
-│  ├─ xml.js
-│  ├─ mt.js
-│  ├─ tools.js
-│  └─ api.js
-└─ _dev/                    # 测试、fixture、本地 patch 覆盖层
+├─ index.js                 # Host 端：存储 + 工具 + 私有 API
+├─ client.js                # 生成的 Web bundle（不要手改）
+├─ client/                  # Client 端源码
+│  ├─ index.js              # slot 与 locale 装配
+│  ├─ helpers.js            # 纯函数，不 import 其他模块
+│  ├─ rpc.js                # fetch 封装与传输层错误
+│  ├─ errors.js             # 错误码 → 文案
+│  ├─ react.js              # 唯一 import React 的模块
+│  ├─ styles.js             # CSS + px→var(--cait-u) 缩放
+│  ├─ locales.js            # ZH/EN/JA 字典（各 621 键）
+│  ├─ components/           # 一个界面区域一个模块
+│  └─ workbench/            # controller.js（状态）+ workbench.js（视图）
+├─ lib/                     # Host 模块；完整地图见 docs/ARCHITECTURE.md §5
+│  ├─ store.js              # CatStore 门面，装配 store-mixins.js
+│  ├─ store-mixins.js       # store 模块的唯一注册表
+│  ├─ api.js                # 私有 RPC + 唯一的写操作清单
+│  ├─ tools.js              # 21 个 Agent 工具
+│  └─ …                     # 文档、句段、库、格式、持久化
+├─ scripts/                 # 构建、契约检查、测试 runner、基准
+├─ locale/{en,zh,ja}.json   # 只放包元数据字符串
+├─ docs/                    # ARCHITECTURE.md、NEXT-ROUND.md
+└─ _dev/                    # 测试套件 + fixture
 ```
+
+完整模块地图、依赖方向，以及「新增 store 方法 / RPC handler / 格式 / 错误码」
+的规则都在 [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)。这里只留一个短
+草图，避免它再次过期。
 
 </details>
 
@@ -440,34 +428,37 @@ cait/
 中测试。
 
 ```sh
-npm run build:client
-node --check client.js
-
-node _dev/test-core.mjs
-node _dev/test-imports.mjs
-node _dev/test-formats.mjs
-node _dev/test-epub.mjs
-node _dev/test-preprocess.mjs
-node _dev/test-second-tier.mjs
-node _dev/test-docx-export.mjs
-node _dev/test-api.mjs
-node _dev/test-plugin.mjs
-node _dev/test-persistence.mjs
-node _dev/test-documents.mjs
-node _dev/test-libraries.mjs
-node _dev/test-mounts.mjs
-node _dev/test-ui-scale.mjs
-node _dev/test-mt.mjs
+npm install        # 只需一次
+npm run check      # CI 跑的整套：lint、格式化、契约检查、测试
+npm test           # 只跑 _dev/ 里的 51 个套件
 ```
+
+`npm run check` 是唯一门槛，按顺序执行：
+
+| 步骤 | 证明什么 |
+| --- | --- |
+| `lint` | ESLint 覆盖 `lib/`、`index.js`、`scripts/`、`_dev/`、`client/` |
+| `format:check` | Prettier 与仓库一致 |
+| `check:locales` | ZH/EN/JA 键集相同（621 个），`{占位符}` 也相同 |
+| `check:errors` | `lib/` 里抛出的每个错误码都能查到文案 |
+| `check:store` | 每个 store mixin 都已登记，且没有重名覆盖 |
+| `check:formats` | 每个导出格式、每种导入扩展名都接通并在界面上可选 |
+| `check:shared` | 客户端与服务端的共享常量一致 |
+| `check:api` | 每个 RPC handler 在 store 上存在，客户端调用的方法也都存在 |
+| `check:client` | 磁盘上的 `client.js` 与 `client/` 构建结果一致 |
+| `test` | `_dev/` 的 51 个套件，逐个进程运行 |
+
+`npm run bench` 用来测量规模路径（默认 `--segments 20000 --tm 10000`）；
+改动与这些数字相关的东西之前先跑一遍。
 
 导入/导出 fixture 为 `_dev/sample.docx`、`_dev/sample-table.docx` 和
 `_dev/sample-format.docx`；可用对应的 `python _dev/make-*.py` 脚本重新生成。
-45 套测试应全部通过。
 
 ### 发布
 
-`npm publish` 会触发 `prepublishOnly`：从 `client/` 的片段重建 `client.js`
-并做语法检查，因此发布出去的不会是一个过期的 bundle。在仓库根目录执行：
+`npm publish` 会触发 `prepublishOnly`：先从 `client/` 重建 `client.js`，
+再跑完整的 `npm run check`，因此发布出去的既不会是过期 bundle，也不会带着
+失败的契约检查。在仓库根目录执行：
 
 ```sh
 npm publish

@@ -2,10 +2,5 @@
   "meta": {
     "title": "CAIT 翻译工作台 (dsh-cait)",
     "description": "DSH 内置的 CAT（计算机辅助翻译）工作台：翻译记忆、术语库、句段编辑、AI 翻译建议，以及 TXT/Markdown/DOCX/TMX 导入导出。"
-  },
-  "match.exact": "精确",
-  "match.near_exact": "近似精确",
-  "match.high_fuzzy": "高模糊",
-  "match.medium_fuzzy": "中模糊",
-  "match.low_fuzzy": "低模糊"
+  }
 }

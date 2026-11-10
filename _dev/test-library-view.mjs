@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CatStore } from '../lib/store.js'
-import { parseGlossaryCsv } from '../lib/store-utils.js'
+import { parseGlossaryCsv } from '../lib/text-utils.js'
 
 // The library page needs a catalogue, not a query: every entry of every chosen
 // library, paged, filtered by substring. These tests pin that shape plus the

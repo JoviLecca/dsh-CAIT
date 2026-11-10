@@ -3,7 +3,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CatStore } from '../lib/store.js'
-import { STORE_VERSION } from '../lib/store-utils.js'
+import { STORE_VERSION } from '../lib/limits.js'
 
 function section(title) {
   console.log(`\n== ${title} ==`)

@@ -15,7 +15,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CatStore } from '../lib/store.js'
 import { MUTATIONS, createHandlers } from '../lib/api.js'
-import { DEFAULT_TM_ID, makeId, now } from '../lib/store-utils.js'
+import { DEFAULT_TM_ID } from '../lib/limits.js'
+import { makeId, now } from '../lib/text-utils.js'
 import { normalizeText } from '../lib/similarity.js'
 
 const argv = process.argv.slice(2)
@@ -100,13 +101,13 @@ const pairs = Array.from({ length: BULK_PROBE }, (_, index) => ({
   target: `批量记忆库译文第 ${index + 1} 行`,
 }))
 const imported = time(() => store.importTM({ pairs, sourceLang: 'en', targetLang: 'zh-CN' }))
-record('setup', `importTM (${BULK_PROBE} pairs, O(n²) upsert)`, imported.ms)
+record('setup', `importTM (${BULK_PROBE} pairs, identity index)`, imported.ms)
 const perPair = imported.ms / BULK_PROBE
 
-// Filling the rest through upsertTM would be quadratic (it scans `this.tm` per
-// entry), which the import probe above already shows. Push the remaining rows
-// directly so the measurements below start from a realistic table size instead
-// of paying setup cost.
+// Pushing the remaining rows straight into `this.tm` keeps the probe above
+// honest: filling through `upsertTM` would also pay one persist per call.
+// Rows below are pushed directly so the measured paths start from a realistic
+// table size instead of paying setup cost.
 const stamp = now()
 for (let index = store.tm.length; index < TM_ENTRIES; index += 1) {
   const source = `Bulk memory source line ${index + 1}`
@@ -133,7 +134,7 @@ measureReadPath(`read/TM=${TM_ENTRIES}`)
 const confirmed = time(() =>
   store.confirmSegment({ index: at(100), target: '人工确认的译文。', addToTm: true }),
 )
-record('write', 'confirmSegment() (TM clone + persist)', confirmed.ms)
+record('write', 'confirmSegment() (undo record + persist)', confirmed.ms)
 
 const apiConfirmed = time(() => {
   const result = handlers.confirmSegment({ index: at(101), target: '人工确认的译文。' })
@@ -168,8 +169,8 @@ for (const row of rows) {
 console.log('')
 console.log(`store.json on disk: ${mb(statSync(join(dataDir, 'store.json')).size)}`)
 console.log(
-  `upsertTM cost at ${BULK_PROBE.toLocaleString()} existing entries: ${perPair.toFixed(2)} ms/pair ` +
-    `(quadratic: every insert scans the whole table)`,
+  `importTM cost at ${BULK_PROBE.toLocaleString()} existing entries: ${perPair.toFixed(2)} ms/pair ` +
+    `(identity index; the linear-update path is gone)`,
 )
 console.log(
   `budget check: write ${apiConfirmed.ms.toFixed(0)} ms / ${(apiConfirmed.value.length / 1024 / 1024).toFixed(2)} MB ` +
