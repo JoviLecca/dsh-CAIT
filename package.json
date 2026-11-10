@@ -17,7 +17,7 @@
   "bugs": {
     "url": "https://github.com/JoviLecca/dsh-CAIT/issues"
   },
-  "description": "CAIT — a CAT workbench for DeepSeek Harness with translation memory, glossary, document tabs, MT routes, and Office/EPUB/subtitle/localization formats.",
+  "description": "CAIT 鈥?a CAT workbench for DeepSeek Harness with translation memory, glossary, document tabs, MT routes, and Office/EPUB/subtitle/localization formats.",
   "type": "module",
   "keywords": [
     "dsh-plugin",
@@ -37,10 +37,11 @@
   },
   "scripts": {
     "build:client": "node scripts/build-client.mjs",
-    "check": "npm run lint && npm run format:check && npm run check:locales && npm run check:store && npm run check:formats && npm run check:api && npm run check:client && npm test",
+    "check": "npm run lint && npm run format:check && npm run check:locales && npm run check:store && npm run check:formats && npm run check:shared && npm run check:api && npm run check:client && npm test",
     "check:api": "node scripts/check-api.mjs",
     "check:client": "node scripts/check-client.mjs",
     "check:formats": "node scripts/check-formats.mjs",
+    "check:shared": "node scripts/check-shared.mjs",
     "check:locales": "node scripts/check-locales.mjs",
     "check:store": "node scripts/check-store.mjs",
     "format": "prettier --write .",
