@@ -130,6 +130,14 @@ export function useWorkbenchController({ i18n, translate }) {
     setMtError('')
   }
 
+  // TM／术语库／设置这类操作不会改动当前句段，所以刻意不重置草稿；
+  // 但活动文档可能被另一个窗口删短，选中越界时必须退回完整采纳。
+  const replaceRemoteState = (next) => {
+    const nextDoc = next?.activeDocument
+    if (!nextDoc || selected >= (nextDoc.segments?.length || 0)) adoptState(next)
+    else setData(next)
+  }
+
   const notify = (message, kind = 'success') => setToast({ message, kind, id: Date.now() })
   const report = (error) => notify(error?.message || t('toast.error'), 'error')
   const importNotice = (result, fallback) => {
@@ -165,7 +173,9 @@ export function useWorkbenchController({ i18n, translate }) {
 
   const refreshState = async () => {
     try {
-      if (dirty) {
+      // 必须读 ref：预翻译是「每块刷新一次」的长循环，闭包里的 dirty 是循环开始
+      // 那一帧的值，用户中途输入会被判成「没改动」而被 adoptState 覆盖掉。
+      if (dirtyRef.current) {
         const saved = await saveDraft(true)
         if (!saved) return
       }
@@ -385,7 +395,7 @@ export function useWorkbenchController({ i18n, translate }) {
   ])
 
   const saveDraft = async (silent = true) => {
-    if (!doc || !dirty) return true
+    if (!doc || !dirtyRef.current) return true
     try {
       const result = await rpc('saveDraft', { documentId: doc.id, index: selected, target: draft })
       if (result.state) adoptState(result.state)
@@ -402,7 +412,7 @@ export function useWorkbenchController({ i18n, translate }) {
     if (!doc || busy || nextIndex === selected) return
     setBusy('select')
     try {
-      if (dirty) {
+      if (dirtyRef.current) {
         await rpc('saveDraft', { documentId: doc.id, index: selected, target: draft })
         setDirty(false)
       }
@@ -485,7 +495,7 @@ export function useWorkbenchController({ i18n, translate }) {
 
   const adoptSuggestion = async () => {
     if (!doc || busy || !segment?.suggestion) return
-    if (dirty) {
+    if (dirtyRef.current) {
       const saved = await saveDraft(true)
       if (!saved) return
     }
@@ -505,7 +515,7 @@ export function useWorkbenchController({ i18n, translate }) {
     if (!doc || busy) return
     setBusy('move')
     try {
-      if (dirty) {
+      if (dirtyRef.current) {
         await rpc('saveDraft', { documentId: doc.id, index: selected, target: draft })
         setDirty(false)
       }
@@ -522,7 +532,7 @@ export function useWorkbenchController({ i18n, translate }) {
     if (!documentId || documentId === doc?.id || busy) return
     setBusy('open')
     try {
-      if (dirty) {
+      if (dirtyRef.current) {
         await rpc('saveDraft', { documentId: doc.id, index: selected, target: draft })
         setDirty(false)
       }
@@ -539,7 +549,7 @@ export function useWorkbenchController({ i18n, translate }) {
     if (!documentId || busy) return
     setBusy('close')
     try {
-      if (dirty) {
+      if (dirtyRef.current) {
         const saved = await saveDraft(true)
         if (!saved) return
       }
@@ -629,7 +639,7 @@ export function useWorkbenchController({ i18n, translate }) {
     if (!doc || busy) return
     setBusy('unconfirm')
     try {
-      if (dirty) {
+      if (dirtyRef.current) {
         const saved = await saveDraft(true)
         if (!saved) return
       }
@@ -996,7 +1006,7 @@ export function useWorkbenchController({ i18n, translate }) {
     setBusy('tm-edit')
     try {
       const result = await rpc('updateTM', { id, target })
-      setData(result.state)
+      replaceRemoteState(result.state)
       setTmRefresh((value) => value + 1)
       notify(t('toast.tmUpdated'))
       return true
@@ -1016,7 +1026,7 @@ export function useWorkbenchController({ i18n, translate }) {
       confirmLabel: t('panel.delete'),
       action: async () => {
         const result = await rpc('deleteTM', { id: match.id })
-        setData(result.state)
+        replaceRemoteState(result.state)
         setTmRefresh((value) => value + 1)
         notify(t('toast.tmDeleted'))
       },
@@ -1100,7 +1110,7 @@ export function useWorkbenchController({ i18n, translate }) {
         sourceLang: doc?.sourceLang || settings.sourceLang,
         glossaryId: data?.mounts?.defaultGlossaryId,
       })
-      setData(result.state)
+      replaceRemoteState(result.state)
       notify(t('toast.termSaved'))
       return true
     } catch (error) {
@@ -1119,7 +1129,7 @@ export function useWorkbenchController({ i18n, translate }) {
       confirmLabel: t('panel.delete'),
       action: async () => {
         const result = await rpc('deleteGlossary', { id: term.id })
-        setData(result.state)
+        replaceRemoteState(result.state)
         notify(t('toast.termDeleted'))
       },
     })
@@ -1136,7 +1146,7 @@ export function useWorkbenchController({ i18n, translate }) {
         targetLang: doc?.targetLang || settings.targetLang,
         tmId: data?.mounts?.defaultTmId,
       })
-      setData(result.state)
+      replaceRemoteState(result.state)
       importNotice(result, `${t('toast.tmImported')} · +${result.added} / ~${result.updated}`)
     } catch (error) {
       report(error)
@@ -1153,7 +1163,7 @@ export function useWorkbenchController({ i18n, translate }) {
         text,
         glossaryId: data?.mounts?.defaultGlossaryId,
       })
-      setData(result.state)
+      replaceRemoteState(result.state)
       notify(`${t('toast.glossaryImported')} · +${result.added} / ~${result.updated}`)
     } catch (error) {
       report(error)
@@ -1187,7 +1197,7 @@ export function useWorkbenchController({ i18n, translate }) {
     setBusy('settings')
     try {
       const result = await rpc('saveSettings', patch)
-      setData(result.state)
+      replaceRemoteState(result.state)
       setModal(null)
       notify(t('toast.settingsSaved'))
       return true
@@ -1203,7 +1213,7 @@ export function useWorkbenchController({ i18n, translate }) {
     setBusy('mounts')
     try {
       const result = await rpc('setMounts', patch)
-      setData(result.state)
+      replaceRemoteState(result.state)
       setTmResults(null)
       notify(t('libraries.mountSaved'))
       return true
@@ -1219,7 +1229,7 @@ export function useWorkbenchController({ i18n, translate }) {
     setBusy('library')
     try {
       const result = await rpc('createLibrary', { kind, name })
-      setData(result.state)
+      replaceRemoteState(result.state)
       notify(t('libraries.created'))
       return true
     } catch (error) {
@@ -1234,7 +1244,7 @@ export function useWorkbenchController({ i18n, translate }) {
     setBusy('library')
     try {
       const result = await rpc('renameLibrary', { kind, id, name })
-      setData(result.state)
+      replaceRemoteState(result.state)
       notify(t('libraries.renamed'))
       return true
     } catch (error) {
@@ -1254,7 +1264,7 @@ export function useWorkbenchController({ i18n, translate }) {
       confirmLabel: t('libraries.delete'),
       action: async () => {
         const result = await rpc('deleteLibrary', { kind, id })
-        setData(result.state)
+        replaceRemoteState(result.state)
         setTmResults(null)
         notify(t('libraries.deleted'))
       },
@@ -1313,7 +1323,7 @@ export function useWorkbenchController({ i18n, translate }) {
       confirmLabel: t('panel.clearTm'),
       action: async () => {
         const result = await rpc('clearTM', { tmIds: data?.mounts?.tmIds || [], confirm: true })
-        setData(result.state)
+        replaceRemoteState(result.state)
         setTmResults(null)
         notify(t('toast.tmCleared'))
       },
@@ -1329,7 +1339,7 @@ export function useWorkbenchController({ i18n, translate }) {
           glossaryIds: data?.mounts?.glossaryIds || [],
           confirm: true,
         })
-        setData(result.state)
+        replaceRemoteState(result.state)
         notify(t('toast.glossaryCleared'))
       },
     })
