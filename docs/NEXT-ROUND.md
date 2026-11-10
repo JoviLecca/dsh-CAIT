@@ -195,5 +195,5 @@ npm run build:client # 改过 client/** 时
 | 2026-11-10 | P2 基准与 TM 索引：`bench-scale.mjs`、`prepare/scoreCeiling`、`test-tm-index` | `5a10bf2`、`c6859bc` |
 | 2026-11-10 | P3/P4：文档同步、tools 样板、死键、`file-ops.js`、utils 六拆、TM 写入索引、紧凑落盘 | 见 `git log` |
 | 2026-11-10 | AI 审校 A+B：当前页/高风险分批、进度、取消、`indexes` 参数 | `8fcc6b2` |
-| 2026-11-10 | AI 审校 C：报告落库、三态筛选、CSV/Markdown 导出、清空 | `6c192ec` |
+| 2026-11-10 | AI 审校 C：报告落库、三态筛选、CSV/Markdown 导出、清空 | `2b49317` |
 
