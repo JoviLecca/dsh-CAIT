@@ -37,10 +37,11 @@
   },
   "scripts": {
     "build:client": "node scripts/build-client.mjs",
-    "check": "npm run lint && npm run format:check && npm run check:locales && npm run check:api && npm run check:client && npm test",
+    "check": "npm run lint && npm run format:check && npm run check:locales && npm run check:store && npm run check:api && npm run check:client && npm test",
     "check:api": "node scripts/check-api.mjs",
     "check:client": "node scripts/check-client.mjs",
     "check:locales": "node scripts/check-locales.mjs",
+    "check:store": "node scripts/check-store.mjs",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint": "eslint lib index.js scripts _dev client",
