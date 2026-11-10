@@ -166,6 +166,7 @@ lib:     api/tools → store → domain modules → infra(store-utils/persistenc
 | --- | --- | --- |
 | RPC 方法 | `lib/api.js` 的 `METHODS` 表（名字、handler、是否 mutation） | `check-api` |
 | 客户端调用 | `client/rpc.js` 的 `rpc('method', …)` | `check-api`（扫源码字面量） |
+| store 方法 | 对应的 `*Methods` 模块 + `lib/store-mixins.js` 的 `STORE_MIXINS` 一行 | `check-store`（登记 + 重名） |
 | 导入/导出格式 | `lib/formats/registry.js` 一行 | round-trip 测试 |
 | UI 面板 | `client/components/` 新文件 + `components/workbench.js` 挂载 | `no-unused-vars` + `check-client` |
 | 界面文案 | `client/locales.js` 的 `ZH/EN/JA` 三份同时加（`Object.assign` 追加块） | `check-locales`（键齐平 + 占位符一致） |
@@ -202,7 +203,7 @@ CI 与本地跑同一套命令，避免「本地过、CI 挂」。
 | 0 | 工程护栏 | ✅ 完成（`ab9ea1d`） |
 | 1 | 客户端模块化 | 🟡 1.1/1.2/1.4 完成，1.3 控制器已抽出、hook 细分待做 |
 | 3 | 增量同步 | 未开始 |
-| 2 | 服务端拆分 | 未开始 |
+| 2 | 服务端拆分 | 🟡 2.1 完成（`f155e3d`），2.2–2.4 待做 |
 | 4 | 格式注册表 | 未开始 |
 
 验收记录：
@@ -213,5 +214,9 @@ CI 与本地跑同一套命令，避免「本地过、CI 挂」。
 | 2026-11-10 | 1（1.1/1.2） | `npm run check` | 同上，`client.js` 423KB→349KB，提交 `95a6870` |
 | 2026-11-10 | 1（1.2 组件拆分） | `npm run check` | 9 个 components 文件、`client.js` 349KB，提交 `8ef405c` |
 | 2026-11-10 | 1（1.3 控制器） | `npm run check` | controller 1600 行 / view 574 行，提交 `255d5ec` |
+| 2026-11-10 | 1（i18n 传参） | `npm run check` | 28 处 `.replace('{x}')` 清零，check:locales 新增占位符校验，提交 `274a94e` |
+| 2026-11-10 | 1（jsdom 端到端） | `npm run check` | 47/47 套件（新增 mount/flow 两个 jsdom 用例），提交 `b8165f0` |
+| 2026-11-10 | 1（草稿保护） | `npm run check` | stale closure 6 处改 `dirtyRef`，13 处裸 `setData` 收口，提交 `154121c` |
+| 2026-11-10 | 2（2.1 组合显式化） | `npm run check` | 20 个 mixin / 101 个方法登记，重名装配期抛错，提交 `f155e3d` |
 
 > 每批完成后在此表更新状态，并补一行「验收记录」（命令、日期、结果）。

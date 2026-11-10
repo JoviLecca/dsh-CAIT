@@ -15,8 +15,9 @@ index.js  apply(ctx)
         └─ webServer.register('/cait/api')    同源校验 + JSON 信封
 ```
 
-客户端是单文件产物 `client.js`，由 `scripts/build-client.mjs` 把 `client/` 下六个片段
-拼进同一个函数作用域后生成。**`client.js` 不要手改**，改 `client/` 再构建。
+客户端源码在 `client/`，由 `scripts/build-client.mjs` 用 esbuild 打包成单文件 `client.js`
+（外层仍是 DSH 的 `window.__ModuleLoader__.load` 契约，`react` 是 external）。
+**`client.js` 不要手改**，改 `client/` 再构建。
 
 ## 2. 服务端分层
 
@@ -26,7 +27,7 @@ index.js  apply(ctx)
 | --- | --- | --- |
 | 入口 | `index.js` | 组装、生命周期、卸载时 flush |
 | 协议层 | `lib/api.js`、`lib/tools.js` | HTTP/工具的参数与错误信封，不含业务分支 |
-| 状态层 | `lib/store.js` + 21 个 mixin | `CatStore` 持有 `docs/tm/glossary/settings/revision`，方法由 mixin 挂到原型上 |
+| 状态层 | `lib/store.js` + `lib/store-mixins.js` 登记的 20 个方法模块 | `CatStore` 持有 `docs/tm/glossary/settings/revision`，接口由 mixin 挂到原型上 |
 | 领域层 | `formats/localization/docx/xlsx/pptx/epub/qa/review/replace/...` | 纯函数或「只依赖传入参数」的模块 |
 | 基础设施 | `lib/store-utils.js`、`lib/errors.js`、`lib/persistence.js` | 通用工具、错误类型、落盘与迁移 |
 
@@ -34,6 +35,9 @@ index.js  apply(ctx)
 
 - 领域层不得 import `store.js`；需要 store 能力时由 store 传参进来。
 - `store-utils.js` 只放纯函数与常量，不再接新职责（它已经是杂物抽屉，见路线图 Batch 2）。
+- mixin 的所有权只在 `lib/store-mixins.js` 的 `STORE_MIXINS` 里登记一次；`applyMixins` 在装配时
+  拒绝同名方法（含与 `CatStore` 类体重名），`npm run check:store` 会打印归属表，并在
+  「模块导出了 `*Methods` 但没登记」时失败。
 - **不要新增 mixin**。新方法写进已有的领域模块，或新建一个「接收 store 作为参数」的函数模块，
   由 store 里一行转发调用。mixins 目录只减不增。
 
@@ -66,20 +70,26 @@ Batch 3 会改成按 `revision` 增量下发。
 
 ## 5. 客户端结构
 
-六个片段共享一个作用域，没有 import/export，也没有模块边界：
+`client/` 是真正的 ESM，依赖方向自上而下（`eslint.config.js` 用 `no-restricted-imports` 守着）：
 
-- `helpers.js`：纯函数（分页、缩放、主题、取整），通过 `__test` 暴露给 Node 测试
-- `styles.js`：一条巨型 CSS 模板串
-- `rpc.js`：fetch 封装与下载/剪贴板
-- `components.js`：全部 React 组件，`Workbench` 是唯一的状态持有者
-- `locales.js`：ZH/EN/JA 三本字典 + `makeTranslator`
-- `entry.js`：`return { ... }`，向 DSH 注册面板
+```
+client/index.js            注册 DSH 面板、i18n 适配（entry）
+  ├─ workbench/controller.js  useWorkbenchController：全部状态与动作（数据层/动作层）
+  ├─ workbench.js            纯视图：h() 树，只读 controller 的返回值
+  └─ components/*.js         各界面：base/shell/rail/editor/panels/forms/dialogs/pages
+        └─ helpers.js  rpc.js  locales.js  react.js   （叶子，不得 import 上层）
+```
 
-Batch 1 会把它们改成真正的 ESM + 打包器，并把 `Workbench` 拆成
-「数据层（server state）/ 动作层 / 视图层」。在那之前：
+- `components/**` 不得 import `workbench/**`；`workbench/**` 不得 import `components/**`
+  （唯一例外是 `components/workbench.js` 组合两者）。组件之间横向 import 只允许 `base.js`。
+- `helpers.js` 是纯函数（分页、缩放、主题），`styles.js` 是一条 CSS 模板串 + 缩放，
+  `rpc.js` 是 fetch 封装，`locales.js` 是三本字典 + `makeTranslator`（`t(key, vars)`）。
+- 界面文案一律 `t('key', { name: value })`，不要用 `.replace('{name}', ...)`：
+  `check:locales` 会校验三语占位符一致，手写 replace 会绕过这条检查。
+- 新组件按界面归入 `components/` 下已有的文件；只有当现有文件出现第二个职责时才新建文件。
 
-- 新组件不要往 `components.js` 里堆，先想清楚它属于哪一层
-- 新增文案必须同时加 ZH/EN/JA 三个键
+`Workbench` 的状态仍集中在一个 hook 里（35 个 `useState`），这是 Batch 1.3 的剩余项：
+按面板拆成多个 hook，但 controller 对外暴露的字段名保持不变，视图层无需改动。
 
 ## 6. 测试
 
@@ -89,15 +99,19 @@ Batch 1 会把它们改成真正的 ESM + 打包器，并把 `Workbench` 拆成
 - 一个套件只测一个模块或一条链路，直接 `import` 被测模块，不启动 HTTP 服务
 - 需要 store 时 `new CatStore({ dataDir: mkdtemp(...) })`，用完删目录
 - 断言用 `node:assert/strict`，失败信息写清楚「期望/实际」
+- 界面链路用 `_dev/lib/workbench-harness.mjs` 在 jsdom 里挂载 `client.js` 产物，配真实 store
+  （`test-workbench-mount.mjs`、`test-workbench-flow.mjs` 是范例）
 
-`npm run check` = lint + 格式检查 + 三个契约检查 + 全量测试，CI 与 `prepublishOnly` 都跑它。
+`npm run check` = lint + 格式检查 + 四个契约检查（locales/store/api/client）+ 全量测试，
+CI 与 `prepublishOnly` 都跑它。
 
 ## 7. 加东西的标准动作
 
 | 要做的事 | 改哪里 | 之后跑 |
 | --- | --- | --- |
 | 新 RPC | store 方法 → `createHandlers` → 写操作登记 `MUTATIONS` → 客户端 `rpc()` | `check:api` |
+| 新 store 方法 | 加进对应的 `*Methods` 模块；**不要**新建 mixin，也**不要**往 `store.js` 类体堆 | `check:store` |
 | 新界面文案 | `client/locales.js` 的 ZH/EN/JA 三处 | `check:locales` |
 | 新导出格式 | Batch 4 之后加一条注册表项；当前先加 `import-export.js` 分支并补测试 | `npm test` |
 | 新 store 字段 | 构造函数 → `persist()` → `restore()` 迁移 → `bootstrap()` | `npm test` |
-| 改客户端 | `client/*.js` → `npm run build:client` | `check:client` + `npm test` |
+| 改客户端 | `client/**` → `npm run build:client` | `check:client` + `npm test` |
