@@ -16,7 +16,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm 版本" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
-  <img alt="41 套测试" src="https://img.shields.io/badge/tests-41%20suites-brightgreen.svg" />
+  <img alt="45 套测试" src="https://img.shields.io/badge/tests-45%20suites-brightgreen.svg" />
   <img alt="无需 API Key" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
 </p>
 
@@ -52,6 +52,13 @@ CAIT 为 DSH Web UI 和 DSH 桌面端增加一个 CAT 翻译工作台。它从�
 无需手动刷新即可出现。
 
 ## 功能
+
+### 1.1.7 新增
+
+- **DOCX 深度**：表格、页眉、页脚、脚注和尾注里的段落都会作为普通句段导入，并写回原来的 part。
+- **本地化字符串**：Apple `.strings`/`.stringsdict`、Android `strings.xml`/复数、`.resx`、`.arb`、嵌套 YAML、Java `.properties` 可往返，保留 key、注释、复数变体、块标量和内联标签。
+- **演讲者备注与多工作表**：PPTX 备注页独立成段；XLSX 每个工作表保留名称、顺序和单元格引用；保留源文件时按原单元格回写，样式和合并区域不丢。
+- **字幕时间轴**：合并相邻 cue、按时间点拆分、整体平移时间码；重叠 cue 作为高风险 QA 提示，不自动改时间。
 
 ### 1.1.6 新增
 
@@ -214,7 +221,7 @@ provider/model/code/status，客户端只会收到 `MT_PROVIDER_FAILED`。
 | SDLXLIFF | ✅ | ✅ | 走基础 XLIFF 1.2 路径；SDL 专有扩展不会完整往返 |
 | HTML | ✅ | ✅ | 保留文本块与内联标签；不重建文档级 CSS/版式 |
 | JSON | ✅ | ✅ | 字符串路径子集；通过模板保留对象/数组结构；key 和数字不翻译 |
-| XLSX | ✅ | ✅ | 第一个工作表；识别 `Source`/`Target` 表头或 A/B 列；导出为新的两列表格 |
+| XLSX | ✅ | ✅ | 全部工作表；识别源/目标列或表头；保留源文件时按单元格回写，样式、合并区域和其他工作表不丢；公式单元格跳过 |
 | PPTX | ✅ | ✅* | 保留源格式导出；需要导入时保留的 `.pptx` 包。仅正文；备注/图表/SmartArt 不导入。 |
 | RTF | ✅ | ✅ | 基础段落、`\uN`、`\'hh`、控制字；不往返原始样式 |
 
@@ -256,7 +263,7 @@ CAIT 以 DSH bundle 的形式安装；发布的 npm 包名为 `dsh-cait`，插�
 plugin_manager install_bundle target: dsh-cait
 ```
 
-需要固定版本时写 `dsh-cait@1.1.6`，需要最新版时写 `dsh-cait@latest`。管理器会解析 registry
+需要固定版本时写 `dsh-cait@1.1.7`，需要最新版时写 `dsh-cait@latest`。管理器会解析 registry
 上的包、应用 bundle patch 并激活插件，不需要手工在配置档里加行。
 
 使用 CLI 管理的配置档：
@@ -455,7 +462,7 @@ node _dev/test-mt.mjs
 
 导入/导出 fixture 为 `_dev/sample.docx`、`_dev/sample-table.docx` 和
 `_dev/sample-format.docx`；可用对应的 `python _dev/make-*.py` 脚本重新生成。
-41 套测试应全部通过。
+45 套测试应全部通过。
 
 ### 发布
 
@@ -497,11 +504,14 @@ GitHub release 发布。
   [不支持 PDF](#不支持-pdf)）。暂不支持图片 OCR。
 - EPUB 导入只覆盖 spine 中的正文 XHTML 文本块；不支持 DRM、固定版式、
   脚本化以及大量使用 MathML 的电子书。
-- DOCX 导入会跳过表格、页眉、脚注、域、替代文本和修订删除内容。
-  DOCX 导出时这些区域保持源语言。
+- DOCX 导入覆盖正文、表格、页眉、页脚、脚注和尾注；域、替代文本和修订删除
+  仍保持源语言。
 - DOCX/PPTX 中混合 run 的段落会继承第一个 run 的格式。
-- PPTX 导入只覆盖正文，不包含备注、图表或 SmartArt。
-- XLSX 导入/导出是两列表格；不保留单元格样式、公式、合并单元格、图片和额外工作表。
+- PPTX 导入覆盖正文和演讲者备注，不包含图表或 SmartArt。
+- XLSX 导出需要目标列才能回写；公式单元格会跳过；1.1.7 之前导入的文档没有
+  保留源工作簿，只能重建新表。
+- 嵌套 YAML 支持 mapping、sequence、scalar、块标量和注释；锚点、别名、
+  merge key 和 flow 集合会以 `LOCALIZATION_YAML_UNSUPPORTED` 拒绝。
 - HTML/RTF 导出不往返原始样式；JSON 只翻译字符串值。
 - TM 匹配是词法级的，不是语义级；没有词干、同义词或向量。
 - 每个上下文下，同一原文存一条译文：重复的句子会为每种相邻句组合保留一条变体，
@@ -510,8 +520,8 @@ GitHub release 发布。
 - TBX 与 JSON 术语导出是单向的；只有 TMX 和 CSV 能再导入回来。
 - 工作台界面提供中文、English、日本語三种语言，可在设置中切换；README 提供英文、简体中文和日文三个版本，以英文版为准。
 
-后续计划：通过多模态 DSH 路由支持图片/视觉输入、保留样式的 XLSX 输出，
-以及 XLIFF `<alt-trans>` / 注释支持。
+后续计划：通过多模态 DSH 路由支持图片/视觉输入、Office 段落映射后的合并/拆分，
+以及字幕波形/播放头。
 
 ## 变更日志与版本
 

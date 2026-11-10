@@ -1,6 +1,6 @@
 # CAIT v1.1.4–v1.1.7 路线图：从第一稿到交付
 
-> 状态：**1.1.4 已实现（2026-11-08），1.1.5 主体已实现（2026-11-08），1.1.6 主体已实现（2026-11-09），1.1.7 已规划**
+> 状态：**1.1.4 已实现（2026-11-08），1.1.5 主体已实现（2026-11-08），1.1.6 主体已实现（2026-11-09），1.1.7 主体已实现（2026-11-10）**
 > 基线：`v1.1.3`（`main`）→ `v1.1.4`
 > 使用者：作者本人 + agent
 > 原则：不按时间盒砍范围；每版一个主题；数据模型一次只动一层；每版可独立发布、独立回滚
@@ -298,6 +298,15 @@
 
 **真实文件的作用**：如果主要文件是字幕，可以把 1.7.4 提到 1.7.3 前面；但 DOCX 和 strings 不后置。这版的目标是补两个最大人群的深度，不是把格式表再铺宽一层。
 
+### 实现状态（2026-11-10）
+
+- 1.7.1 DOCX：表格、页眉、页脚、脚注、尾注按 part + ordinal 解析与回填；`test-imports`、`test-docx-export` 通过。
+- 1.7.2 本地化字符串：Apple `.strings`/`.stringsdict`、Android `strings.xml`/plurals、`.resx`、`.arb`、嵌套 YAML（mapping/sequence/block scalar/注释）、`.properties`；`test-localization` 通过。
+- 1.7.3 Office：XLSX 多工作表 + 保留源工作簿按目标单元格回写（样式、合并区域、其他 sheet 不丢；公式跳过）；PPTX 演讲者备注；`test-office-1.7`、`test-xlsx-roundtrip`、`test-second-tier` 通过。
+- 1.7.4 字幕：cue 合并/拆分/平移 + 重叠 QA；`test-subtitles` 通过。
+- 未做/已知限制：XLSX 回写要求源表有目标列，公式单元格不译；嵌套 YAML 的锚点/别名/merge key/flow 集合明确拒绝；字幕无波形/播放头；Office 句段合并/拆分仍只覆盖文本格式。
+- 全量 45 套 `_dev/test-*.mjs` 通过；`client.js` 已重建。
+
 ### 数据模型
 
 - 不升 `STORE_VERSION`；扩展 `cleanSegmentMeta` 白名单：`docxPart`、`table`、`row`、`cell`、`sheet`、`keyPath`、`icuType` 等，全部可选。
@@ -351,7 +360,7 @@
 - 多目标语言（一源多译）
 - 项目包/整包备份
 - 成本核算/发票
-- 完整 style-preserving XLSX
+- XLSX 公式单元格/图表对象的回写
 - 图像/视觉输入（README 的 *Planned next*）
 - XLIFF `<alt-trans>`（1.1.5 先做 `state`/`note` 审校包）
 

@@ -447,6 +447,9 @@ window.__ModuleLoader__.load({
 .cait-textarea::placeholder{color:var(--dsw-alias-label-secondary)}
 .cait-meta{font-size:10.5px;color:var(--dsw-alias-label-secondary);font-variant-numeric:tabular-nums}
 .cait-actionbar{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-top:13px}
+.cait-subbar{display:inline-flex;align-items:center;gap:6px;flex-wrap:wrap;padding:3px 6px;border:1px solid var(--dsw-alias-border-l1);border-radius:7px;background:var(--dsw-alias-bg-layer-2)}
+.cait-subtime{font-size:10.5px;font-variant-numeric:tabular-nums;color:var(--dsw-alias-label-secondary);white-space:nowrap}
+.cait-suboffset{width:54px;height:24px;padding:0 5px;border:1px solid var(--dsw-alias-border-l1);border-radius:5px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);font-size:10.5px}
 .cait-hint{margin-left:auto;font-size:10px;color:var(--dsw-alias-label-secondary)}
 .cait-savebtn{width:31px;height:31px;border-color:var(--dsw-alias-border-l1);background:var(--dsw-alias-bg-layer-1)}
 .cait-editor-foot{display:flex;align-items:center;gap:8px;margin-top:11px;font-size:10.5px;color:var(--dsw-alias-label-secondary)}
@@ -648,7 +651,8 @@ window.__ModuleLoader__.load({
 .cait-libtoolbar{display:flex;align-items:center;gap:6px;padding:9px 12px 6px;flex-wrap:wrap;flex:0 0 auto}
 .cait-libsearch{display:flex;align-items:center;gap:6px;min-width:150px;flex:1;height:29px;padding:0 9px;border:1px solid var(--dsw-alias-border-l1);border-radius:7px;background:var(--dsw-alias-bg-base);color:var(--dsw-alias-label-secondary)}
 .cait-libsearch input{min-width:0;flex:1;border:0;outline:0;background:transparent;font-size:11.5px;color:var(--dsw-alias-label-primary)}
-.cait-liblang{height:29px;padding:0 5px;border:1px solid var(--dsw-alias-border-l1);border-radius:7px;background:var(--dsw-alias-bg-layer-1);font-size:11px;flex:0 0 auto}
+.cait-liblang{height:29px;padding:0 7px;border:1px solid var(--dsw-alias-border-l1);border-radius:7px;background:var(--dsw-alias-bg-layer-1);font-size:11px;flex:0 0 auto;min-width:132px;max-width:280px}
+.cait-liblang:disabled{opacity:.65}
 .cait-libwrite{display:inline-flex;align-items:center;gap:5px;flex:0 0 auto;font-size:10.5px;color:var(--dsw-alias-label-secondary);white-space:nowrap}
 .cait-libwritelabel{font-size:10.5px;color:var(--dsw-alias-label-secondary)}
 .cait-libscope{display:flex;align-items:center;gap:4px;padding:0 12px 8px;flex-wrap:wrap;flex:0 0 auto}
@@ -681,7 +685,7 @@ window.__ModuleLoader__.load({
 .cait-alignhead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .cait-alignhead h2{margin:0 0 3px;font-size:13.5px;font-weight:600;color:var(--dsw-alias-label-primary)}
 .cait-alignactions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-.cait-alignactions .cait-libinput{width:118px;min-height:26px;height:26px}
+.cait-alignactions .cait-libinput{width:170px;min-height:28px;height:28px;flex:0 0 auto}
 .cait-alignfiles{display:flex;gap:8px;flex-wrap:wrap}
 .cait-alignfile{display:flex;align-items:center;gap:8px;padding:7px 9px;border:1px dashed var(--dsw-alias-border-l1);border-radius:8px;background:var(--dsw-alias-bg-layer-1);min-width:0;flex:1 1 300px}
 .cait-alignlabel{font-size:10px;letter-spacing:.04em;text-transform:uppercase;color:var(--dsw-alias-label-secondary);flex:0 0 auto}
@@ -1577,9 +1581,21 @@ window.__ModuleLoader__.load({
       )
     }
 
-    function EditorPane({ t, doc, index, segment, detail, draft, setDraft, dirty, busy, onConfirm, onUnconfirm, onNext, onPrev, onSave, onUndo, onRedo, canUndo, canRedo, onToggleLock, onMerge, onSplit, onAdopt, onApplyTerm, onOpenBrief, onOpenResources, onOpenAnalysis, onOpenNotes, noteCount, qaRisk, textareaRef }) {
+    function EditorPane({ t, doc, index, segment, detail, draft, setDraft, dirty, busy, onConfirm, onUnconfirm, onNext, onPrev, onSave, onUndo, onRedo, canUndo, canRedo, onToggleLock, onMerge, onSplit, onMergeCue, onSplitCue, onShiftSubtitles, onAdopt, onApplyTerm, onOpenBrief, onOpenResources, onOpenAnalysis, onOpenNotes, noteCount, qaRisk, textareaRef }) {
       const hits = detail?.index === index ? detail.glossaryHits : []
       const charCount = Array.from(draft || '').length
+      const isSubtitle = doc.format === 'srt' || doc.format === 'vtt'
+      const [shiftSeconds, setShiftSeconds] = useState('1')
+      const cueStart = Number(segment.meta?.start)
+      const cueEnd = Number(segment.meta?.end)
+      const formatCue = (value) => {
+        if (!Number.isFinite(value)) return '--:--.-'
+        const total = Math.max(0, Math.round(value))
+        const minutes = Math.floor(total / 60000)
+        const seconds = Math.floor((total % 60000) / 1000)
+        const millis = total % 1000
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(millis).padStart(3, '0')}`
+      }
       const progress = doc.progress
       const remaining = progress.total - progress.confirmed
       const statusLabel =
@@ -1847,16 +1863,47 @@ window.__ModuleLoader__.load({
             h(Icon, { name: 'chevronLeft', size: 13 }),
             t('editor.prev'),
           ),
-          h(
-            'button',
-            { className: 'cait-btn cait-btn-ghost', onClick: onMerge, disabled: Boolean(busy) || !canMerge, title: t('editor.mergeHint') },
-            t('editor.merge'),
-          ),
-          h(
-            'button',
-            { className: 'cait-btn cait-btn-ghost', onClick: splitAtCursor, disabled: Boolean(busy) || !canSplit, title: t('editor.splitHint') },
-            t('editor.split'),
-          ),
+          isSubtitle
+            ? h(
+                'div',
+                { className: 'cait-subbar' },
+                h('span', { className: 'cait-subtime' }, `${formatCue(cueStart)} → ${formatCue(cueEnd)}`),
+                h('input', {
+                  className: 'cait-suboffset',
+                  type: 'number',
+                  step: '0.1',
+                  value: shiftSeconds,
+                  onChange: (event) => setShiftSeconds(event.target.value),
+                  title: t('editor.shiftHint'),
+                }),
+                h(
+                  'button',
+                  { className: 'cait-btn cait-btn-ghost', onClick: () => onShiftSubtitles(Math.round(Number(shiftSeconds) * 1000)), disabled: Boolean(busy) || Boolean(segment.locked) || !Number.isFinite(Number(shiftSeconds)) },
+                  t('editor.shift'),
+                ),
+                h(
+                  'button',
+                  { className: 'cait-btn cait-btn-ghost', onClick: onMergeCue, disabled: Boolean(busy) || Boolean(segment.locked) || index >= doc.segments.length - 1 },
+                  t('editor.mergeCue'),
+                ),
+                h(
+                  'button',
+                  { className: 'cait-btn cait-btn-ghost', onClick: () => onSplitCue(Math.round((cueStart + cueEnd) / 2)), disabled: Boolean(busy) || Boolean(segment.locked) || !(cueEnd > cueStart) },
+                  t('editor.splitCue'),
+                ),
+              )
+            : [
+                h(
+                  'button',
+                  { key: 'merge', className: 'cait-btn cait-btn-ghost', onClick: onMerge, disabled: Boolean(busy) || !canMerge, title: t('editor.mergeHint') },
+                  t('editor.merge'),
+                ),
+                h(
+                  'button',
+                  { key: 'split', className: 'cait-btn cait-btn-ghost', onClick: splitAtCursor, disabled: Boolean(busy) || !canSplit, title: t('editor.splitHint') },
+                  t('editor.split'),
+                ),
+              ],
           h(
             'button',
             { className: 'cait-iconbtn', onClick: onUndo, disabled: Boolean(busy) || !canUndo, title: t('editor.undo'), 'aria-label': t('editor.undo') },
@@ -2715,6 +2762,7 @@ window.__ModuleLoader__.load({
       const sourceRef = useRef(null)
       const targetRef = useRef(null)
       const libraries = data?.tmLibraries || []
+      const languageOptions = ['zh-CN', 'zh-TW', 'en', 'ja', 'ko', 'fr', 'de', 'es', 'pt-BR', 'ru', 'it', 'ar']
 
       useEffect(() => {
         if (!tmId && libraries.length) setTmId(libraries[0].id)
@@ -2815,7 +2863,12 @@ window.__ModuleLoader__.load({
           action: async () => {
             setWorking(true)
             try {
-              const written = await rpc('writeAlignment', { pairs, tmId: tmId || undefined })
+              const written = await rpc('writeAlignment', {
+                pairs,
+                tmId: tmId || undefined,
+                sourceLang: sourceLang || undefined,
+                targetLang: targetLang || undefined,
+              })
               notify(t('align.written', { written: written.written, skipped: written.skipped }))
             } catch (error) {
               report(error)
@@ -2863,15 +2916,20 @@ window.__ModuleLoader__.load({
           h(
             'div',
             { className: 'cait-alignactions' },
+            h('datalist', { id: 'cait-align-languages' }, languageOptions.map((code) => h('option', { key: code, value: code }))),
             h('input', {
               className: 'cait-libinput',
               placeholder: t('align.sourceLang'),
+              title: t('align.langHint'),
+              list: 'cait-align-languages',
               value: sourceLang,
               onChange: (event) => setSourceLang(event.target.value),
             }),
             h('input', {
               className: 'cait-libinput',
               placeholder: t('align.targetLang'),
+              title: t('align.langHint'),
+              list: 'cait-align-languages',
               value: targetLang,
               onChange: (event) => setTargetLang(event.target.value),
             }),
@@ -2881,8 +2939,15 @@ window.__ModuleLoader__.load({
                 className: 'cait-select cait-liblang',
                 value: tmId,
                 onChange: (event) => setTmId(event.target.value),
+                title: t('align.tmHint'),
+                'aria-label': t('align.tm'),
+                disabled: !libraries.length,
               },
-              libraries.map((library) => h('option', { key: library.id, value: library.id }, library.name)),
+              libraries.length
+                ? libraries.map((library) =>
+                    h('option', { key: library.id, value: library.id }, t('align.tmOption', { name: library.name })),
+                  )
+                : h('option', { value: '' }, t('align.noTm')),
             ),
             h(
               'button',
@@ -3972,6 +4037,13 @@ window.__ModuleLoader__.load({
         ['srt', t('modal.export.srt'), t('modal.export.subtitleGroup'), 'file'],
         ['vtt', t('modal.export.vtt'), t('modal.export.subtitleGroup'), 'file'],
         ['po', t('modal.export.po'), t('modal.export.localizationGroup'), 'file'],
+        ['apple-strings', t('modal.export.appleStrings'), t('modal.export.localizationGroup'), 'file'],
+        ['apple-stringsdict', t('modal.export.appleStringsdict'), t('modal.export.localizationGroup'), 'file'],
+        ['android', t('modal.export.android'), t('modal.export.localizationGroup'), 'file'],
+        ['resx', t('modal.export.resx'), t('modal.export.localizationGroup'), 'file'],
+        ['arb', t('modal.export.arb'), t('modal.export.localizationGroup'), 'file'],
+        ['yaml', t('modal.export.yaml'), t('modal.export.localizationGroup'), 'file'],
+        ['properties', t('modal.export.properties'), t('modal.export.localizationGroup'), 'file'],
         ['xliff', t('modal.export.xliff'), t('modal.export.localizationGroup'), 'file'],
         ['xliff-review', t('modal.export.xliffReview'), t('modal.export.localizationGroup'), 'file'],
         ['xliff2', t('modal.export.xliff2'), t('modal.export.localizationGroup'), 'file'],
@@ -5748,6 +5820,48 @@ window.__ModuleLoader__.load({
         })
       }
 
+      const mergeCue = () => {
+        if (!doc || !segment || busy) return
+        openConfirm({
+          title: t('modal.confirm.mergeTitle'),
+          message: t('modal.confirm.mergeCue'),
+          confirmLabel: t('editor.mergeCue'),
+          action: async () => {
+            const result = await rpc('mergeCues', { documentId: doc.id, index: selected, count: 2 })
+            adoptState(result.state, result.index)
+            notify(t('toast.cuesMerged'))
+          },
+        })
+      }
+
+      const splitCueAt = (at) => {
+        if (!doc || !segment || busy) return
+        openConfirm({
+          title: t('modal.confirm.splitTitle'),
+          message: t('modal.confirm.splitCue'),
+          confirmLabel: t('editor.splitCue'),
+          action: async () => {
+            const result = await rpc('splitCue', { documentId: doc.id, index: selected, at })
+            adoptState(result.state, result.index)
+            notify(t('toast.cueSplit'))
+          },
+        })
+      }
+
+      const shiftSubtitles = (offsetMs) => {
+        if (!doc || !offsetMs || busy) return
+        openConfirm({
+          title: t('modal.confirm.shiftTitle'),
+          message: t('modal.confirm.shiftCue'),
+          confirmLabel: t('editor.shift'),
+          action: async () => {
+            const result = await rpc('shiftSubtitles', { documentId: doc.id, offsetMs })
+            adoptState(result.state)
+            notify(t('toast.subtitlesShifted'))
+          },
+        })
+      }
+
       const saveBrief = async (brief) => {
         if (!doc || busy) return false
         setBusy('brief')
@@ -6615,6 +6729,9 @@ window.__ModuleLoader__.load({
                   onToggleLock: toggleLock,
                   onMerge: mergeCurrent,
                   onSplit: splitCurrent,
+                  onMergeCue: mergeCue,
+                  onSplitCue: splitCueAt,
+                  onShiftSubtitles: shiftSubtitles,
                   onNext: () => moveSegment(1),
                   onPrev: () => moveSegment(-1),
                   onSave: () => saveDraft(false),
@@ -6992,6 +7109,13 @@ window.__ModuleLoader__.load({
       'modal.export.srt': 'SRT 字幕',
       'modal.export.vtt': 'WebVTT 字幕',
       'modal.export.po': 'PO 本地化',
+      'modal.export.appleStrings': '.strings 字符串',
+      'modal.export.appleStringsdict': '.stringsdict 复数',
+      'modal.export.android': 'Android strings.xml',
+      'modal.export.resx': '.resx 资源',
+      'modal.export.arb': 'ARB 应用资源',
+      'modal.export.yaml': 'YAML 本地化',
+      'modal.export.properties': '.properties 属性',
       'modal.export.xliff': 'XLIFF 1.2',
       'modal.export.xliffReview': 'XLIFF 审校包',
       'modal.export.reviewImport': '回填审校包',
@@ -7137,6 +7261,11 @@ window.__ModuleLoader__.load({
       'align.readError': '读取文件失败。',
       'align.sourceLang': '源语言（可选）',
       'align.targetLang': '目标语言（可选）',
+      'align.langHint': '可留空；例如 zh-CN、en',
+      'align.tm': '写入记忆库',
+      'align.tmHint': '对齐结果写入这个记忆库',
+      'align.tmOption': '记忆库：{name}',
+      'align.noTm': '暂无已挂载的记忆库',
       'align.stats': '高置信 {high} · 待确认 {medium} · 可疑 {low}',
       'align.unpairedSource': '未配对原文',
       'align.unpairedTarget': '未配对译文',
@@ -7386,6 +7515,13 @@ window.__ModuleLoader__.load({
       'modal.export.srt': 'SRT subtitles',
       'modal.export.vtt': 'WebVTT subtitles',
       'modal.export.po': 'PO localization',
+      'modal.export.appleStrings': '.strings strings',
+      'modal.export.appleStringsdict': '.stringsdict plurals',
+      'modal.export.android': 'Android strings.xml',
+      'modal.export.resx': '.resx resources',
+      'modal.export.arb': 'ARB app resources',
+      'modal.export.yaml': 'YAML localization',
+      'modal.export.properties': '.properties',
       'modal.export.xliff': 'XLIFF 1.2',
       'modal.export.xliffReview': 'XLIFF review package',
       'modal.export.reviewImport': 'Apply review package',
@@ -7530,8 +7666,13 @@ window.__ModuleLoader__.load({
       'align.running': 'Aligning…',
       'align.needFiles': 'Choose both files first.',
       'align.readError': 'Could not read that file.',
-      'align.sourceLang': 'Source language (optional)',
-      'align.targetLang': 'Target language (optional)',
+      'align.sourceLang': 'Source language',
+      'align.targetLang': 'Target language',
+      'align.langHint': 'Optional; for example zh-CN, en',
+      'align.tm': 'Write to memory',
+      'align.tmHint': 'Aligned pairs are written to this memory',
+      'align.tmOption': 'Memory: {name}',
+      'align.noTm': 'No mounted memory yet',
       'align.stats': 'high {high} · to review {medium} · doubtful {low}',
       'align.unpairedSource': 'Unpaired source',
       'align.unpairedTarget': 'Unpaired target',
@@ -7781,6 +7922,13 @@ window.__ModuleLoader__.load({
       'modal.export.srt': 'SRT 字幕',
       'modal.export.vtt': 'WebVTT 字幕',
       'modal.export.po': 'PO ローカライズ',
+      'modal.export.appleStrings': '.strings 文字列',
+      'modal.export.appleStringsdict': '.stringsdict 複数形',
+      'modal.export.android': 'Android strings.xml',
+      'modal.export.resx': '.resx リソース',
+      'modal.export.arb': 'ARB アプリリソース',
+      'modal.export.yaml': 'YAML ローカライズ',
+      'modal.export.properties': '.properties',
       'modal.export.xliff': 'XLIFF 1.2',
       'modal.export.xliffReview': 'XLIFF 校閲パッケージ',
       'modal.export.reviewImport': '校閲パッケージを反映',
@@ -7927,6 +8075,11 @@ window.__ModuleLoader__.load({
       'align.readError': 'ファイルを読み込めませんでした。',
       'align.sourceLang': '原文言語（任意）',
       'align.targetLang': '訳文言語（任意）',
+      'align.langHint': '任意；例: zh-CN、en',
+      'align.tm': '保存先メモリ',
+      'align.tmHint': '整列結果をこのメモリに保存します',
+      'align.tmOption': 'メモリ: {name}',
+      'align.noTm': 'メモリ未設定',
       'align.stats': '高 {high} · 要確認 {medium} · 要注意 {low}',
       'align.unpairedSource': '未対応の原文',
       'align.unpairedTarget': '未対応の訳文',
@@ -8012,6 +8165,7 @@ window.__ModuleLoader__.load({
       'qa.risk': '风险',
       'qa.code.TERM_FORBIDDEN': '禁用术语',
       'qa.code.LENGTH_DRIFT': '长度异常',
+      'qa.code.SUBTITLE_OVERLAP': '字幕重叠',
       'qa.fixCopy': '复制源文',
       'qa.fixClear': '清空译文',
       'qa.fixTerm': '插入术语',
@@ -8164,6 +8318,7 @@ window.__ModuleLoader__.load({
       'qa.risk': 'Risk',
       'qa.code.TERM_FORBIDDEN': 'Forbidden term',
       'qa.code.LENGTH_DRIFT': 'Length drift',
+      'qa.code.SUBTITLE_OVERLAP': 'Subtitle overlap',
       'qa.fixCopy': 'Copy source',
       'qa.fixClear': 'Clear target',
       'qa.fixTerm': 'Insert term',
@@ -8316,6 +8471,7 @@ window.__ModuleLoader__.load({
       'qa.risk': 'リスク',
       'qa.code.TERM_FORBIDDEN': '禁止用語',
       'qa.code.LENGTH_DRIFT': '長さの不一致',
+      'qa.code.SUBTITLE_OVERLAP': '字幕の重なり',
       'qa.fixCopy': '原文をコピー',
       'qa.fixClear': '訳文を空にする',
       'qa.fixTerm': '用語を挿入',
@@ -8428,6 +8584,17 @@ window.__ModuleLoader__.load({
       'modal.confirm.merge': '合并会新建一个句段，并丢失两条原文各自的确认状态。确定继续？',
       'modal.confirm.splitTitle': '拆分句段',
       'modal.confirm.split': '拆分后两侧都会变成未确认状态，译文按比例切开。确定继续？',
+      'editor.shift': '平移',
+      'editor.shiftHint': '按秒平移当前文档所有字幕时间码；不能产生负时间码。',
+      'editor.mergeCue': '合并下一条',
+      'editor.splitCue': '按中点拆分',
+      'toast.cuesMerged': '已合并字幕',
+      'toast.cueSplit': '已拆分字幕',
+      'toast.subtitlesShifted': '已平移字幕时间轴',
+      'modal.confirm.shiftTitle': '平移字幕',
+      'modal.confirm.shiftCue': '会平移当前文档所有字幕的时间码，且不修改译文。确定继续？',
+      'modal.confirm.mergeCue': '合并当前字幕和下一条，时间范围取两者首尾；确定继续？',
+      'modal.confirm.splitCue': '会在当前字幕时间范围的中点拆成两条，译文按比例切开；确定继续？',
     })
     Object.assign(EN, {
       'editor.merge': 'Merge next',
@@ -8440,6 +8607,17 @@ window.__ModuleLoader__.load({
       'modal.confirm.merge': 'Merging creates a new segment and discards the confirmation state of both originals. Continue?',
       'modal.confirm.splitTitle': 'Split segment',
       'modal.confirm.split': 'Both halves become unconfirmed and the target is split proportionally. Continue?',
+      'editor.shift': 'Shift',
+      'editor.shiftHint': 'Shift every subtitle cue in this document by seconds; negative timecodes are rejected.',
+      'editor.mergeCue': 'Merge next cue',
+      'editor.splitCue': 'Split at midpoint',
+      'toast.cuesMerged': 'Cues merged',
+      'toast.cueSplit': 'Cue split',
+      'toast.subtitlesShifted': 'Subtitle timeline shifted',
+      'modal.confirm.shiftTitle': 'Shift subtitles',
+      'modal.confirm.shiftCue': 'Every cue in this document moves by the same offset. Translations are unchanged. Continue?',
+      'modal.confirm.mergeCue': 'Merge this cue with the next one, using the outer time range. Continue?',
+      'modal.confirm.splitCue': 'Split this cue at its midpoint; the translation is split proportionally. Continue?',
     })
     Object.assign(JA, {
       'editor.merge': '次を結合',
@@ -8452,6 +8630,17 @@ window.__ModuleLoader__.load({
       'modal.confirm.merge': '結合すると新しいセグメントになり、元の確認状態は失われます。続行しますか？',
       'modal.confirm.splitTitle': 'セグメントを分割',
       'modal.confirm.split': '分割後は両側とも未確認になり、訳文は比率で分割されます。続行しますか？',
+      'editor.shift': 'シフト',
+      'editor.shiftHint': '文書内の全字幕を秒単位でシフトします。負のタイムコードは拒否されます。',
+      'editor.mergeCue': '次のキューを結合',
+      'editor.splitCue': '中点で分割',
+      'toast.cuesMerged': '字幕を結合しました',
+      'toast.cueSplit': '字幕を分割しました',
+      'toast.subtitlesShifted': '字幕タイムラインをシフトしました',
+      'modal.confirm.shiftTitle': '字幕をシフト',
+      'modal.confirm.shiftCue': '文書内の全キューを同じ量だけ移動します。訳文は変更しません。続行しますか？',
+      'modal.confirm.mergeCue': '現在のキューと次を結合し、外側の時間範囲を使います。続行しますか？',
+      'modal.confirm.splitCue': '現在のキューの中央で二分割し、訳文を比率で分けます。続行しますか？',
     })
     const UI_LANGS = [
       ['auto', ''],

@@ -34,6 +34,7 @@ try {
       UNTRANSLATED_RESIDUE: 0,
       INCONSISTENT_TARGET: 0,
       LENGTH_DRIFT: 0,
+      SUBTITLE_OVERLAP: 0,
     })
   }
 

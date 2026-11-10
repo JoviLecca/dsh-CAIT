@@ -135,6 +135,16 @@ try {
       pairs: [{ source: 'Nova is a tool.', target: 'Nova 是个工具。' }],
     })
     assert.equal(changed.updated, 1)
+
+    const localized = store.writeAlignment({
+      pairs: [{ source: 'Bonjour le monde.', target: 'Hallo Welt.' }],
+      sourceLang: 'fr',
+      targetLang: 'de',
+    })
+    assert.equal(localized.written, 1)
+    const entry = store.tm.find((item) => item.source === 'Bonjour le monde.')
+    assert.equal(entry.sourceLang, 'fr')
+    assert.equal(entry.targetLang, 'de')
   }
 
   section('a translated document survives a round-trip through the store')

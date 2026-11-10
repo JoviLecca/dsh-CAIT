@@ -21,8 +21,10 @@ assert.ok(state.activeDocument.segments.some((segment) => segment.source.include
 const tableBuffer = fs.readFileSync(new URL('./sample-table.docx', import.meta.url))
 const tableText = parseDocx(tableBuffer)
 console.log(JSON.stringify(tableText))
-assert.equal(tableText, 'Before table paragraph.\n\nAfter table paragraph.')
-assert.equal(tableText.includes('Table cell'), false, 'table cell paragraphs must be excluded')
+assert.ok(tableText.includes('Before table paragraph.'))
+assert.ok(tableText.includes('Table cell A'))
+assert.ok(tableText.includes('Table cell D'))
+assert.ok(tableText.includes('After table paragraph.'))
 
 const glossary = store.importGlossary({ text: 'translation memory,翻译记忆库,TM\nCAT,计算机辅助翻译,computer-aided translation' })
 console.log(glossary)

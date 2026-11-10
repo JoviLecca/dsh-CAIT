@@ -16,7 +16,7 @@
 <p align="center">
   <a href="https://www.npmjs.com/package/dsh-cait"><img alt="npm version" src="https://img.shields.io/npm/v/dsh-cait.svg" /></a>
   <img alt="DSH 0.2.x" src="https://img.shields.io/badge/DSH-0.2.x-4d6bfe.svg" />
-  <img alt="Tests: 41 suites" src="https://img.shields.io/badge/tests-41%20suites-brightgreen.svg" />
+  <img alt="Tests: 45 suites" src="https://img.shields.io/badge/tests-45%20suites-brightgreen.svg" />
   <img alt="No API key required" src="https://img.shields.io/badge/API%20key-not%20required-6b7280.svg" />
 </p>
 
@@ -56,6 +56,21 @@ Host revision every two seconds, so changes made by an agent appear without a
 manual reload.
 
 ## Features
+
+### New in 1.1.7
+
+- **DOCX depth.** Table cells, headers, footers, footnotes, and endnotes are
+  imported as normal segments and written back to their original parts.
+- **Localization catalogs.** Apple `.strings`/`.stringsdict`, Android
+  `strings.xml`/plurals, `.resx`, `.arb`, nested YAML, and Java `.properties`
+  round-trip with keys, comments, plural variants, block scalars, and inline
+  tags intact.
+- **Speaker notes and multi-sheet workbooks.** PowerPoint notes pages become
+  separate units; every XLSX worksheet keeps its own name, order, and cell
+  references. When the source workbook is retained, export patches the original
+  cells so styles and merged ranges survive.
+- **Subtitle timeline.** Merge adjacent cues, split at a time point, and shift
+  all cues; overlapping cues show up as a high-risk QA finding.
 
 ### New in 1.1.6
 
@@ -148,7 +163,7 @@ manual reload.
   marker when the term is already known. Counting finds and ranks the candidates
   (Latin n-grams, repeated CJK substrings filtered by boundary entropy); you
   confirm the wording and add them. A model-assisted shortlist that can include
-  single-occurrence proper nouns is planned for 1.1.6.
+  single-occurrence proper nouns is included since 1.1.6.
 
 ### Library workspace
 
@@ -285,8 +300,8 @@ provider/model/code/status; the client receives only `MT_PROVIDER_FAILED`.
 | SDLXLIFF | ✅ | ✅ | Basic XLIFF 1.2 path; SDL-specific extensions are not round-tripped |
 | HTML | ✅ | ✅ | Text blocks and inline tags preserved; document CSS/layout is not rebuilt |
 | JSON | ✅ | ✅ | String-path subset; object/array structure preserved via a template; keys and numbers are not translated |
-| XLSX | ✅ | ✅ | First worksheet; `Source`/`Target` headers or columns A/B; export is a new two-column workbook |
-| PPTX | ✅ | ✅ | Source-preserving export; requires the imported `.pptx` package. Body text only; notes/charts/SmartArt not imported. |
+| XLSX | ✅ | ✅ | All worksheets; source/target columns (or headers); source-preserving patch keeps styles, merges, and other sheets; formulas are skipped |
+| PPTX | ✅ | ✅ | Source-preserving export; requires the imported `.pptx` package. Body text and speaker notes; charts/SmartArt not imported. |
 | RTF | ✅ | ✅ | Basic paragraphs, `\uN`, `\'hh`, control words; original styling not round-tripped |
 
 \* PPTX export fails with `PPTX_SOURCE_REQUIRED` when the retained source package
@@ -331,7 +346,7 @@ In DSH Desktop (or any profile with the `plugin_manager` tool):
 plugin_manager install_bundle target: dsh-cait
 ```
 
-Pin a release with `dsh-cait@1.1.6`, or ask for the newest one with
+Pin a release with `dsh-cait@1.1.7`, or ask for the newest one with
 `dsh-cait@latest`. The manager resolves the registry package, applies the bundle
 patch, and activates the plugin — no hand-written profile rows.
 
@@ -610,12 +625,15 @@ GitHub with a release.
   [PDF is not supported](#pdf-is-not-supported)). No image OCR yet.
 - EPUB import follows the spine and body XHTML text blocks; DRM-protected,
   fixed-layout, scripted, and MathML-heavy books are not supported.
-- DOCX import skips tables, headers, footnotes, fields, alt text, and tracked
-  deletions. DOCX export leaves those regions in the source language.
+- DOCX import covers body, tables, headers, footers, footnotes, and endnotes;
+  fields, alt text, and tracked deletions still stay in the source language.
 - Mixed-run DOCX/PPTX paragraphs inherit the first run's formatting.
-- PPTX import covers body text, not notes, charts, or SmartArt.
-- XLSX import/export is a two-column table; cell styles, formulas, merged cells,
-  images, and extra sheets are not preserved.
+- PPTX import covers body text and speaker notes, not charts or SmartArt.
+- XLSX export needs a target column to patch; formula cells are skipped, and a
+  workbook imported before 1.1.7 has no retained source to patch.
+- Nested YAML supports mappings, sequences, scalars, block scalars, and
+  comments; anchors, aliases, merge keys, and flow collections are rejected
+  with `LOCALIZATION_YAML_UNSUPPORTED`.
 - HTML/RTF export does not round-trip original styling; JSON translates string
   values only.
 - TM matching is lexical, not semantic; no stemming, synonyms, or embeddings.
@@ -629,12 +647,13 @@ GitHub with a release.
   Settings; this README ships in English, Simplified Chinese, and Japanese, and
   the English version is the source of truth.
 
-Planned next: per-document TM/glossary binding, word-count and leverage analysis,
-bilingual DOCX review output, and an XLIFF review package (1.1.5); then
-find/replace, segment merge/split/lock, comments, local undo (1.1.6), plus a
-term-extraction overhaul that stops ranking by frequency and can surface
-single-occurrence proper nouns and fiction terms, and an optional LLM review
-pass (1.1.6).
+Shipped since 1.1.5: per-document TM/glossary binding, word-count and leverage
+analysis, bilingual DOCX review output, and an XLIFF review package. 1.1.6 added
+find/replace, segment merge/split/lock, comments, local undo, and an optional LLM
+review pass. 1.1.7 added DOCX tables/headers/footnotes, nested localization
+catalogs, source-preserving multi-sheet XLSX, speaker notes, and subtitle
+timeline controls. Next candidates: Office paragraph mapping for merge/split
+and a subtitle waveform.
 
 ## Changelog and versioning
 

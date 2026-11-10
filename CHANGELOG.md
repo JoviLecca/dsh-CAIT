@@ -4,6 +4,49 @@ All notable changes to CAIT are documented here. The project follows
 [Semantic Versioning](https://semver.org/) and the format is based on
 [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.1.7] - 2026-11-10
+
+Format-depth release: DOCX tables, headers, footers, and notes; Apple/Android
+string catalogs and other localization formats; PowerPoint speaker notes,
+multi-sheet XLSX, and subtitle timing controls.
+
+### Added
+
+- **DOCX content outside the body.** Import and export paragraphs in tables,
+  headers, footers, footnotes, and endnotes, keyed by `docxPart` and
+  `docxParagraph`; body-only documents keep the old path.
+- **Localization string formats.** Apple `.strings` and `.stringsdict`, Android
+  `strings.xml`/plurals, `.resx`, `.arb`, nested YAML, and Java `.properties`.
+  Keys, comments, plural variants, block scalars, inline XML tags, and ARB
+  metadata are preserved for round trips. Nested YAML supports mappings,
+  sequences, scalars, block scalars, and comments; anchors, aliases, merge keys,
+  and flow collections are rejected explicitly.
+- **PowerPoint speaker notes.** Notes pages are imported as separate units and
+  written back by part; slide text and notes stay in document order.
+- **Multi-sheet XLSX with source-preserving export.** Every worksheet is
+  imported with `sheet`/`sheetName` metadata and cell references. When the
+  source workbook is retained, export patches the original cells instead of
+  rebuilding the workbook, so styles, merged ranges, and other sheets survive;
+  formula cells are skipped.
+- **Subtitle timeline controls.** Merge adjacent cues, split a cue at a time
+  point, and shift all cues by milliseconds. Overlapping cues are reported as a
+  high-risk QA finding rather than being changed automatically.
+
+### Changed
+
+- Segment views include their metadata (`start`/`end`, `docxPart`, `sheetName`,
+  key paths, and similar) so timeline and format context reaches the UI.
+
+### Known limits
+
+- Segment merge/split still only cover text formats; Office merge/split needs a
+  paragraph-mapping contract.
+- XLSX export needs a target column; formula cells are skipped, and workbooks
+  imported before 1.1.7 have no retained source package to patch.
+- Nested YAML rejects anchors, aliases, merge keys, and flow collections.
+- Subtitle editing has no waveform/playhead; split uses a time point, merge uses
+  the outer cue range.
+
 ## [1.1.6] - 2026-11-09
 
 Review-workbench release: find and replace, a command palette, segment notes,

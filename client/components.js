@@ -761,9 +761,21 @@
       )
     }
 
-    function EditorPane({ t, doc, index, segment, detail, draft, setDraft, dirty, busy, onConfirm, onUnconfirm, onNext, onPrev, onSave, onUndo, onRedo, canUndo, canRedo, onToggleLock, onMerge, onSplit, onAdopt, onApplyTerm, onOpenBrief, onOpenResources, onOpenAnalysis, onOpenNotes, noteCount, qaRisk, textareaRef }) {
+    function EditorPane({ t, doc, index, segment, detail, draft, setDraft, dirty, busy, onConfirm, onUnconfirm, onNext, onPrev, onSave, onUndo, onRedo, canUndo, canRedo, onToggleLock, onMerge, onSplit, onMergeCue, onSplitCue, onShiftSubtitles, onAdopt, onApplyTerm, onOpenBrief, onOpenResources, onOpenAnalysis, onOpenNotes, noteCount, qaRisk, textareaRef }) {
       const hits = detail?.index === index ? detail.glossaryHits : []
       const charCount = Array.from(draft || '').length
+      const isSubtitle = doc.format === 'srt' || doc.format === 'vtt'
+      const [shiftSeconds, setShiftSeconds] = useState('1')
+      const cueStart = Number(segment.meta?.start)
+      const cueEnd = Number(segment.meta?.end)
+      const formatCue = (value) => {
+        if (!Number.isFinite(value)) return '--:--.-'
+        const total = Math.max(0, Math.round(value))
+        const minutes = Math.floor(total / 60000)
+        const seconds = Math.floor((total % 60000) / 1000)
+        const millis = total % 1000
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}.${String(millis).padStart(3, '0')}`
+      }
       const progress = doc.progress
       const remaining = progress.total - progress.confirmed
       const statusLabel =
@@ -1031,16 +1043,47 @@
             h(Icon, { name: 'chevronLeft', size: 13 }),
             t('editor.prev'),
           ),
-          h(
-            'button',
-            { className: 'cait-btn cait-btn-ghost', onClick: onMerge, disabled: Boolean(busy) || !canMerge, title: t('editor.mergeHint') },
-            t('editor.merge'),
-          ),
-          h(
-            'button',
-            { className: 'cait-btn cait-btn-ghost', onClick: splitAtCursor, disabled: Boolean(busy) || !canSplit, title: t('editor.splitHint') },
-            t('editor.split'),
-          ),
+          isSubtitle
+            ? h(
+                'div',
+                { className: 'cait-subbar' },
+                h('span', { className: 'cait-subtime' }, `${formatCue(cueStart)} → ${formatCue(cueEnd)}`),
+                h('input', {
+                  className: 'cait-suboffset',
+                  type: 'number',
+                  step: '0.1',
+                  value: shiftSeconds,
+                  onChange: (event) => setShiftSeconds(event.target.value),
+                  title: t('editor.shiftHint'),
+                }),
+                h(
+                  'button',
+                  { className: 'cait-btn cait-btn-ghost', onClick: () => onShiftSubtitles(Math.round(Number(shiftSeconds) * 1000)), disabled: Boolean(busy) || Boolean(segment.locked) || !Number.isFinite(Number(shiftSeconds)) },
+                  t('editor.shift'),
+                ),
+                h(
+                  'button',
+                  { className: 'cait-btn cait-btn-ghost', onClick: onMergeCue, disabled: Boolean(busy) || Boolean(segment.locked) || index >= doc.segments.length - 1 },
+                  t('editor.mergeCue'),
+                ),
+                h(
+                  'button',
+                  { className: 'cait-btn cait-btn-ghost', onClick: () => onSplitCue(Math.round((cueStart + cueEnd) / 2)), disabled: Boolean(busy) || Boolean(segment.locked) || !(cueEnd > cueStart) },
+                  t('editor.splitCue'),
+                ),
+              )
+            : [
+                h(
+                  'button',
+                  { key: 'merge', className: 'cait-btn cait-btn-ghost', onClick: onMerge, disabled: Boolean(busy) || !canMerge, title: t('editor.mergeHint') },
+                  t('editor.merge'),
+                ),
+                h(
+                  'button',
+                  { key: 'split', className: 'cait-btn cait-btn-ghost', onClick: splitAtCursor, disabled: Boolean(busy) || !canSplit, title: t('editor.splitHint') },
+                  t('editor.split'),
+                ),
+              ],
           h(
             'button',
             { className: 'cait-iconbtn', onClick: onUndo, disabled: Boolean(busy) || !canUndo, title: t('editor.undo'), 'aria-label': t('editor.undo') },
@@ -1899,6 +1942,7 @@
       const sourceRef = useRef(null)
       const targetRef = useRef(null)
       const libraries = data?.tmLibraries || []
+      const languageOptions = ['zh-CN', 'zh-TW', 'en', 'ja', 'ko', 'fr', 'de', 'es', 'pt-BR', 'ru', 'it', 'ar']
 
       useEffect(() => {
         if (!tmId && libraries.length) setTmId(libraries[0].id)
@@ -1999,7 +2043,12 @@
           action: async () => {
             setWorking(true)
             try {
-              const written = await rpc('writeAlignment', { pairs, tmId: tmId || undefined })
+              const written = await rpc('writeAlignment', {
+                pairs,
+                tmId: tmId || undefined,
+                sourceLang: sourceLang || undefined,
+                targetLang: targetLang || undefined,
+              })
               notify(t('align.written', { written: written.written, skipped: written.skipped }))
             } catch (error) {
               report(error)
@@ -2047,15 +2096,20 @@
           h(
             'div',
             { className: 'cait-alignactions' },
+            h('datalist', { id: 'cait-align-languages' }, languageOptions.map((code) => h('option', { key: code, value: code }))),
             h('input', {
               className: 'cait-libinput',
               placeholder: t('align.sourceLang'),
+              title: t('align.langHint'),
+              list: 'cait-align-languages',
               value: sourceLang,
               onChange: (event) => setSourceLang(event.target.value),
             }),
             h('input', {
               className: 'cait-libinput',
               placeholder: t('align.targetLang'),
+              title: t('align.langHint'),
+              list: 'cait-align-languages',
               value: targetLang,
               onChange: (event) => setTargetLang(event.target.value),
             }),
@@ -2065,8 +2119,15 @@
                 className: 'cait-select cait-liblang',
                 value: tmId,
                 onChange: (event) => setTmId(event.target.value),
+                title: t('align.tmHint'),
+                'aria-label': t('align.tm'),
+                disabled: !libraries.length,
               },
-              libraries.map((library) => h('option', { key: library.id, value: library.id }, library.name)),
+              libraries.length
+                ? libraries.map((library) =>
+                    h('option', { key: library.id, value: library.id }, t('align.tmOption', { name: library.name })),
+                  )
+                : h('option', { value: '' }, t('align.noTm')),
             ),
             h(
               'button',
@@ -3156,6 +3217,13 @@
         ['srt', t('modal.export.srt'), t('modal.export.subtitleGroup'), 'file'],
         ['vtt', t('modal.export.vtt'), t('modal.export.subtitleGroup'), 'file'],
         ['po', t('modal.export.po'), t('modal.export.localizationGroup'), 'file'],
+        ['apple-strings', t('modal.export.appleStrings'), t('modal.export.localizationGroup'), 'file'],
+        ['apple-stringsdict', t('modal.export.appleStringsdict'), t('modal.export.localizationGroup'), 'file'],
+        ['android', t('modal.export.android'), t('modal.export.localizationGroup'), 'file'],
+        ['resx', t('modal.export.resx'), t('modal.export.localizationGroup'), 'file'],
+        ['arb', t('modal.export.arb'), t('modal.export.localizationGroup'), 'file'],
+        ['yaml', t('modal.export.yaml'), t('modal.export.localizationGroup'), 'file'],
+        ['properties', t('modal.export.properties'), t('modal.export.localizationGroup'), 'file'],
         ['xliff', t('modal.export.xliff'), t('modal.export.localizationGroup'), 'file'],
         ['xliff-review', t('modal.export.xliffReview'), t('modal.export.localizationGroup'), 'file'],
         ['xliff2', t('modal.export.xliff2'), t('modal.export.localizationGroup'), 'file'],
@@ -4932,6 +5000,48 @@
         })
       }
 
+      const mergeCue = () => {
+        if (!doc || !segment || busy) return
+        openConfirm({
+          title: t('modal.confirm.mergeTitle'),
+          message: t('modal.confirm.mergeCue'),
+          confirmLabel: t('editor.mergeCue'),
+          action: async () => {
+            const result = await rpc('mergeCues', { documentId: doc.id, index: selected, count: 2 })
+            adoptState(result.state, result.index)
+            notify(t('toast.cuesMerged'))
+          },
+        })
+      }
+
+      const splitCueAt = (at) => {
+        if (!doc || !segment || busy) return
+        openConfirm({
+          title: t('modal.confirm.splitTitle'),
+          message: t('modal.confirm.splitCue'),
+          confirmLabel: t('editor.splitCue'),
+          action: async () => {
+            const result = await rpc('splitCue', { documentId: doc.id, index: selected, at })
+            adoptState(result.state, result.index)
+            notify(t('toast.cueSplit'))
+          },
+        })
+      }
+
+      const shiftSubtitles = (offsetMs) => {
+        if (!doc || !offsetMs || busy) return
+        openConfirm({
+          title: t('modal.confirm.shiftTitle'),
+          message: t('modal.confirm.shiftCue'),
+          confirmLabel: t('editor.shift'),
+          action: async () => {
+            const result = await rpc('shiftSubtitles', { documentId: doc.id, offsetMs })
+            adoptState(result.state)
+            notify(t('toast.subtitlesShifted'))
+          },
+        })
+      }
+
       const saveBrief = async (brief) => {
         if (!doc || busy) return false
         setBusy('brief')
@@ -5799,6 +5909,9 @@
                   onToggleLock: toggleLock,
                   onMerge: mergeCurrent,
                   onSplit: splitCurrent,
+                  onMergeCue: mergeCue,
+                  onSplitCue: splitCueAt,
+                  onShiftSubtitles: shiftSubtitles,
                   onNext: () => moveSegment(1),
                   onPrev: () => moveSegment(-1),
                   onSave: () => saveDraft(false),
