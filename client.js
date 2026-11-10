@@ -1362,7 +1362,6 @@ Object.assign(ZH, {
   "qa.refresh": "重新检查",
   "qa.empty": "没有发现问题。",
   "qa.loading": "正在检查…",
-  "qa.review": "AI 审校",
   "qa.reviewing": "审校中…",
   "qa.reviewTitle": "AI 审校建议",
   "qa.reviewEmpty": "AI 没有发现需要改的句子。",
@@ -1452,7 +1451,6 @@ Object.assign(ZH, {
   "cmd.analysis": "文档分析",
   "cmd.clearPretranslated": "清理预翻译",
   "cmd.notes": "句段备注",
-  "cmd.review": "AI 审校当前文档",
   "editor.notes": "备注",
   "notes.title": "句段备注",
   "notes.hint": "备注只保存在本文档，不会写入 TM。",
@@ -1511,7 +1509,6 @@ Object.assign(EN, {
   "qa.refresh": "Re-run checks",
   "qa.empty": "No issues found.",
   "qa.loading": "Running checks…",
-  "qa.review": "AI review",
   "qa.reviewing": "Reviewing…",
   "qa.reviewTitle": "AI review suggestions",
   "qa.reviewEmpty": "The model found no sentence worth changing.",
@@ -1601,7 +1598,6 @@ Object.assign(EN, {
   "cmd.analysis": "Document analysis",
   "cmd.clearPretranslated": "Clear pre-translated targets",
   "cmd.notes": "Segment notes",
-  "cmd.review": "AI review this document",
   "editor.notes": "Notes",
   "notes.title": "Segment notes",
   "notes.hint": "Notes stay in this document and are never written to TM.",
@@ -1660,7 +1656,6 @@ Object.assign(JA, {
   "qa.refresh": "再チェック",
   "qa.empty": "問題はありません。",
   "qa.loading": "チェック中…",
-  "qa.review": "AI 校閲",
   "qa.reviewing": "校閲中…",
   "qa.reviewTitle": "AI 校閲の提案",
   "qa.reviewEmpty": "モデルが修正すべき文を見つけませんでした。",
@@ -1750,7 +1745,6 @@ Object.assign(JA, {
   "cmd.analysis": "文書分析",
   "cmd.clearPretranslated": "事前翻訳をクリア",
   "cmd.notes": "セグメントメモ",
-  "cmd.review": "この文書を AI 校閲",
   "editor.notes": "メモ",
   "notes.title": "セグメントメモ",
   "notes.hint": "メモはこの文書にのみ保存され、TM には書き込まれません。",
@@ -2026,6 +2020,51 @@ function makeTranslator(preference, dshTranslate) {
     return interpolateText(text, vars);
   };
 }
+Object.assign(ZH, {
+  "qa.reviewPage": "审校本页",
+  "qa.reviewPageHint": "审校当前页的全部句段",
+  "qa.reviewRisk": "只审高风险（{count}）",
+  "qa.reviewRiskHint": "只审规则检查标为高风险的句段",
+  "qa.reviewProgress": "已审 {done}/{total} 段",
+  "qa.reviewCancel": "取消",
+  "qa.reviewCancelled": "已取消，可随时重新审校。",
+  "qa.reviewRiskEmpty": "规则检查没有发现高风险句段。",
+  "qa.reviewEmptyRange": "当前页没有可审校的句段。",
+  "cmd.review": "审校当前页",
+  "cmd.reviewHint": "审校当前页的句段",
+  "cmd.reviewRisk": "只审高风险句段",
+  "cmd.reviewRiskHint": "使用规则检查的高风险名单"
+});
+Object.assign(EN, {
+  "qa.reviewPage": "Review this page",
+  "qa.reviewPageHint": "Review every segment on this page",
+  "qa.reviewRisk": "High risk only ({count})",
+  "qa.reviewRiskHint": "Review only the segments the check flagged as high risk",
+  "qa.reviewProgress": "{done}/{total} reviewed",
+  "qa.reviewCancel": "Cancel",
+  "qa.reviewCancelled": "Cancelled. You can run it again at any time.",
+  "qa.reviewRiskEmpty": "The check found no high-risk segments.",
+  "qa.reviewEmptyRange": "This page has no segments to review.",
+  "cmd.review": "Review this page",
+  "cmd.reviewHint": "Review the segments on this page",
+  "cmd.reviewRisk": "Review high-risk segments",
+  "cmd.reviewRiskHint": "Use the high-risk list from the check"
+});
+Object.assign(JA, {
+  "qa.reviewPage": "このページを校閲",
+  "qa.reviewPageHint": "現在のページの全セグメントを校閲します",
+  "qa.reviewRisk": "高リスクのみ（{count}）",
+  "qa.reviewRiskHint": "チェックが高リスクとしたセグメントのみを校閲します",
+  "qa.reviewProgress": "{done}/{total} 件を校閲",
+  "qa.reviewCancel": "中止",
+  "qa.reviewCancelled": "中止しました。いつでも再実行できます。",
+  "qa.reviewRiskEmpty": "チェックで高リスクのセグメントは見つかりませんでした。",
+  "qa.reviewEmptyRange": "このページに校閲できるセグメントはありません。",
+  "cmd.review": "現在のページを校閲",
+  "cmd.reviewHint": "現在のページのセグメントを校閲します",
+  "cmd.reviewRisk": "高リスクのセグメントを校閲",
+  "cmd.reviewRiskHint": "チェックの高リスク一覧を使用します"
+});
 
 // client/styles.js
 var CSS = `
@@ -2318,6 +2357,8 @@ var CSS = `
 .cait-panel-foot .cait-btn{height:26px;padding:0 7px;font-size:10px}
 .cait-subhead{display:flex;align-items:center;justify-content:space-between;margin:2px 1px 7px;font-size:10px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--dsw-alias-label-secondary)}
 .cait-subhead-actions{display:flex;align-items:center;gap:6px}
+.cait-subhead-actions .cait-btn{height:26px;padding:0 9px;font-size:10.5px}
+.cait-reviewmeta{display:flex;align-items:center;gap:8px;font-weight:500;letter-spacing:0;text-transform:none}
 .cait-review{margin-top:10px;padding-top:8px;border-top:1px solid var(--dsw-alias-border-l1)}
 .cait-reviewrow{display:flex;align-items:flex-start;gap:7px;width:100%;margin-bottom:6px;padding:7px 8px;border:1px solid var(--dsw-alias-border-l1);border-left:3px solid var(--dsw-alias-state-warn-primary);border-radius:7px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);text-align:left;cursor:pointer}
 .cait-reviewrow:hover{background:var(--dsw-alias-bg-layer-2)}
@@ -4283,6 +4324,7 @@ function CatPanel({
   review,
   reviewBusy,
   onReview,
+  onCancelReview,
   onApplyReview,
   concordance,
   concordanceQuery,
@@ -4639,13 +4681,25 @@ function CatPanel({
             h(
               "button",
               {
-                className: "cait-linkbtn",
-                onClick: onReview,
+                className: "cait-btn cait-btn-primary",
+                onClick: () => onReview("page"),
                 disabled: Boolean(busy) || Boolean(reviewBusy),
-                title: t("qa.review")
+                title: t("qa.reviewPageHint")
               },
               h(Icon, { name: "sparkles", size: 12 }),
-              reviewBusy ? t("qa.reviewing") : t("qa.review")
+              reviewBusy ? t("qa.reviewing") : t("qa.reviewPage")
+            ),
+            h(
+              "button",
+              {
+                className: "cait-linkbtn",
+                onClick: () => onReview("risk"),
+                disabled: Boolean(busy) || Boolean(reviewBusy) || (qa?.risks || []).every((item) => item.risk !== "high"),
+                title: t("qa.reviewRiskHint")
+              },
+              t("qa.reviewRisk", {
+                count: (qa?.risks || []).filter((item) => item.risk === "high").length
+              })
             ),
             h(
               "button",
@@ -4742,7 +4796,26 @@ function CatPanel({
         review ? h(
           "div",
           { className: "cait-review" },
-          h("div", { className: "cait-listhead" }, t("qa.reviewTitle")),
+          h(
+            "div",
+            { className: "cait-listhead" },
+            t("qa.reviewTitle"),
+            h(
+              "span",
+              { className: "cait-reviewmeta" },
+              h(
+                "span",
+                { className: "cait-muted" },
+                t("qa.reviewProgress", { done: review.done, total: review.total })
+              ),
+              review.running ? h(
+                "button",
+                { className: "cait-linkbtn", onClick: onCancelReview },
+                t("qa.reviewCancel")
+              ) : null
+            )
+          ),
+          review.cancelled && !review.running ? h("p", { className: "cait-empty-note" }, t("qa.reviewCancelled")) : null,
           (review.issues || []).length ? review.issues.map((issue, issueIndex) => {
             const severity = ["high", "medium", "low"].includes(issue.severity) ? issue.severity : "medium";
             return h(
@@ -7400,6 +7473,18 @@ function describeError(error, t, fallback) {
 }
 
 // client/workbench/controller.js
+var REVIEW_BATCH_SIZE = 20;
+var SEVERITY_RANK = { high: 0, medium: 1, low: 2 };
+function mergeReviewIssues(issues) {
+  const byIndex = /* @__PURE__ */ new Map();
+  for (const issue of issues) {
+    if (!issue || !Number.isInteger(issue.index) || byIndex.has(issue.index)) continue;
+    byIndex.set(issue.index, issue);
+  }
+  return [...byIndex.values()].sort(
+    (a, b) => (SEVERITY_RANK[a.severity] ?? 3) - (SEVERITY_RANK[b.severity] ?? 3) || a.index - b.index
+  );
+}
 function useWorkbenchController({ i18n, translate }) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -7543,6 +7628,8 @@ function useWorkbenchController({ i18n, translate }) {
     }
   };
   const preCancelRef = useRef(false);
+  const reviewCancelRef = useRef(false);
+  const reviewRunRef = useRef(0);
   const runPreTranslate = async () => {
     const active = data?.activeDocument;
     if (!active || pre.running) return;
@@ -7659,6 +7746,8 @@ function useWorkbenchController({ i18n, translate }) {
     };
   }, [data?.activeDocument?.id, data?.revision]);
   useEffect(() => {
+    reviewRunRef.current += 1;
+    reviewCancelRef.current = true;
     setReview(null);
   }, [data?.activeDocument?.id]);
   useEffect(() => {
@@ -8211,22 +8300,74 @@ function useWorkbenchController({ i18n, translate }) {
   const jumpQa = (nextIndex) => {
     if (Number.isInteger(nextIndex)) chooseSegment(nextIndex);
   };
-  const runReview = async () => {
-    if (!doc || reviewBusy) return;
-    setReviewBusy(true);
-    try {
-      const result = await rpc("reviewDocument", {
-        documentId: doc.id,
-        from: 0,
-        count: 20
-      });
-      setReview(result || { issues: [] });
-    } catch (error) {
-      setReview(null);
-      report(error);
-    } finally {
-      setReviewBusy(false);
+  const reviewIndexes = (target) => {
+    if (!doc) return [];
+    const total = doc.segments.length;
+    if (target === "risk") {
+      return (qa?.risks || []).filter((item) => item.risk === "high" && Number.isInteger(item.index)).map((item) => item.index);
     }
+    const storage = typeof localStorage === "undefined" ? null : localStorage;
+    const size = readPageSize(storage);
+    const start = Math.floor(Math.min(Math.max(0, selected), Math.max(0, total - 1)) / size) * size;
+    const end = Math.min(total, start + size);
+    return Array.from({ length: Math.max(0, end - start) }, (_, offset) => start + offset);
+  };
+  const runReview = async (target = "page") => {
+    if (!doc || reviewBusy) return;
+    const indexes = reviewIndexes(target);
+    if (!indexes.length) {
+      notify(t(target === "risk" ? "qa.reviewRiskEmpty" : "qa.reviewEmptyRange"), "info");
+      return;
+    }
+    const token = ++reviewRunRef.current;
+    reviewCancelRef.current = false;
+    const collected = [];
+    setReviewBusy(true);
+    setReview({
+      target,
+      running: true,
+      cancelled: false,
+      done: 0,
+      total: indexes.length,
+      indexes,
+      issues: []
+    });
+    try {
+      for (let offset = 0; offset < indexes.length; offset += REVIEW_BATCH_SIZE) {
+        if (reviewCancelRef.current || reviewRunRef.current !== token) break;
+        const batch = indexes.slice(offset, offset + REVIEW_BATCH_SIZE);
+        const result = await rpc("reviewDocument", { documentId: doc.id, indexes: batch });
+        collected.push(...result?.issues || []);
+        if (reviewRunRef.current !== token) break;
+        setReview(
+          (prev) => prev ? {
+            ...prev,
+            done: Math.min(prev.total, offset + batch.length),
+            issues: mergeReviewIssues(collected)
+          } : prev
+        );
+      }
+    } catch (error) {
+      if (reviewRunRef.current === token) {
+        setReview(null);
+        report(error);
+      }
+    } finally {
+      if (reviewRunRef.current === token) {
+        setReviewBusy(false);
+        setReview(
+          (prev) => prev ? {
+            ...prev,
+            running: false,
+            cancelled: reviewCancelRef.current,
+            issues: mergeReviewIssues(collected)
+          } : prev
+        );
+      }
+    }
+  };
+  const cancelReview = () => {
+    reviewCancelRef.current = true;
   };
   const applyReview = (issue) => {
     if (!doc || !issue || !Number.isInteger(issue.index)) return;
@@ -8813,6 +8954,7 @@ function useWorkbenchController({ i18n, translate }) {
     refreshQa,
     jumpQa,
     runReview,
+    cancelReview,
     applyReview,
     applyQaFix,
     runConcordance,
@@ -8944,6 +9086,7 @@ function Workbench({ i18n, translate }) {
     refreshQa,
     jumpQa,
     runReview,
+    cancelReview,
     applyReview,
     applyQaFix,
     runConcordance,
@@ -9064,11 +9207,21 @@ function Workbench({ i18n, translate }) {
     {
       id: "review",
       title: t("cmd.review"),
-      hint: "",
+      hint: t("cmd.reviewHint"),
       docOnly: true,
       run: () => {
         setTab("qa");
-        runReview();
+        runReview("page");
+      }
+    },
+    {
+      id: "review-risk",
+      title: t("cmd.reviewRisk"),
+      hint: t("cmd.reviewRiskHint"),
+      docOnly: true,
+      run: () => {
+        setTab("qa");
+        runReview("risk");
       }
     },
     {
@@ -9240,6 +9393,7 @@ function Workbench({ i18n, translate }) {
           review,
           reviewBusy,
           onReview: runReview,
+          onCancelReview: cancelReview,
           onApplyReview: applyReview,
           concordance,
           concordanceQuery,

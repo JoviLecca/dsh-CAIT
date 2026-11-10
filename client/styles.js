@@ -290,6 +290,8 @@ const CSS = `
 .cait-panel-foot .cait-btn{height:26px;padding:0 7px;font-size:10px}
 .cait-subhead{display:flex;align-items:center;justify-content:space-between;margin:2px 1px 7px;font-size:10px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;color:var(--dsw-alias-label-secondary)}
 .cait-subhead-actions{display:flex;align-items:center;gap:6px}
+.cait-subhead-actions .cait-btn{height:26px;padding:0 9px;font-size:10.5px}
+.cait-reviewmeta{display:flex;align-items:center;gap:8px;font-weight:500;letter-spacing:0;text-transform:none}
 .cait-review{margin-top:10px;padding-top:8px;border-top:1px solid var(--dsw-alias-border-l1)}
 .cait-reviewrow{display:flex;align-items:flex-start;gap:7px;width:100%;margin-bottom:6px;padding:7px 8px;border:1px solid var(--dsw-alias-border-l1);border-left:3px solid var(--dsw-alias-state-warn-primary);border-radius:7px;background:var(--dsw-alias-bg-layer-1);color:var(--dsw-alias-label-primary);text-align:left;cursor:pointer}
 .cait-reviewrow:hover{background:var(--dsw-alias-bg-layer-2)}

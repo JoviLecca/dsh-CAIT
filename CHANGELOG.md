@@ -6,6 +6,15 @@ All notable changes to CAIT are documented here. The project follows
 
 ## [Unreleased]
 
+### Added
+
+- AI review covers the page being edited instead of always the first 20
+  segments. `reviewDocument` accepts an explicit `indexes` list, the workbench
+  sends the current page — or the high-risk segments from the check — in
+  batches of 20, shows how many are done, and can be cancelled. The entry on the
+  check tab is a primary button, and the palette command is called "review this
+  page" again (`lib/review.js`, `client/workbench/controller.js`).
+
 ### Fixed
 
 - Batch machine translation could write one segment's text into another. The

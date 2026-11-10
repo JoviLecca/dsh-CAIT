@@ -108,6 +108,62 @@ section('review inherits the MT route when no override is set')
   assert.equal(result.inherited, true)
 }
 
+section('review accepts an explicit index list')
+{
+  const store = new CatStore()
+  const created = store.createDocument({
+    name: 'Indexes',
+    text: 'One. Two. Three. Four. Five. Six.',
+    sourceLang: 'en',
+    targetLang: 'zh-CN',
+  })
+  const id = created.document.id
+  assert.equal(store.bootstrap().activeDocument.segments.length, 6)
+  let prompt = ''
+  store.resolveMtRoute = async () => ({
+    mock: false,
+    provider: 'test-provider',
+    model: 'test-model',
+    note: '',
+  })
+  store.mtRuntime = {
+    stream: async function* stream(options) {
+      prompt = options.messages[0].content[0].text
+      yield {
+        type: 'text-delta',
+        text: JSON.stringify([
+          { index: 3, severity: 'low', code: 'STYLE', message: 'Not requested.' },
+          { index: 5, severity: 'high', code: 'OMISSION', message: 'Requested.' },
+        ]),
+      }
+      yield { type: 'finish', reason: { kind: 'stop' } }
+    },
+  }
+
+  // 去重、排序、丢掉越界索引；只审被要求的段落。
+  const sparse = await store.reviewDocument({ documentId: id, indexes: [5, 2, 2, 99, -1] })
+  assert.deepEqual(sparse.indexes, [2, 5])
+  assert.equal(sparse.from, 2)
+  assert.equal(sparse.to, 6)
+  assert.ok(prompt.includes('[S2]') && prompt.includes('[S5]'))
+  assert.ok(!prompt.includes('[S3]'), 'a sparse run must not review the gap')
+  assert.deepEqual(
+    sparse.issues.map((issue) => issue.index),
+    [5],
+    'issues outside the requested indexes are dropped',
+  )
+
+  // 空列表回退到 from/count。
+  const ranged = await store.reviewDocument({ documentId: id, from: 4, count: 20, indexes: [] })
+  assert.deepEqual(ranged.indexes, [4, 5])
+
+  // 全部越界时报范围错误，而不是发一次空调用。
+  await assert.rejects(
+    () => store.reviewDocument({ documentId: id, indexes: [99] }),
+    /审校范围超出文档/,
+  )
+}
+
 section('review refuses to run without a model route')
 {
   const store = new CatStore()

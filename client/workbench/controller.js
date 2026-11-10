@@ -8,10 +8,28 @@ import {
   CAIT_THEME_ATTR,
   detectThemeKind,
   DEFAULT_FUZZY_THRESHOLD,
+  readPageSize,
 } from '../helpers.js'
 import { rpc, filePayload, downloadFile, decodeBase64, copyText } from '../rpc.js'
 import { describeError } from '../errors.js'
 import { UI_LANG_CODES } from '../locales.js'
+
+// The server reviews at most 20 segments per call, so a longer run is split
+// into batches and merged client-side.
+const REVIEW_BATCH_SIZE = 20
+const SEVERITY_RANK = { high: 0, medium: 1, low: 2 }
+
+function mergeReviewIssues(issues) {
+  const byIndex = new Map()
+  for (const issue of issues) {
+    if (!issue || !Number.isInteger(issue.index) || byIndex.has(issue.index)) continue
+    byIndex.set(issue.index, issue)
+  }
+  return [...byIndex.values()].sort(
+    (a, b) =>
+      (SEVERITY_RANK[a.severity] ?? 3) - (SEVERITY_RANK[b.severity] ?? 3) || a.index - b.index,
+  )
+}
 
 // Workbench 的状态与动作。渲染层只从这里取数据，不直接调用 rpc。
 export function useWorkbenchController({ i18n, translate }) {
@@ -189,6 +207,8 @@ export function useWorkbenchController({ i18n, translate }) {
   }
 
   const preCancelRef = useRef(false)
+  const reviewCancelRef = useRef(false)
+  const reviewRunRef = useRef(0)
 
   // The client drives pre-translation block by block instead of asking the
   // host for a background job: a block is one RPC, cancellation is simply
@@ -326,6 +346,8 @@ export function useWorkbenchController({ i18n, translate }) {
   }, [data?.activeDocument?.id, data?.revision])
 
   useEffect(() => {
+    reviewRunRef.current += 1
+    reviewCancelRef.current = true
     setReview(null)
   }, [data?.activeDocument?.id])
 
@@ -924,22 +946,86 @@ export function useWorkbenchController({ i18n, translate }) {
     if (Number.isInteger(nextIndex)) chooseSegment(nextIndex)
   }
 
-  const runReview = async () => {
-    if (!doc || reviewBusy) return
-    setReviewBusy(true)
-    try {
-      const result = await rpc('reviewDocument', {
-        documentId: doc.id,
-        from: 0,
-        count: 20,
-      })
-      setReview(result || { issues: [] })
-    } catch (error) {
-      setReview(null)
-      report(error)
-    } finally {
-      setReviewBusy(false)
+  // Which segments a review run covers. "This page" follows the segment the
+  // user is editing (the rail jumps to it), "high risk" reuses the rule-based
+  // check instead of letting the model pick, and both are capped per request
+  // by the server, so a run is split into batches below.
+  const reviewIndexes = (target) => {
+    if (!doc) return []
+    const total = doc.segments.length
+    if (target === 'risk') {
+      return (qa?.risks || [])
+        .filter((item) => item.risk === 'high' && Number.isInteger(item.index))
+        .map((item) => item.index)
     }
+    const storage = typeof localStorage === 'undefined' ? null : localStorage
+    const size = readPageSize(storage)
+    const start = Math.floor(Math.min(Math.max(0, selected), Math.max(0, total - 1)) / size) * size
+    const end = Math.min(total, start + size)
+    return Array.from({ length: Math.max(0, end - start) }, (_, offset) => start + offset)
+  }
+
+  const runReview = async (target = 'page') => {
+    if (!doc || reviewBusy) return
+    const indexes = reviewIndexes(target)
+    if (!indexes.length) {
+      notify(t(target === 'risk' ? 'qa.reviewRiskEmpty' : 'qa.reviewEmptyRange'), 'info')
+      return
+    }
+    const token = ++reviewRunRef.current
+    reviewCancelRef.current = false
+    const collected = []
+    setReviewBusy(true)
+    setReview({
+      target,
+      running: true,
+      cancelled: false,
+      done: 0,
+      total: indexes.length,
+      indexes,
+      issues: [],
+    })
+    try {
+      for (let offset = 0; offset < indexes.length; offset += REVIEW_BATCH_SIZE) {
+        if (reviewCancelRef.current || reviewRunRef.current !== token) break
+        const batch = indexes.slice(offset, offset + REVIEW_BATCH_SIZE)
+        const result = await rpc('reviewDocument', { documentId: doc.id, indexes: batch })
+        collected.push(...(result?.issues || []))
+        if (reviewRunRef.current !== token) break
+        setReview((prev) =>
+          prev
+            ? {
+                ...prev,
+                done: Math.min(prev.total, offset + batch.length),
+                issues: mergeReviewIssues(collected),
+              }
+            : prev,
+        )
+      }
+    } catch (error) {
+      if (reviewRunRef.current === token) {
+        setReview(null)
+        report(error)
+      }
+    } finally {
+      if (reviewRunRef.current === token) {
+        setReviewBusy(false)
+        setReview((prev) =>
+          prev
+            ? {
+                ...prev,
+                running: false,
+                cancelled: reviewCancelRef.current,
+                issues: mergeReviewIssues(collected),
+              }
+            : prev,
+        )
+      }
+    }
+  }
+
+  const cancelReview = () => {
+    reviewCancelRef.current = true
   }
 
   const applyReview = (issue) => {
@@ -1570,6 +1656,7 @@ export function useWorkbenchController({ i18n, translate }) {
     refreshQa,
     jumpQa,
     runReview,
+    cancelReview,
     applyReview,
     applyQaFix,
     runConcordance,

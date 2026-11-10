@@ -117,6 +117,7 @@ function Workbench({ i18n, translate }) {
     refreshQa,
     jumpQa,
     runReview,
+    cancelReview,
     applyReview,
     applyQaFix,
     runConcordance,
@@ -240,11 +241,21 @@ function Workbench({ i18n, translate }) {
     {
       id: 'review',
       title: t('cmd.review'),
-      hint: '',
+      hint: t('cmd.reviewHint'),
       docOnly: true,
       run: () => {
         setTab('qa')
-        runReview()
+        runReview('page')
+      },
+    },
+    {
+      id: 'review-risk',
+      title: t('cmd.reviewRisk'),
+      hint: t('cmd.reviewRiskHint'),
+      docOnly: true,
+      run: () => {
+        setTab('qa')
+        runReview('risk')
       },
     },
     {
@@ -429,6 +440,7 @@ function Workbench({ i18n, translate }) {
                   review,
                   reviewBusy,
                   onReview: runReview,
+                  onCancelReview: cancelReview,
                   onApplyReview: applyReview,
                   concordance,
                   concordanceQuery,

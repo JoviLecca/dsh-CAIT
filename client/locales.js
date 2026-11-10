@@ -1238,7 +1238,6 @@ Object.assign(ZH, {
   'qa.refresh': '重新检查',
   'qa.empty': '没有发现问题。',
   'qa.loading': '正在检查…',
-  'qa.review': 'AI 审校',
   'qa.reviewing': '审校中…',
   'qa.reviewTitle': 'AI 审校建议',
   'qa.reviewEmpty': 'AI 没有发现需要改的句子。',
@@ -1328,7 +1327,6 @@ Object.assign(ZH, {
   'cmd.analysis': '文档分析',
   'cmd.clearPretranslated': '清理预翻译',
   'cmd.notes': '句段备注',
-  'cmd.review': 'AI 审校当前文档',
   'editor.notes': '备注',
   'notes.title': '句段备注',
   'notes.hint': '备注只保存在本文档，不会写入 TM。',
@@ -1388,7 +1386,6 @@ Object.assign(EN, {
   'qa.refresh': 'Re-run checks',
   'qa.empty': 'No issues found.',
   'qa.loading': 'Running checks…',
-  'qa.review': 'AI review',
   'qa.reviewing': 'Reviewing…',
   'qa.reviewTitle': 'AI review suggestions',
   'qa.reviewEmpty': 'The model found no sentence worth changing.',
@@ -1480,7 +1477,6 @@ Object.assign(EN, {
   'cmd.analysis': 'Document analysis',
   'cmd.clearPretranslated': 'Clear pre-translated targets',
   'cmd.notes': 'Segment notes',
-  'cmd.review': 'AI review this document',
   'editor.notes': 'Notes',
   'notes.title': 'Segment notes',
   'notes.hint': 'Notes stay in this document and are never written to TM.',
@@ -1540,7 +1536,6 @@ Object.assign(JA, {
   'qa.refresh': '再チェック',
   'qa.empty': '問題はありません。',
   'qa.loading': 'チェック中…',
-  'qa.review': 'AI 校閲',
   'qa.reviewing': '校閲中…',
   'qa.reviewTitle': 'AI 校閲の提案',
   'qa.reviewEmpty': 'モデルが修正すべき文を見つけませんでした。',
@@ -1631,7 +1626,6 @@ Object.assign(JA, {
   'cmd.analysis': '文書分析',
   'cmd.clearPretranslated': '事前翻訳をクリア',
   'cmd.notes': 'セグメントメモ',
-  'cmd.review': 'この文書を AI 校閲',
   'editor.notes': 'メモ',
   'notes.title': 'セグメントメモ',
   'notes.hint': 'メモはこの文書にのみ保存され、TM には書き込まれません。',
@@ -1946,6 +1940,54 @@ function makeTranslator(preference, dshTranslate) {
     return interpolateText(text, vars)
   }
 }
+
+// AI review scope: a page-sized run or the high-risk list from the check.
+// Kept together so the three dictionaries stay aligned.
+Object.assign(ZH, {
+  'qa.reviewPage': '审校本页',
+  'qa.reviewPageHint': '审校当前页的全部句段',
+  'qa.reviewRisk': '只审高风险（{count}）',
+  'qa.reviewRiskHint': '只审规则检查标为高风险的句段',
+  'qa.reviewProgress': '已审 {done}/{total} 段',
+  'qa.reviewCancel': '取消',
+  'qa.reviewCancelled': '已取消，可随时重新审校。',
+  'qa.reviewRiskEmpty': '规则检查没有发现高风险句段。',
+  'qa.reviewEmptyRange': '当前页没有可审校的句段。',
+  'cmd.review': '审校当前页',
+  'cmd.reviewHint': '审校当前页的句段',
+  'cmd.reviewRisk': '只审高风险句段',
+  'cmd.reviewRiskHint': '使用规则检查的高风险名单',
+})
+Object.assign(EN, {
+  'qa.reviewPage': 'Review this page',
+  'qa.reviewPageHint': 'Review every segment on this page',
+  'qa.reviewRisk': 'High risk only ({count})',
+  'qa.reviewRiskHint': 'Review only the segments the check flagged as high risk',
+  'qa.reviewProgress': '{done}/{total} reviewed',
+  'qa.reviewCancel': 'Cancel',
+  'qa.reviewCancelled': 'Cancelled. You can run it again at any time.',
+  'qa.reviewRiskEmpty': 'The check found no high-risk segments.',
+  'qa.reviewEmptyRange': 'This page has no segments to review.',
+  'cmd.review': 'Review this page',
+  'cmd.reviewHint': 'Review the segments on this page',
+  'cmd.reviewRisk': 'Review high-risk segments',
+  'cmd.reviewRiskHint': 'Use the high-risk list from the check',
+})
+Object.assign(JA, {
+  'qa.reviewPage': 'このページを校閲',
+  'qa.reviewPageHint': '現在のページの全セグメントを校閲します',
+  'qa.reviewRisk': '高リスクのみ（{count}）',
+  'qa.reviewRiskHint': 'チェックが高リスクとしたセグメントのみを校閲します',
+  'qa.reviewProgress': '{done}/{total} 件を校閲',
+  'qa.reviewCancel': '中止',
+  'qa.reviewCancelled': '中止しました。いつでも再実行できます。',
+  'qa.reviewRiskEmpty': 'チェックで高リスクのセグメントは見つかりませんでした。',
+  'qa.reviewEmptyRange': 'このページに校閲できるセグメントはありません。',
+  'cmd.review': '現在のページを校閲',
+  'cmd.reviewHint': '現在のページのセグメントを校閲します',
+  'cmd.reviewRisk': '高リスクのセグメントを校閲',
+  'cmd.reviewRiskHint': 'チェックの高リスク一覧を使用します',
+})
 
 export {
   ZH,

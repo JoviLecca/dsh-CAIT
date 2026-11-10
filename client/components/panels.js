@@ -37,6 +37,7 @@ function CatPanel({
   review,
   reviewBusy,
   onReview,
+  onCancelReview,
   onApplyReview,
   concordance,
   concordanceQuery,
@@ -413,13 +414,28 @@ function CatPanel({
                 h(
                   'button',
                   {
-                    className: 'cait-linkbtn',
-                    onClick: onReview,
+                    className: 'cait-btn cait-btn-primary',
+                    onClick: () => onReview('page'),
                     disabled: Boolean(busy) || Boolean(reviewBusy),
-                    title: t('qa.review'),
+                    title: t('qa.reviewPageHint'),
                   },
                   h(Icon, { name: 'sparkles', size: 12 }),
-                  reviewBusy ? t('qa.reviewing') : t('qa.review'),
+                  reviewBusy ? t('qa.reviewing') : t('qa.reviewPage'),
+                ),
+                h(
+                  'button',
+                  {
+                    className: 'cait-linkbtn',
+                    onClick: () => onReview('risk'),
+                    disabled:
+                      Boolean(busy) ||
+                      Boolean(reviewBusy) ||
+                      (qa?.risks || []).every((item) => item.risk !== 'high'),
+                    title: t('qa.reviewRiskHint'),
+                  },
+                  t('qa.reviewRisk', {
+                    count: (qa?.risks || []).filter((item) => item.risk === 'high').length,
+                  }),
                 ),
                 h(
                   'button',
@@ -527,7 +543,30 @@ function CatPanel({
               ? h(
                   'div',
                   { className: 'cait-review' },
-                  h('div', { className: 'cait-listhead' }, t('qa.reviewTitle')),
+                  h(
+                    'div',
+                    { className: 'cait-listhead' },
+                    t('qa.reviewTitle'),
+                    h(
+                      'span',
+                      { className: 'cait-reviewmeta' },
+                      h(
+                        'span',
+                        { className: 'cait-muted' },
+                        t('qa.reviewProgress', { done: review.done, total: review.total }),
+                      ),
+                      review.running
+                        ? h(
+                            'button',
+                            { className: 'cait-linkbtn', onClick: onCancelReview },
+                            t('qa.reviewCancel'),
+                          )
+                        : null,
+                    ),
+                  ),
+                  review.cancelled && !review.running
+                    ? h('p', { className: 'cait-empty-note' }, t('qa.reviewCancelled'))
+                    : null,
                   (review.issues || []).length
                     ? review.issues.map((issue, issueIndex) => {
                         const severity = ['high', 'medium', 'low'].includes(issue.severity)
