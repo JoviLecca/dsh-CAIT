@@ -289,8 +289,10 @@ try {
         stream(
           JSON.stringify(
             Array.from({ length: 8 }, (_, offset) => {
-              const index = 47 - offset
-              return { id: `S${index}`, text: `T${index}` }
+              // Ids are local to the batch and the model may return them in any
+              // order; the mapping is by id, never by array position.
+              const position = 8 - offset
+              return { id: `T${position}`, text: `T${40 + position - 1}` }
             }),
           ),
         ),

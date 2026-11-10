@@ -6,6 +6,17 @@ All notable changes to CAIT are documented here. The project follows
 
 ## [Unreleased]
 
+### Fixed
+
+- Batch machine translation could write one segment's text into another. The
+  prompt used absolute document indices (`[S1042]`) and repeated each
+  neighbour's source under every item, so a model that renumbered its answer
+  from 1 shifted the whole block by one segment, and a model that merged two
+  segments returned text covering both. Batches now carry local ids
+  (`T1..Tn`), the payload is a flat JSON array without repeated context, and
+  answers that duplicate or contain another answer are dropped and retried one
+  segment at a time (`lib/mt-translate.js`).
+
 ### Changed
 
 - Selecting a segment no longer rescans the whole translation memory. `lookupTM`
